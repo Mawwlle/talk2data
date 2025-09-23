@@ -3,6 +3,8 @@
 
 > **Status:** Public artifact accompanying the IEEE ICDM 2025 BIGIS Workshop paper *“A Multimodal Conversational Agent for Tabular Data Analysis”.*
 
+https://github.com/user-attachments/assets/71d15e7b-1998-41f9-a689-a624aad7acb2
+
 https://github.com/mohammad-nour-alawad/talk2data
 
 ---
