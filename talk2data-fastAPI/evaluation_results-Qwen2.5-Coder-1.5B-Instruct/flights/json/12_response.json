@@ -1,0 +1,16 @@
+{
+  "code": "df.groupby('DayOfWeek')['AirTime'].mean()",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Group by DayOfWeek and compute the average AirTime.",
+      "system": "df.groupby('DayOfWeek')['AirTime'].mean()"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.1285,
+    "generate_code_sec": 0.1316,
+    "overall_request_sec": 0.2658
+  }
+}

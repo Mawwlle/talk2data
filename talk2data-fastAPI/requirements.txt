@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+vllm==0.8.5
+transformers
+torch  
+accelerate
+openai-whisper
+matplotlib
+python-multipart
+pandas
+langgraph
+TTS

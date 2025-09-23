@@ -1,0 +1,16 @@
+{
+  "code": "correlation = df[['math score', 'reading score', 'writing score']].corr()\nprint(correlation)",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Compute the Pearson correlation between math, reading, and writing scores.",
+      "system": "correlation = df[['math score', 'reading score', 'writing score']].corr()\nprint(correlation)"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.1219,
+    "generate_code_sec": 0.2102,
+    "overall_request_sec": 0.3431
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "code": "max_elapsed_time_flight = df[df['ActualElapsedTime'] == df['ActualElapsedTime'].max()]\nmax_elapsed_time_flight",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Get the flight with the maximum ActualElapsedTime.",
+      "system": "max_elapsed_time_flight = df[df['ActualElapsedTime'] == df['ActualElapsedTime'].max()]\nmax_elapsed_time_flight"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.5146,
+    "generate_code_sec": 0.9488,
+    "overall_request_sec": 1.475
+  }
+}

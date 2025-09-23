@@ -1,0 +1,16 @@
+{
+  "code": "import seaborn as sns\nsns.countplot(x='UniqueCarrier', data=df)",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Plot a countplot of flights by UniqueCarrier using seaborn.",
+      "system": "import seaborn as sns\nsns.countplot(x='UniqueCarrier', data=df)"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.285,
+    "generate_code_sec": 0.3794,
+    "overall_request_sec": 0.6763
+  }
+}

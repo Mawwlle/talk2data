@@ -1,0 +1,16 @@
+{
+  "code": "import seaborn as sns\nsns.countplot(x='gender', data=df)",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Plot a countplot of gender using seaborn.",
+      "system": "import seaborn as sns\nsns.countplot(x='gender', data=df)"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.2647,
+    "generate_code_sec": 0.3503,
+    "overall_request_sec": 0.6212
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ncorr_matrix = df.corr()\nplt.figure(figsize=(20, 16))\nheatmap = sns.heatmap(corr_matrix, annot=False, cmap='coolwarm')\nplt.show()",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Generate a heatmap of the correlation matrix for all features using seaborn.",
+      "system": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\ncorr_matrix = df.corr()\nplt.figure(figsize=(20, 16))\nheatmap = sns.heatmap(corr_matrix, annot=False, cmap='coolwarm')\nplt.show()"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.3082,
+    "generate_code_sec": 1.3908,
+    "overall_request_sec": 1.7091
+  }
+}

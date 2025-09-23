@@ -1,0 +1,240 @@
+[
+  {
+    "idx": 1,
+    "command": "Plot a countplot of flights by UniqueCarrier using seaborn.",
+    "round_trip_sec": 0.681,
+    "server_timing": {
+      "decide_action_sec": 0.285,
+      "generate_code_sec": 0.3794,
+      "overall_request_sec": 0.6763
+    },
+    "code_success": 1,
+    "sandbox_sec": 7.1705,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 2,
+    "command": "Calculate the average ArrDelay for each Month.",
+    "round_trip_sec": 0.7688,
+    "server_timing": {
+      "decide_action_sec": 0.2732,
+      "generate_code_sec": 0.4846,
+      "overall_request_sec": 0.7644
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0717,
+    "audio_file": "",
+    "text_out": [
+      "Month\n1     10.188856\n2     13.077837\n3     11.192365\n4      6.807297\n5      5.978448\n6     13.266756\n7      9.975050\n8      6.910915\n9      0.697733\n10     0.415495\n11     2.015858\n12    16.680505\nName: ArrDelay, dtype: float64"
+    ]
+  },
+  {
+    "idx": 3,
+    "command": "Create a scatter plot of DepDelay versus ArrDelay with matplotlib.",
+    "round_trip_sec": 1.1591,
+    "server_timing": {
+      "decide_action_sec": 0.2769,
+      "generate_code_sec": 0.8667,
+      "overall_request_sec": 1.155
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.2784,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 4,
+    "command": "Generate a histogram of FlightNum with 30 bins.",
+    "round_trip_sec": 0.6291,
+    "server_timing": {
+      "decide_action_sec": 0.2721,
+      "generate_code_sec": 0.3457,
+      "overall_request_sec": 0.6242
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0684,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 5,
+    "command": "Visualize the distribution of Distance using seaborn distplot.",
+    "round_trip_sec": 0.5967,
+    "server_timing": {
+      "decide_action_sec": 0.2747,
+      "generate_code_sec": 0.3065,
+      "overall_request_sec": 0.5924
+    },
+    "code_success": 1,
+    "sandbox_sec": 21.4459,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 6,
+    "command": "Compute the total number of cancelled flights in the dataset.",
+    "round_trip_sec": 0.6331,
+    "server_timing": {
+      "decide_action_sec": 0.2856,
+      "generate_code_sec": 0.3296,
+      "overall_request_sec": 0.6265
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.003,
+    "audio_file": "",
+    "text_out": [
+      "137434"
+    ]
+  },
+  {
+    "idx": 7,
+    "command": "Get the flight with the maximum ActualElapsedTime.",
+    "round_trip_sec": 0.984,
+    "server_timing": {
+      "decide_action_sec": 0.275,
+      "generate_chat_response_sec": 0.2741,
+      "tts_sec": 0.417,
+      "overall_request_sec": 0.978
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/flights/audio/7.wav",
+    "text_out": []
+  },
+  {
+    "idx": 8,
+    "command": "Count flights that departed after 1000 (DepTime > 1000).",
+    "round_trip_sec": 0.9757,
+    "server_timing": {
+      "decide_action_sec": 0.2732,
+      "generate_code_sec": 0.6931,
+      "overall_request_sec": 0.9724
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.605,
+    "audio_file": "",
+    "text_out": [
+      "4915594"
+    ]
+  },
+  {
+    "idx": 9,
+    "command": "Plot a boxplot of TaxiOut times grouped by Origin using seaborn.",
+    "round_trip_sec": 0.7544,
+    "server_timing": {
+      "decide_action_sec": 0.2739,
+      "generate_code_sec": 0.466,
+      "overall_request_sec": 0.7506
+    },
+    "code_success": 1,
+    "sandbox_sec": 9.8235,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 10,
+    "command": "Display a heatmap of the correlation matrix of numerical columns using matplotlib.",
+    "round_trip_sec": 1.1204,
+    "server_timing": {
+      "decide_action_sec": 0.2754,
+      "generate_code_sec": 0.8301,
+      "overall_request_sec": 1.1165
+    },
+    "code_success": 1,
+    "sandbox_sec": 6.1588,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 11,
+    "command": "Calculate the percentage of flights with DepDelay > 15 minutes.",
+    "round_trip_sec": 0.8445,
+    "server_timing": {
+      "decide_action_sec": 0.2758,
+      "generate_code_sec": 0.5528,
+      "overall_request_sec": 0.8399
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.008,
+    "audio_file": "",
+    "text_out": [
+      "18.20892337049312"
+    ]
+  },
+  {
+    "idx": 12,
+    "command": "Group by DayOfWeek and compute the average AirTime.",
+    "round_trip_sec": 0.7184,
+    "server_timing": {
+      "decide_action_sec": 0.273,
+      "generate_code_sec": 0.4309,
+      "overall_request_sec": 0.7146
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0737,
+    "audio_file": "",
+    "text_out": [
+      "DayOfWeek\n1    103.182165\n2    103.214930\n3    103.058508\n4    103.467138\n5    103.557539\n6    107.400631\n7    104.864885\nName: AirTime, dtype: float64"
+    ]
+  },
+  {
+    "idx": 13,
+    "command": "Create a line plot of average DepDelay over DayofMonth with matplotlib.",
+    "round_trip_sec": 1.4308,
+    "server_timing": {
+      "decide_action_sec": 0.2733,
+      "generate_code_sec": 1.1428,
+      "overall_request_sec": 1.4267
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0761,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 14,
+    "command": "What does the column CRSDepTime stand for, and is it stored as a number or a category?",
+    "round_trip_sec": 2.1701,
+    "server_timing": {
+      "decide_action_sec": 0.9318,
+      "generate_chat_response_sec": 0.36,
+      "tts_sec": 0.8617,
+      "overall_request_sec": 2.1647
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/flights/audio/14.wav",
+    "text_out": []
+  },
+  {
+    "idx": 15,
+    "command": "Give me a brief explanation of why flight distance could affect arrival delay.",
+    "round_trip_sec": 3.1438,
+    "server_timing": {
+      "decide_action_sec": 0.2707,
+      "generate_chat_response_sec": 0.7773,
+      "tts_sec": 2.0809,
+      "overall_request_sec": 3.1349
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/flights/audio/15.wav",
+    "text_out": []
+  },
+  {
+    "idx": 16,
+    "command": "What do you think we should do as data\u2011cleaning step before modeling? please explain it.",
+    "round_trip_sec": 1.8073,
+    "server_timing": {
+      "decide_action_sec": 0.272,
+      "generate_chat_response_sec": 0.374,
+      "tts_sec": 1.1488,
+      "overall_request_sec": 1.8005
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/flights/audio/16.wav",
+    "text_out": []
+  }
+]

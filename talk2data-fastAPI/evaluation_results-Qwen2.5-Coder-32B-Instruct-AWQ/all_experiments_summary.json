@@ -1,0 +1,44 @@
+[
+  {
+    "dataset_name": "otto_group_product",
+    "commands_processed": 16,
+    "code_responses": 13,
+    "code_success": 11,
+    "chat_success": 3,
+    "tts_responses": 3,
+    "avg_round_trip_time_sec": 2.9434,
+    "avg_sandbox_time_sec": 1.6357,
+    "avg_decide_time_sec": 0.5164,
+    "avg_code_gen_time_sec": 1.5356,
+    "avg_chat_resp_gen_time_sec": 3.0529,
+    "avg_tts_time_sec": 3.1553
+  },
+  {
+    "dataset_name": "students_performance",
+    "commands_processed": 16,
+    "code_responses": 13,
+    "code_success": 13,
+    "chat_success": 3,
+    "tts_responses": 3,
+    "avg_round_trip_time_sec": 2.0048,
+    "avg_sandbox_time_sec": 0.06,
+    "avg_decide_time_sec": 0.2898,
+    "avg_code_gen_time_sec": 0.9392,
+    "avg_chat_resp_gen_time_sec": 1.6267,
+    "avg_tts_time_sec": 3.3774
+  },
+  {
+    "dataset_name": "us_flights_2008",
+    "commands_processed": 16,
+    "code_responses": 13,
+    "code_success": 13,
+    "chat_success": 3,
+    "tts_responses": 3,
+    "avg_round_trip_time_sec": 1.8863,
+    "avg_sandbox_time_sec": 3.453,
+    "avg_decide_time_sec": 0.3611,
+    "avg_code_gen_time_sec": 1.2313,
+    "avg_chat_resp_gen_time_sec": 1.184,
+    "avg_tts_time_sec": 1.5452
+  }
+]

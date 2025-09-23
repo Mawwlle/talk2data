@@ -1,0 +1,234 @@
+[
+  {
+    "idx": 1,
+    "command": "Plot a histogram of feat_1 with 25 bins and add a title.",
+    "round_trip_sec": 1.2093,
+    "server_timing": {
+      "decide_action_sec": 0.5181,
+      "generate_code_sec": 0.664,
+      "overall_request_sec": 1.2004
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0184,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 2,
+    "command": "Compute summary statistics (mean, median, std) for all 93 features.",
+    "round_trip_sec": 0.2893,
+    "server_timing": {
+      "decide_action_sec": 0.1742,
+      "generate_code_sec": 0.1006,
+      "overall_request_sec": 0.2852
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.2293,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 3,
+    "command": "Generate a heatmap of the correlation matrix for all features using seaborn.",
+    "round_trip_sec": 0.767,
+    "server_timing": {
+      "decide_action_sec": 0.1372,
+      "generate_code_sec": 0.6154,
+      "overall_request_sec": 0.7627
+    },
+    "code_success": 1,
+    "sandbox_sec": 3.5746,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 4,
+    "command": "Create a pairplot for the first 8 features (feat_1 to feat_8).",
+    "round_trip_sec": 0.7785,
+    "server_timing": {
+      "decide_action_sec": 0.1763,
+      "generate_code_sec": 0.5837,
+      "overall_request_sec": 0.7713
+    },
+    "code_success": 1,
+    "sandbox_sec": 7.9204,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 5,
+    "command": "Get the product id with the maximum value in feat_3.",
+    "round_trip_sec": 0.4589,
+    "server_timing": {
+      "decide_action_sec": 0.1829,
+      "generate_code_sec": 0.2617,
+      "overall_request_sec": 0.4545
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0009,
+    "audio_file": "",
+    "text_out": [
+      "20807"
+    ]
+  },
+  {
+    "idx": 6,
+    "command": "Plot a boxplot for feat_10 to examine distribution and outliers.",
+    "round_trip_sec": 0.4166,
+    "server_timing": {
+      "decide_action_sec": 0.1599,
+      "generate_code_sec": 0.2487,
+      "overall_request_sec": 0.4137
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.1345,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 7,
+    "command": "Plot a histogram of feat_15 with 20 bins.",
+    "round_trip_sec": 0.4705,
+    "server_timing": {
+      "decide_action_sec": 0.1635,
+      "generate_code_sec": 0.2989,
+      "overall_request_sec": 0.4674
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.016,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 8,
+    "command": "Calculate the average value of feat_20.",
+    "round_trip_sec": 0.3435,
+    "server_timing": {
+      "decide_action_sec": 0.1695,
+      "generate_code_sec": 0.1587,
+      "overall_request_sec": 0.3396
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0008,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 9,
+    "command": "Create a scatter plot of feat_5 vs feat_6 with a regression line.",
+    "round_trip_sec": 0.5274,
+    "server_timing": {
+      "decide_action_sec": 0.1291,
+      "generate_code_sec": 0.3846,
+      "overall_request_sec": 0.5241
+    },
+    "code_success": 1,
+    "sandbox_sec": 10.0561,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 10,
+    "command": "Bin feat_25 into 5 equal intervals and show frequency in a bar chart.",
+    "round_trip_sec": 1.2292,
+    "server_timing": {
+      "decide_action_sec": 0.1705,
+      "generate_code_sec": 1.0444,
+      "overall_request_sec": 1.2255
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0223,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 11,
+    "command": "Perform PCA on all features and plot the first two principal components.",
+    "round_trip_sec": 1.8074,
+    "server_timing": {
+      "decide_action_sec": 0.129,
+      "generate_code_sec": 1.6667,
+      "overall_request_sec": 1.8037
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0002,
+    "audio_file": "",
+    "text_out": [
+      "Execution error: __import__ not found"
+    ]
+  },
+  {
+    "idx": 12,
+    "command": "Generate a violin plot for the distribution of feat_30 using seaborn.",
+    "round_trip_sec": 0.4663,
+    "server_timing": {
+      "decide_action_sec": 0.1719,
+      "generate_code_sec": 0.2802,
+      "overall_request_sec": 0.4628
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.4559,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 13,
+    "command": "Plot a line chart of the cumulative sum of feat_2 over the dataset index.",
+    "round_trip_sec": 0.7735,
+    "server_timing": {
+      "decide_action_sec": 0.1698,
+      "generate_code_sec": 0.5891,
+      "overall_request_sec": 0.7697
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0085,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 14,
+    "command": "what kind of information do you think the column feat_42 captures?",
+    "round_trip_sec": 2.476,
+    "server_timing": {
+      "decide_action_sec": 0.1692,
+      "generate_chat_response_sec": 0.6976,
+      "tts_sec": 1.5902,
+      "overall_request_sec": 2.4681
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/otto/audio/14.wav",
+    "text_out": []
+  },
+  {
+    "idx": 15,
+    "command": "Give me a short suggestion on how I could preprocess these 93 numerical features before building a model.",
+    "round_trip_sec": 0.6263,
+    "server_timing": {
+      "decide_action_sec": 0.1252,
+      "generate_code_sec": 0.4925,
+      "overall_request_sec": 0.6231
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0001,
+    "audio_file": "",
+    "text_out": [
+      "Execution error: __import__ not found"
+    ]
+  },
+  {
+    "idx": 16,
+    "command": "Is there any column in this dataset that should probably be treated as\u00a0categorical instead of numeric? Briefly explain your idea.",
+    "round_trip_sec": 3.118,
+    "server_timing": {
+      "decide_action_sec": 0.1337,
+      "generate_chat_response_sec": 0.6715,
+      "tts_sec": 2.2928,
+      "overall_request_sec": 3.1082
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/otto/audio/16.wav",
+    "text_out": []
+  }
+]

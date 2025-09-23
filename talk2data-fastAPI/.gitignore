@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+outs*/
+venv/
+.env
+out_ref/
+logs/
+temp_audio.wav
+*.wav
+*.npy
+
+*.so
+
+
+otto_group_product.csv
+StudentsPerformance.csv
+us_flights_2008.csv

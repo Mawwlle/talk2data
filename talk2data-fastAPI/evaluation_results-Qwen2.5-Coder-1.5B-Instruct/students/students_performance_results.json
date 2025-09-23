@@ -1,0 +1,238 @@
+[
+  {
+    "idx": 1,
+    "command": "Plot a countplot of gender using seaborn.",
+    "round_trip_sec": 7.6696,
+    "server_timing": {
+      "decide_action_sec": 0.1272,
+      "generate_chat_response_sec": 0.87,
+      "tts_sec": 6.6476,
+      "overall_request_sec": 7.6514
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/1.wav",
+    "text_out": []
+  },
+  {
+    "idx": 2,
+    "command": "Generate a boxplot of math score grouped by gender using seaborn.",
+    "round_trip_sec": 0.3577,
+    "server_timing": {
+      "decide_action_sec": 0.1205,
+      "generate_code_sec": 0.2261,
+      "overall_request_sec": 0.3542
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0242,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 3,
+    "command": "Calculate the average reading score for each race/ethnicity group.",
+    "round_trip_sec": 5.4641,
+    "server_timing": {
+      "decide_action_sec": 0.122,
+      "generate_chat_response_sec": 0.6418,
+      "tts_sec": 4.674,
+      "overall_request_sec": 5.4496
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/3.wav",
+    "text_out": []
+  },
+  {
+    "idx": 4,
+    "command": "Create a histogram of writing score with 20 bins using matplotlib.",
+    "round_trip_sec": 0.2948,
+    "server_timing": {
+      "decide_action_sec": 0.1232,
+      "generate_code_sec": 0.1619,
+      "overall_request_sec": 0.2914
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0128,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 5,
+    "command": "Plot a scatter of math score vs reading score with matplotlib.",
+    "round_trip_sec": 0.3859,
+    "server_timing": {
+      "decide_action_sec": 0.1232,
+      "generate_code_sec": 0.2479,
+      "overall_request_sec": 0.3822
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0067,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 6,
+    "command": "Compute the Pearson correlation between math, reading, and writing scores.",
+    "round_trip_sec": 0.3464,
+    "server_timing": {
+      "decide_action_sec": 0.1219,
+      "generate_code_sec": 0.2102,
+      "overall_request_sec": 0.3431
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0009,
+    "audio_file": "",
+    "text_out": [
+      "Execution error: name 'print' is not defined"
+    ]
+  },
+  {
+    "idx": 7,
+    "command": "Plot a violin plot of math score by parental education using seaborn.",
+    "round_trip_sec": 5.2808,
+    "server_timing": {
+      "decide_action_sec": 0.1179,
+      "generate_chat_response_sec": 0.5148,
+      "tts_sec": 4.6297,
+      "overall_request_sec": 5.2684
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/7.wav",
+    "text_out": []
+  },
+  {
+    "idx": 8,
+    "command": "Group the data by lunch type and compute the mean math score.",
+    "round_trip_sec": 0.3902,
+    "server_timing": {
+      "decide_action_sec": 0.1328,
+      "generate_code_sec": 0.2476,
+      "overall_request_sec": 0.387
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0014,
+    "audio_file": "",
+    "text_out": [
+      "lunch\nfree/reduced    58.921127\nstandard        70.034109\nName: math score, dtype: float64"
+    ]
+  },
+  {
+    "idx": 9,
+    "command": "Plot a bar chart showing the count of students for each test prep course.",
+    "round_trip_sec": 11.9297,
+    "server_timing": {
+      "decide_action_sec": 0.139,
+      "generate_chat_response_sec": 1.4792,
+      "tts_sec": 10.2719,
+      "overall_request_sec": 11.9014
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/9.wav",
+    "text_out": []
+  },
+  {
+    "idx": 10,
+    "command": "Calculate the median reading score for each test prep course category.",
+    "round_trip_sec": 4.8951,
+    "server_timing": {
+      "decide_action_sec": 0.1241,
+      "generate_chat_response_sec": 0.6742,
+      "tts_sec": 4.0749,
+      "overall_request_sec": 4.8799
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/10.wav",
+    "text_out": []
+  },
+  {
+    "idx": 11,
+    "command": "Create a pairplot of math, reading, writing scores using seaborn.",
+    "round_trip_sec": 0.3575,
+    "server_timing": {
+      "decide_action_sec": 0.1218,
+      "generate_code_sec": 0.2258,
+      "overall_request_sec": 0.3535
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.5375,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 12,
+    "command": "Generate a heatmap of the correlation matrix for math, reading, writing scores.",
+    "round_trip_sec": 0.3988,
+    "server_timing": {
+      "decide_action_sec": 0.1207,
+      "generate_code_sec": 0.2634,
+      "overall_request_sec": 0.3952
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0379,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 13,
+    "command": "Plot a boxplot of reading score by race/ethnicity using seaborn.",
+    "round_trip_sec": 0.3782,
+    "server_timing": {
+      "decide_action_sec": 0.121,
+      "generate_code_sec": 0.2425,
+      "overall_request_sec": 0.3745
+    },
+    "code_success": 1,
+    "sandbox_sec": 0.0302,
+    "audio_file": "",
+    "text_out": []
+  },
+  {
+    "idx": 14,
+    "command": "Explain what the parental level of education column represents and why it might influence student scores.",
+    "round_trip_sec": 5.1368,
+    "server_timing": {
+      "decide_action_sec": 0.1205,
+      "generate_chat_response_sec": 0.6022,
+      "tts_sec": 4.3925,
+      "overall_request_sec": 5.121
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/14.wav",
+    "text_out": []
+  },
+  {
+    "idx": 15,
+    "command": "Which of the score columns would you expect to be most correlated, and why?",
+    "round_trip_sec": 0.9384,
+    "server_timing": {
+      "decide_action_sec": 0.1213,
+      "generate_chat_response_sec": 0.1223,
+      "tts_sec": 0.6837,
+      "overall_request_sec": 0.9336
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/15.wav",
+    "text_out": []
+  },
+  {
+    "idx": 16,
+    "command": "This dataset mixes categorical and numeric data. Can you tell the categorical columns and describe them in everyday language?",
+    "round_trip_sec": 9.8154,
+    "server_timing": {
+      "decide_action_sec": 0.1202,
+      "generate_chat_response_sec": 1.2518,
+      "tts_sec": 8.4116,
+      "overall_request_sec": 9.7898
+    },
+    "code_success": 0,
+    "sandbox_sec": 0.0,
+    "audio_file": "evaluation_results/students/audio/16.wav",
+    "text_out": []
+  }
+]

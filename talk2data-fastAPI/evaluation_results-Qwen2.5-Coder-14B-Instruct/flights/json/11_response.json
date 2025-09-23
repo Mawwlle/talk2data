@@ -1,0 +1,16 @@
+{
+  "code": "percentage_delayed = (df['DepDelay'] > 15).mean() * 100\npercentage_delayed",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Calculate the percentage of flights with DepDelay > 15 minutes.",
+      "system": "percentage_delayed = (df['DepDelay'] > 15).mean() * 100\npercentage_delayed"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.5173,
+    "generate_code_sec": 1.0504,
+    "overall_request_sec": 1.5781
+  }
+}

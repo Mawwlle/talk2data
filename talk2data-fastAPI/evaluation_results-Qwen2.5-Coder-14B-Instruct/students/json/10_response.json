@@ -1,0 +1,16 @@
+{
+  "code": "median_reading_scores = df.groupby('test preparation course')['reading score'].median()\nmedian_reading_scores",
+  "message": "Here's the generated code:",
+  "audio": null,
+  "updated_history": [
+    {
+      "user": "Calculate the median reading score for each test prep course category.",
+      "system": "median_reading_scores = df.groupby('test preparation course')['reading score'].median()\nmedian_reading_scores"
+    }
+  ],
+  "timing": {
+    "decide_action_sec": 0.5017,
+    "generate_code_sec": 0.7993,
+    "overall_request_sec": 1.3114
+  }
+}
