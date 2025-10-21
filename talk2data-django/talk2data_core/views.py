@@ -22,7 +22,9 @@ import plotly.io as pio
 
 import requests
 
-API_URL = "http://10.32.15.90:6000"
+# API_URL = "http://10.32.15.90:6000"
+# Для локального дебага
+API_URL = "http://127.0.0.1:6000"
 
 df_store = None
 metadata_store = {}
@@ -140,7 +142,14 @@ def generate_code(request):
             else:
                 return JsonResponse({'status': 'error', 'message': response.text}, status=400)
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            import traceback
+            tb = traceback.format_exc()
+            print(tb)  # чтобы увидеть в консоли
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e),
+                'traceback': tb
+            }, status=500)
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 @csrf_exempt

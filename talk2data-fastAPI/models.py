@@ -42,6 +42,7 @@ print("Loading Language Model with vLLM...")
 llm = LLM(
     model=LLM_MODEL_NAME,
     tokenizer=LLM_MODEL_NAME,
+    dtype="float16",   # <- локально использую float16 вместо bfloat16, чтобы видюха тянула
     enforce_eager=True,
     max_model_len=llm_config.max_position_embeddings
 )
