@@ -1,7 +1,7 @@
 # worker.py
 import json
 import pika
-from models import whisper_model
+# from models import whisper_model
 from workflow import create_workflow
 from settings import TASK_QUEUE, RABBITMQ_HOST
 import logging
@@ -42,7 +42,7 @@ def process_transcribe(data: dict):
     
 task_mapping = {
     "converse": process_converse,
-    "transcribe": process_transcribe
+    # "transcribe": process_transcribe # будет добавлено позже
 }
         
 def callback(ch, method, properties, body):

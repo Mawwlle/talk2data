@@ -7,7 +7,7 @@ import time
 
 # Import workflow and schemas
 from workflow import create_workflow
-from models import whisper_model
+# from models import whisper_model позже вернём
 from schemas import ConversationRequest
 
 app = FastAPI()

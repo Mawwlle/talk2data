@@ -11,7 +11,7 @@ from langchain_core.output_parsers import JsonOutputParser
 # Import prompt templates and schemas
 from prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
 from schemas import AgentState, Decision
-from models import llm, tokenizer, text_to_speech
+from models import llm, tokenizer #, text_to_speech пока без него
 
 def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = None) -> str:
     """Format chat template with current state and metadata."""
@@ -134,7 +134,7 @@ def create_workflow():
     builder = StateGraph(AgentState)
     builder.add_node("decide_action", decide_action)
     builder.add_node("generate_code", generate_code_node)
-    builder.add_node("generate_chat_response", generate_chat_response_node)
+    # builder.add_node("generate_chat_response", generate_chat_response_node)
     builder.add_conditional_edges(
         "decide_action",
         route_action,
