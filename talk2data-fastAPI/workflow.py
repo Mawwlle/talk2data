@@ -11,7 +11,7 @@ from langchain_core.output_parsers import JsonOutputParser
 # Import prompt templates and schemas
 from prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
 from schemas import AgentState, Decision
-from models import llm, tokenizer #, text_to_speech пока без него
+from models import get_llm, get_tokenizer #, text_to_speech пока без него
 
 def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = None) -> str:
     """Format chat template with current state and metadata."""

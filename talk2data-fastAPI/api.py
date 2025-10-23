@@ -9,6 +9,7 @@ import time
 from workflow import create_workflow
 # from models import whisper_model позже вернём
 from schemas import ConversationRequest
+from models import get_llm, get_tokenizer
 
 app = FastAPI()
 
@@ -19,6 +20,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    # Прогрев модели и токенизатора
+    get_llm()
+    get_tokenizer()
+    print("✅ Models initialized on startup")
 
 @app.post("/converse")
 async def converse(request: ConversationRequest):
