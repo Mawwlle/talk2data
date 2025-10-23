@@ -8,12 +8,20 @@ from vllm import LLM
 import os
 from dotenv import load_dotenv
 
+# Настроим локальный кэш (если не указан явно — используем ./cache/huggingface)
+os.environ["TRANSFORMERS_CACHE"] = os.getenv("TRANSFORMERS_CACHE", "./cache/huggingface")
+os.environ["HF_HOME"] = os.getenv("HF_HOME", "./cache/huggingface")
+
+# Создадим каталог, если его нет
+os.makedirs(os.environ["TRANSFORMERS_CACHE"], exist_ok=True)
+
 load_dotenv()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
 
 LLM_MODEL_NAME = os.getenv("LLM_MODEL")
+CACHE_DIR = os.getenv("TRANSFORMERS_CACHE", "./cache/huggingface")
 
 _tokenizer = None
 _llm = None
@@ -22,9 +30,13 @@ _llm = None
 def get_tokenizer():
     global _tokenizer
     if _tokenizer is None:
-        print("Initializing tokenizer...")
+        print("Initializing tokenizer from local cache...")
         _tokenizer = AutoTokenizer.from_pretrained(
-            LLM_MODEL_NAME, use_fast=True, padding_side="left"
+            LLM_MODEL_NAME,
+            use_fast=True,
+            padding_side="left",
+            cache_dir=CACHE_DIR,  # используем локальный кэш
+            local_files_only=True  # запрещаем скачивание
         )
         if _tokenizer.pad_token is None:
             _tokenizer.add_special_tokens({"pad_token": "[PAD]"})
@@ -34,14 +46,19 @@ def get_tokenizer():
 def get_llm():
     global _llm
     if _llm is None:
-        print("Initializing vLLM...")
-        llm_config = AutoConfig.from_pretrained(LLM_MODEL_NAME)
+        print("Initializing vLLM from local cache...")
+        llm_config = AutoConfig.from_pretrained(
+            LLM_MODEL_NAME,
+            cache_dir=CACHE_DIR,
+            local_files_only=True  # обязательно только локально
+        )
         _llm = LLM(
             model=LLM_MODEL_NAME,
             tokenizer=LLM_MODEL_NAME,
             dtype="float16",
             enforce_eager=True,
             max_model_len=llm_config.max_position_embeddings,
+            cache_dir=CACHE_DIR,   # чтобы vLLM тоже брал кэш локально
         )
     return _llm
 
