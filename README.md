@@ -47,23 +47,18 @@ git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
 
 # Для локального запуска используем .env.local, для прода - .env.prod
 
-# Перед первым запуском нужно скачать модели (всего один раз)
-# Занимает 10-15 минут
-cd talk2data-fastAPI
-CUDA_VISIBLE_DEVICES=0 python init_cache.py
-
 # Launch backend API (port 6000)
 cd talk2data-fastAPI
-CUDA_VISIBLE_DEVICES=0 uvicorn api:app --host 0.0.0.0 --port 6000
+CUDA_VISIBLE_DEVICES=0 poetry run uvicorn api:app --host 0.0.0.0 --port 6000
 
 # Запускаем контейнеры, (если они ещё не запущены)
 
 # Запускаем django на gateway
 cd ../../gateway
-python manage.py runserver
+poetry run python manage.py runserver
 
-# Запускаем worker
-CUDA_VISIBLE_DEVICES=0 python worker.py
+# Запускаем worker (если запустили rabbitmq)
+CUDA_VISIBLE_DEVICES=0 poetry run python worker.py
 
 ```
 
