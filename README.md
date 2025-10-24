@@ -30,7 +30,7 @@ A 1‑min demo video (📽 `demo.mp4`) shows the full workflow.
 
 ```
 .
-├── talk2data-django/      # Django sandbox execution + memory management + UI
+├── talk2data-django/      # В основном перенесён на gateway
 ├── talk2data-fastAPI/     # FastAPI service running ASR, LLM, TTS
 ├── demo.mp4               # 1-min demo.
 ├── LICENSE                # Apache‑2.0
@@ -45,22 +45,26 @@ A 1‑min demo video (📽 `demo.mp4`) shows the full workflow.
 # Clone
 git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
 
-# Set up Python 3.10 virtual‑env
-python -m venv .venv && source .venv/bin/activate
+# Для локального запуска используем .env.local, для прода - .env.prod
 
-# Install deps (split by component)
-pip install -r talk2data-django/requirements.txt
-pip install -r talk2data-fastAPI/requirements.txt
-
-# 1️⃣  Launch backend API (port 6000)
+# Перед первым запуском нужно скачать модели (всего один раз)
+# Занимает 10-15 минут
 cd talk2data-fastAPI
-CUDA_VISIBLE_DEVICES=0 uvicorn api:app --host 0.0.0.0 --port 6000 &
+CUDA_VISIBLE_DEVICES=0 python init_cache.py
 
-# 2️⃣  In a new shell, launch the Django UI (port 6001)
-cd ../talk2data-django
+# Launch backend API (port 6000)
+cd talk2data-fastAPI
+CUDA_VISIBLE_DEVICES=0 uvicorn api:app --host 0.0.0.0 --port 6000
+
+# Запускаем контейнеры, (если они ещё не запущены)
+
+# Запускаем django на gateway
+cd ../../gateway
 python manage.py runserver
 
-# Open http://localhost:6001 in your browser and start chatting.
+# Запускаем worker
+CUDA_VISIBLE_DEVICES=0 python worker.py
+
 ```
 
 ## 📥 Datasets

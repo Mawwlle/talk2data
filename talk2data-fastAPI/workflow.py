@@ -11,7 +11,17 @@ from langchain_core.output_parsers import JsonOutputParser
 # Import prompt templates and schemas
 from prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
 from schemas import AgentState, Decision
-from models import get_llm, get_tokenizer #, text_to_speech пока без него
+
+from models import get_llm, get_tokenizer
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Прогрев моделей
+logger.info("Loading models...")
+llm = get_llm()
+tokenizer = get_tokenizer()
+logger.info("Models ready!")
 
 def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = None) -> str:
     """Format chat template with current state and metadata."""
@@ -112,21 +122,21 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     elapsed_llm = time.perf_counter() - start
 
     # Attempt TTS
-    tts_start = time.perf_counter()
-    audio_b64 = None
-    try:
-        audio_bytes = text_to_speech(response)
-        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-    except Exception as e:
-        print(f"TTS Error: {str(e)}")
-    tts_elapsed = time.perf_counter() - tts_start
+    # tts_start = time.perf_counter()
+    # audio_b64 = None
+    # try:
+    #     audio_bytes = text_to_speech(response)
+    #     audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+    # except Exception as e:
+    #     print(f"TTS Error: {str(e)}")
+    # tts_elapsed = time.perf_counter() - tts_start
 
     timing_info = state.get("timing_info", {})
     timing_info["generate_chat_response_sec"] = round(elapsed_llm, 4)
-    timing_info["tts_sec"] = round(tts_elapsed, 4)
+    # timing_info["tts_sec"] = round(tts_elapsed, 4)
     state["timing_info"] = timing_info
 
-    state["response_audio"] = audio_b64
+    # state["response_audio"] = audio_b64
     state["response_message"] = response
     return state
 
@@ -144,6 +154,6 @@ def create_workflow():
         }
     )
     builder.add_edge("generate_code", END)
-    builder.add_edge("generate_chat_response", END)
+    # builder.add_edge("generate_chat_response", END)
     builder.set_entry_point("decide_action")
     return builder.compile()

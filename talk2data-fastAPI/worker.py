@@ -4,7 +4,6 @@ import time
 import pika
 # from models import whisper_model
 from workflow import create_workflow
-from models import get_llm, get_tokenizer
 from schemas import ConversationRequest
 import logging
 
@@ -22,12 +21,6 @@ channel.queue_declare(queue=TASK_QUEUE)
 channel.queue_declare(queue=RESPONSE_QUEUE)
 
 logger.info("Worker connected to RabbitMQ")
-
-# Прогрев моделей
-logger.info("Loading models...")
-llm = get_llm()
-tokenizer = get_tokenizer()
-logger.info("Models ready!")
 
 
 def handle_converse(data: dict):
@@ -98,8 +91,8 @@ def handle_transcribe(data: dict):
         return {"status": "error", "task": "transcribe", "error": str(e)}
 
 task_mapping = {
-    "converse": process_converse,
-    # "transcribe": process_transcribe # будет добавлено позже
+    "converse": handle_converse,
+    # "transcribe": handle_transcribe # будет добавлено позже
 }
 
 def callback(ch, method, properties, body):
