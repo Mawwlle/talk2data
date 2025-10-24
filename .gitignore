@@ -1,3 +1,5 @@
 .env
 .venv/
 talk2data-fastAPI/cache/
+talk2data-fastAPI/evaluation_benchmark/
+talk2data-fastAPI/evaluation_results/

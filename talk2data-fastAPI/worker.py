@@ -6,17 +6,13 @@ import pika
 from workflow import create_workflow
 from schemas import ConversationRequest
 import logging
+from settings import RABBITMQ_HOST, TASK_QUEUE, RESPONSE_QUEUE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
-
-# Настройки RabbitMQ
-RABBITMQ_HOST = "127.0.0.1"
-TASK_QUEUE = "talk2data_tasks"
-RESPONSE_QUEUE = "talk2data_responses"
 
 # Инициализация соединения
 connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
@@ -73,6 +69,9 @@ def handle_converse(data: dict):
 def handle_transcribe(data: dict):
     """Обработка аудио (Whisper)."""
     start = time.perf_counter()
+    # Пока пропустим генерацию аудио
+    return {"status": "error", "task": "transcribe", "error": "Not implemented yet"}
+
     try:
         # Преобразуем байты обратно
         import tempfile
@@ -96,7 +95,7 @@ def handle_transcribe(data: dict):
 
 task_mapping = {
     "converse": handle_converse,
-    # "transcribe": handle_transcribe # будет добавлено позже
+    "transcribe": handle_transcribe # будет добавлено позже
 }
 
 def callback(ch, method, properties, body):

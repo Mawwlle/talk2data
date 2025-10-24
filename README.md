@@ -42,22 +42,22 @@ A 1‑min demo video (📽 `demo.mp4`) shows the full workflow.
 ## 🚀 Quick start (local)
 
 ```bash
-# Clone
+# 1. Clone
 git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
 
-# Для локального запуска используем .env.local, для прода - .env.prod
+# 2. Для локального запуска используем .env.local, для прода - .env.prod
 
-# Launch backend API (port 6000)
+# 3. Launch backend API (port 6000)
 cd talk2data-fastAPI
 CUDA_VISIBLE_DEVICES=0 poetry run uvicorn api:app --host 0.0.0.0 --port 6000
 
-# Запускаем контейнеры, (если они ещё не запущены)
+# 4. Запускаем контейнеры, (если они ещё не запущены)
 
-# Запускаем django на gateway
+# 5. Запускаем django на gateway (если он ещё не запущен)
 cd ../../gateway
 poetry run python manage.py runserver
 
-# Запускаем worker (если запустили rabbitmq)
+# 6. Запускаем worker (посылает сообщения через rabbitmq)
 CUDA_VISIBLE_DEVICES=0 poetry run python worker.py
 
 ```

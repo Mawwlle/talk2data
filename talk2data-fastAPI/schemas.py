@@ -25,5 +25,5 @@ class Decision(TypedDict):
 # Pydantic model for conversation requests
 class ConversationRequest(BaseModel):
     user_input: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any] = {}
     conversation_history: List[dict] = []

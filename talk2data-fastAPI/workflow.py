@@ -5,7 +5,6 @@ import base64
 from typing import Any, Dict
 from vllm import SamplingParams
 from langgraph.graph import StateGraph, END
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
 # Import prompt templates and schemas
