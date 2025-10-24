@@ -8,9 +8,13 @@ from schemas import ConversationRequest
 import logging
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 # Настройки RabbitMQ
-RABBITMQ_HOST = "localhost"
+RABBITMQ_HOST = "127.0.0.1"
 TASK_QUEUE = "talk2data_tasks"
 RESPONSE_QUEUE = "talk2data_responses"
 
@@ -101,7 +105,7 @@ def callback(ch, method, properties, body):
         msg = json.loads(body)
         task_type = msg.get("task")
         data = msg.get("data", {})
-        handler = task_mapping.get(task)
+        handler = task_mapping.get(task_type)
         
         logger.info(f"Received task: {task_type}")
         if handler is None:
@@ -118,7 +122,7 @@ def callback(ch, method, properties, body):
             body=json.dumps(response)
         )
 
-        logger.info(f"Sent response for {task_type}: {response['status']}")
+        logger.info(f"Sent response for {task_type}: {response['status']}: {response.get('error')}")
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     except Exception as e:

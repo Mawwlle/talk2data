@@ -58,7 +58,7 @@ def decide_action(state: AgentState) -> AgentState:
         raw_response = outputs[0].outputs[0].text.strip()
         decision = parser.parse(raw_response)
     except Exception as e:
-        print(f"Decision error: {str(e)}")
+        logger.info(f"Decision error: {str(e)}")
         decision = {"action": "chat_response"}
     
     elapsed = time.perf_counter() - start
@@ -128,7 +128,7 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     #     audio_bytes = text_to_speech(response)
     #     audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
     # except Exception as e:
-    #     print(f"TTS Error: {str(e)}")
+    #     logger.info(f"TTS Error: {str(e)}")
     # tts_elapsed = time.perf_counter() - tts_start
 
     timing_info = state.get("timing_info", {})
@@ -144,7 +144,7 @@ def create_workflow():
     builder = StateGraph(AgentState)
     builder.add_node("decide_action", decide_action)
     builder.add_node("generate_code", generate_code_node)
-    # builder.add_node("generate_chat_response", generate_chat_response_node)
+    builder.add_node("generate_chat_response", generate_chat_response_node)
     builder.add_conditional_edges(
         "decide_action",
         route_action,
@@ -154,6 +154,6 @@ def create_workflow():
         }
     )
     builder.add_edge("generate_code", END)
-    # builder.add_edge("generate_chat_response", END)
+    builder.add_edge("generate_chat_response", END)
     builder.set_entry_point("decide_action")
     return builder.compile()

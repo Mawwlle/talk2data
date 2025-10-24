@@ -4,6 +4,8 @@ from transformers import AutoTokenizer, AutoConfig
 from vllm import LLM
 from pathlib import Path
 import environ
+import logging
+logger = logging.getLogger(__name__)
 # from TTS.api import TTS
 # import whisper
 env = environ.Env()
@@ -23,7 +25,7 @@ os.makedirs(os.environ["TRANSFORMERS_CACHE"], exist_ok=True)
 load_dotenv()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"Using device: {device}")
+logger.info(f"Using device: {device}")
 
 CACHE_DIR = Path(env.str("TRANSFORMERS_CACHE", "./cache/huggingface")) # возможно, это стоит делать на s3
 LLM_MODEL_NAME = env.str("LLM_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
@@ -52,8 +54,8 @@ _llm = None
 def get_tokenizer():
     global _tokenizer
     if not _tokenizer:
-        print(f"model path {model_path} exists: {is_cached}")
-        print("Скачиваю токенайзер...")
+        logger.info(f"model path {model_path} exists: {is_cached}")
+        logger.info("Скачиваю токенайзер...")
         _tokenizer = AutoTokenizer.from_pretrained(
             LLM_MODEL_NAME,
             use_fast=True,
@@ -62,7 +64,7 @@ def get_tokenizer():
             cache_dir=CACHE_DIR,
             local_files_only=is_cached  # запрещаем скачивание, если уже скачано
         )
-        print("Токенайзер скачан")
+        logger.info("Токенайзер скачан")
         if _tokenizer.pad_token is None:
             _tokenizer.add_special_tokens({"pad_token": "[PAD]"})
     return _tokenizer
@@ -71,8 +73,8 @@ def get_tokenizer():
 def get_llm():
     global _llm
     if not _llm:
-        print(f"model path {model_path} exists: {is_cached}")
-        print("⬇️  Скачиваю конфигурацию модели...")
+        logger.info(f"model path {model_path} exists: {is_cached}")
+        logger.info("⬇️  Скачиваю конфигурацию модели...")
         llm_config = AutoConfig.from_pretrained(
             LLM_MODEL_NAME,
             cache_dir=CACHE_DIR,
@@ -87,7 +89,7 @@ def get_llm():
             download_dir=CACHE_DIR,   # чтобы vLLM тоже брал кэш локально
             **LOCAL_CONFIG
         )
-        print("Конфигурация скачана")
+        logger.info("Конфигурация скачана")
     return _llm
 
 
