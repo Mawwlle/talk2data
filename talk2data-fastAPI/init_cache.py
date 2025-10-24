@@ -13,7 +13,7 @@ import torch
 import environ
 
 env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, '.env'))
+env.read_env(Path("../talk2data"), ".env")
 
 # === 1. Настройки ===
 load_dotenv()
@@ -21,6 +21,7 @@ load_dotenv()
 CACHE_DIR = Path(env.str("TRANSFORMERS_CACHE", "./cache/huggingface")) # возможно, это стоит делать на s3
 LLM_MODEL_NAME = env.str("LLM_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DTYPE = env.str("DTYPE", "float16")
 
 # === 2. Создаём структуру папок ===
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -50,7 +51,7 @@ try:
     llm = LLM(
         model=LLM_MODEL_NAME,
         tokenizer=LLM_MODEL_NAME,
-        dtype="float16",
+        dtype=DTYPE,
         enforce_eager=True,
         download_dir=CACHE_DIR  # вот сюда сохраняем веса
     )
