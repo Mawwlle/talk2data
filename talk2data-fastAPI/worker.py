@@ -17,8 +17,8 @@ logging.basicConfig(
 # Инициализация соединения
 connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
 channel = connection.channel()
-channel.queue_declare(queue=TASK_QUEUE)
-channel.queue_declare(queue=RESPONSE_QUEUE)
+# channel.queue_declare(queue=TASK_QUEUE)
+# channel.queue_declare(queue=RESPONSE_QUEUE)
 
 logger.info("Worker connected to RabbitMQ")
 
