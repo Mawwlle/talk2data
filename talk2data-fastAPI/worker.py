@@ -15,10 +15,10 @@ logging.basicConfig(
 )
 
 # Инициализация соединения
-connection = pika.BlockingConnection(pika.ConnectionParameters(RABBITMQ_HOST))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
 channel = connection.channel()
-# channel.queue_declare(queue=TASK_QUEUE)
-# channel.queue_declare(queue=RESPONSE_QUEUE)
+channel.queue_declare(queue=TASK_QUEUE, durable=True)
+channel.queue_declare(queue=RESPONSE_QUEUE, durable=True)
 
 logger.info("Worker connected to RabbitMQ")
 
@@ -115,10 +115,10 @@ def callback(ch, method, properties, body):
             response = handler(data)
 
         # Отправляем результат обратно
-        channel.basic_publish(
-            exchange="",
+        ch.basic_publish(
             routing_key=RESPONSE_QUEUE,
-            body=json.dumps(response)
+            body=json.dumps(response),
+            mandatory=True
         )
 
         logger.info(f"Sent response for {task_type}: {response['status']}: {response.get('error')}")
@@ -134,4 +134,5 @@ channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue=TASK_QUEUE, on_message_callback=callback)
 
 logger.info("Worker started. Waiting for tasks...")
+logger.info(f"Listening to queue: {TASK_QUEUE}")
 channel.start_consuming()
