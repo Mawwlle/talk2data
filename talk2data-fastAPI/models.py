@@ -36,6 +36,7 @@ if env.bool("LOCAL_RUN", False):
     LOCAL_CONFIG = dict(
         max_model_len=4096,              # ↓ уменьшаем контекст
         gpu_memory_utilization=0.95,     # ↑ разрешаем использовать больше GPU-памяти
+        enforce_eager=False
     )
 else:
     LOCAL_CONFIG = {}
@@ -45,7 +46,31 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 os.environ["TRANSFORMERS_CACHE"] = str(CACHE_DIR)
 os.environ["HF_HOME"] = str(CACHE_DIR)
 model_path = CACHE_DIR / f"models--{LLM_MODEL_NAME.replace('/', '--')}" 
-is_cached = model_path.exists()
+# is_cached = model_path.exists()
+
+import os
+from pathlib import Path
+
+def is_model_and_tokenizer_cached(model_name: str, cache_dir: Path) -> bool:
+    # Путь к локальному кэшу модели (формат huggingface hub)
+    model_cache_path = cache_dir / f"models--{model_name.replace('/', '--')}"
+    
+    if not model_cache_path.exists():
+        return False
+    
+    # Проверяем наличие файлов модели
+    model_files = ["pytorch_model.bin", "model.safetensors"]
+    if not any((model_cache_path / f).exists() for f in model_files):
+        return False
+    
+    # Проверяем наличие файлов токенизатора
+    tokenizer_files = ["tokenizer.json", "vocab.json", "merges.txt"]
+    if not any((model_cache_path / f).exists() for f in tokenizer_files):
+        return False
+    
+    return True
+
+is_cached = is_model_and_tokenizer_cached(LLM_MODEL_NAME, CACHE_DIR)
 
 _tokenizer = None
 _llm = None
@@ -85,7 +110,6 @@ def get_llm():
             model=LLM_MODEL_NAME,
             tokenizer=LLM_MODEL_NAME,
             dtype=DTYPE,
-            enforce_eager=True,
             download_dir=CACHE_DIR,   # чтобы vLLM тоже брал кэш локально
             **LOCAL_CONFIG
         )

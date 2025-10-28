@@ -116,6 +116,7 @@ def callback(ch, method, properties, body):
 
         # Отправляем результат обратно
         ch.basic_publish(
+            exchange='',
             routing_key=RESPONSE_QUEUE,
             body=json.dumps(response),
             mandatory=True
