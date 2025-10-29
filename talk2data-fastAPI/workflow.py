@@ -6,12 +6,14 @@ from typing import Any, Dict
 from vllm import SamplingParams
 from langgraph.graph import StateGraph, END
 from langchain_core.output_parsers import JsonOutputParser
+import time
 
 # Import prompt templates and schemas
 from prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
 from schemas import AgentState, Decision
 
 from models import get_llm, get_tokenizer
+from string import Template
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,49 +25,83 @@ tokenizer = get_tokenizer()
 logger.info("Models ready!")
 
 def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = None) -> str:
-    """Format chat template with current state and metadata."""
+    """Format chat template using string.Template to avoid conflicts with braces."""
     formatted_messages = []
-    
+
+    mapping = {
+        "input": str(state.get("user_input", "")),
+        "history": str(state.get("conversation_history", "")),
+        "metadata": str(state.get("metadata", {})),
+    }
+    if metadata_fields:
+        mapping.update({k: str(v) for k, v in metadata_fields.items()})
+
     for msg in messages_template:
-        content = msg["content"].format(
-            input=state["user_input"],
-            history=state["conversation_history"],
-            metadata=state["metadata"],
-            **(metadata_fields or {})
-        )
+        try:
+            tmpl = Template(msg["content"])
+            content = tmpl.safe_substitute(mapping)
+        except Exception as e:
+            print(f"[format_prompt] Template substitution error: {e}")
+            # fallback — оставляем оригинал
+            content = msg["content"]
+
         formatted_messages.append({"role": msg["role"], "content": content})
-    
+
     return tokenizer.apply_chat_template(
         formatted_messages,
         tokenize=False,
         add_generation_prompt=True
     )
 
+
 def decide_action(state: AgentState) -> AgentState:
-    """Decision node with enhanced error handling, measure time here."""
+    """Decision node with enhanced logging using print and timing."""
     start = time.perf_counter()
+    print(f"[decide_action] Starting with state: {state}")
+
     parser = JsonOutputParser(pydantic_object=Decision)
     
     try:
+        # Формируем prompt
         prompt = format_prompt(DECIDE_ACTION_PROMPT, state)
+        print(f"[decide_action] Formatted prompt: {prompt}")
+
+        # Настраиваем параметры сэмплирования
         sampling_params = SamplingParams(
-            max_tokens=200,
-            temperature=0.3,
-            stop=["</s>", "\n\n"]
+                max_tokens=100,
+                temperature=0.0,         # полная детерминированность
+                top_p=1.0,               # отключает сэмплирование по вероятностям
+                stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
+                repetition_penalty=1.0   # не трогаем (нет смысла для коротких ответов)
         )
+    
+        print(f"[decide_action] Sampling parameters: {sampling_params}")
+
+        # Генерация ответа от LLM
         outputs = llm.generate([prompt], sampling_params)
         raw_response = outputs[0].outputs[0].text.strip()
+        print(f"[decide_action] Raw LLM response: {raw_response}")
+
+        # Парсим результат
         decision = parser.parse(raw_response)
+        print(f"[decide_action] Parsed decision: {decision}")
+
     except Exception as e:
-        logger.info(f"Decision error: {str(e)}")
+        print(f"[decide_action] Decision error: {e}")
         decision = {"action": "chat_response"}
-    
+        print(f"[decide_action] Defaulting decision to: {decision}")
+
+    # Считаем время выполнения
     elapsed = time.perf_counter() - start
     timing_info = state.get("timing_info", {})
     timing_info["decide_action_sec"] = round(elapsed, 4)
     state["timing_info"] = timing_info
+    print(f"[decide_action] Time elapsed: {elapsed:.4f} sec")
 
+    # Сохраняем решение в состоянии
     state["decision"] = decision
+    print(f"[decide_action] Final state: {state}")
+
     return state
 
 def route_action(state: AgentState) -> str:

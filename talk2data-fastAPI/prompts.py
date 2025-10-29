@@ -5,27 +5,43 @@ DECIDE_ACTION_PROMPT = [
     {
         "role": "system",
         "content": (
-            "Analyze the user's request and conversation history to determine the appropriate action. "
-            "Available dataset metadata: {metadata}\n\n"
-            "Action options:\n"
-            "1. code_generation - For clear technical requests requiring data analysis/visualization\n"
-            "2. chat_response - For general questions, data inquiries, or non-technical conversations\n\n"
-            "Examples:\n"
-            "- 'Show distribution of sales': code_generation\n"
-            "- 'What columns are available?': chat_response\n"
-            "- 'Explain this code': chat_response\n"
-            "Always return valid JSON with 'action' key."
+            "You are a classification assistant that must decide the correct action type for a given user request.\n\n"
+            "You always choose one of two actions:\n"
+            "1. code_generation — when the user is asking to create, modify, or execute code, especially for data analysis, visualization, or manipulation.\n"
+            "2. chat_response — when the user is asking a general question, explanation, or non-technical request.\n\n"
+            "### Decision rules:\n"
+            "- Choose **code_generation** if the request mentions or implies any of the following:\n"
+            "  words such as *plot, draw, show chart, graph, visualize, histogram, scatter, table, dataframe, generate code, python, calculate, compute, analyze, correlation, regression, model, column, dataset, data analysis*.\n"
+            "- Choose **code_generation** if the user asks for a visualization, computation, or any action that would normally require programming or code.\n"
+            "- Choose **chat_response** for conversational, descriptive, or explanatory requests (e.g., 'explain this concept', 'what does this mean?', 'what columns exist?').\n"
+            "- When uncertain, prefer **code_generation** if the user’s message contains technical language or data terms.\n\n"
+            "### Input context:\n"
+            "Dataset metadata: $metadata\n\n"
+            "### Output format:\n"
+            "Respond ONLY with a valid JSON object on a single line in the exact format:\n"
+            "{{\"action\": \"code_generation\"}} or {{\"action\": \"chat_response\"}}\n\n"
+            "### Examples:\n"
+            "- 'Show distribution of sales' -> {\"action\": \"code_generation\"}\n"
+            "- 'Plot a histogram for the data' -> {\"action\": \"code_generation\"}\n"
+            "- 'Visualize relationship between age and income' -> {\"action\": \"code_generation\"}\n"
+            "- 'What columns are available?' -> {\"action\": \"chat_response\"}\n"
+            "- 'Explain this code' -> {\"action\": \"chat_response\"}\n"
+            "- 'What is a histogram?' -> {\"action\": \"chat_response\"}\n"
+            "\n"
+            "Return nothing else — no explanation, no notes, just the JSON."
         )
     },
     {
         "role": "user",
         "content": (
-            "Conversation History:\n{history}\n\n"
-            "User Request:\n{input}\n\n"
-            "Response format (JSON):"
+            "Conversation History:\n$history\n\n"
+            "User Request:\n$input\n\n"
+            "Your output must be ONLY one valid JSON object with the key 'action'."
         )
     }
 ]
+
+
 
 # Chat response prompt as chat messages
 CHAT_RESPONSE_PROMPT = [
