@@ -1,6 +1,42 @@
 
 # Talk2Data
 
+## 🚀 Quick start (local, upd for SMILE)
+
+### 1. Клонируем и устанавливаем среду
+
+```bash
+git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
+```
+
+### 2. Для локального запуска в .env копируем содержание .env.local, для прода - .env.prod
+
+### 3. Запускаем worker (посылает сообщения через rabbitmq)
+```bash
+cd core
+CUDA_VISIBLE_DEVICES=0 poetry run python core/worker.py
+```
+
+### 4. Запускаем контейнеры, (если они ещё не запущены)
+
+### 5. Запускаем django на gateway и другие необходимые сервисы смайла (если они ещё не запущены)
+
+---
+
+## 🗂 Repository layout (uod for SMILE)
+
+```
+.
+├── core/                  # Всё, что используем в SMILE
+├── talk2data-django/      # Частично перенесён на gateway
+├── talk2data-fastAPI/     # FastAPI service running
+├── demo.mp4               # 1-min demo.
+├── LICENSE                # Apache‑2.0
+└── README.md              # You are here
+```
+
+---
+
 > **Status:** Public artifact accompanying the IEEE ICDM 2025 BIGIS Workshop paper *“A Multimodal Conversational Agent for Tabular Data Analysis”.*
 
 https://github.com/user-attachments/assets/71d15e7b-1998-41f9-a689-a624aad7acb2
@@ -25,42 +61,6 @@ While our evaluation uses public benchmarks, the framework is designed to genera
 A 1‑min demo video (📽 `demo.mp4`) shows the full workflow.
 
 ---
-
-## 🗂 Repository layout
-
-```
-.
-├── talk2data-django/      # В основном перенесён на gateway
-├── talk2data-fastAPI/     # FastAPI service running ASR, LLM, TTS
-├── demo.mp4               # 1-min demo.
-├── LICENSE                # Apache‑2.0
-└── README.md              # You are here
-```
-
----
-
-## 🚀 Quick start (local)
-
-```bash
-# 1. Clone
-git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
-
-# 2. Для локального запуска используем .env.local, для прода - .env.prod
-
-# 3. Launch backend API (port 6000)
-cd talk2data-fastAPI
-CUDA_VISIBLE_DEVICES=0 poetry run uvicorn api:app --host 0.0.0.0 --port 6000
-
-# 4. Запускаем контейнеры, (если они ещё не запущены)
-
-# 5. Запускаем django на gateway (если он ещё не запущен)
-cd ../../gateway
-poetry run python manage.py runserver
-
-# 6. Запускаем worker (посылает сообщения через rabbitmq)
-CUDA_VISIBLE_DEVICES=0 poetry run python worker.py
-
-```
 
 ## 📥 Datasets
 
