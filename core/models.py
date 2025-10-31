@@ -5,17 +5,17 @@ from vllm import LLM
 from pathlib import Path
 import environ
 import logging
+import os
+from dotenv import load_dotenv
+
 logger = logging.getLogger(__name__)
 # from TTS.api import TTS
 # import whisper
 env = environ.Env()
 env.read_env(Path("../talk2data"), ".env")
 
-import os
-from dotenv import load_dotenv
-
-
 # Настроим локальный кэш (если не указан явно — используем ./cache/huggingface)
+# Это необходимо для более быстрого повторного запуска
 os.environ["TRANSFORMERS_CACHE"] = os.getenv("TRANSFORMERS_CACHE", "./cache/huggingface")
 os.environ["HF_HOME"] = os.getenv("HF_HOME", "./cache/huggingface")
 
@@ -27,12 +27,12 @@ load_dotenv()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 logger.info(f"Using device: {device}")
 
-CACHE_DIR = Path(env.str("TRANSFORMERS_CACHE", "./cache/huggingface")) # возможно, это стоит делать на s3
+CACHE_DIR = Path(env.str("TRANSFORMERS_CACHE", "./cache/huggingface"))
 LLM_MODEL_NAME = env.str("LLM_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
 DTYPE = env.str("DTYPE", "float16")
 
 if env.bool("LOCAL_RUN", False):
-    # Для локального запуска
+    # Для локального облегчённоего запуска
     LOCAL_CONFIG = dict(
         max_model_len=4096,              # ↓ уменьшаем контекст
         gpu_memory_utilization=0.95,     # ↑ разрешаем использовать больше GPU-памяти
@@ -46,7 +46,6 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 os.environ["TRANSFORMERS_CACHE"] = str(CACHE_DIR)
 os.environ["HF_HOME"] = str(CACHE_DIR)
 model_path = CACHE_DIR / f"models--{LLM_MODEL_NAME.replace('/', '--')}" 
-# is_cached = model_path.exists()
 
 import os
 from pathlib import Path
@@ -99,7 +98,7 @@ def get_llm():
     global _llm
     if not _llm:
         logger.info(f"model path {model_path} exists: {is_cached}")
-        logger.info("⬇️  Скачиваю конфигурацию модели...")
+        logger.info("Скачиваю конфигурацию модели...")
         llm_config = AutoConfig.from_pretrained(
             LLM_MODEL_NAME,
             cache_dir=CACHE_DIR,
@@ -117,7 +116,7 @@ def get_llm():
     return _llm
 
 
-# print("Initializing TTS...")
+# logger.info("Initializing TTS...")
 # tts = TTS(model_name=TTS_MODEL_NAME, progress_bar=True)
 
 # def text_to_speech(text: str) -> bytes:

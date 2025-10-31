@@ -41,7 +41,7 @@ def format_prompt(messages_template: list, state: AgentState, metadata_fields: d
             tmpl = Template(msg["content"])
             content = tmpl.safe_substitute(mapping)
         except Exception as e:
-            print(f"[format_prompt] Template substitution error: {e}")
+            logger.info(f"[format_prompt] Template substitution error: {e}")
             # fallback — оставляем оригинал
             content = msg["content"]
 
@@ -57,14 +57,14 @@ def format_prompt(messages_template: list, state: AgentState, metadata_fields: d
 def decide_action(state: AgentState) -> AgentState:
     """Decision node with enhanced logging using print and timing."""
     start = time.perf_counter()
-    print(f"[decide_action] Starting with state: {state}")
+    logger.info(f"[decide_action] Starting with state: {state}")
 
     parser = JsonOutputParser(pydantic_object=Decision)
     
     try:
         # Формируем prompt
         prompt = format_prompt(DECIDE_ACTION_PROMPT, state)
-        print(f"[decide_action] Formatted prompt: {prompt}")
+        logger.info(f"[decide_action] Formatted prompt: {prompt}")
 
         # Настраиваем параметры сэмплирования
         sampling_params = SamplingParams(
@@ -75,32 +75,32 @@ def decide_action(state: AgentState) -> AgentState:
                 repetition_penalty=1.0   # не трогаем (нет смысла для коротких ответов)
         )
     
-        print(f"[decide_action] Sampling parameters: {sampling_params}")
+        logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
 
         # Генерация ответа от LLM
         outputs = llm.generate([prompt], sampling_params)
         raw_response = outputs[0].outputs[0].text.strip()
-        print(f"[decide_action] Raw LLM response: {raw_response}")
+        logger.info(f"[decide_action] Raw LLM response: {raw_response}")
 
         # Парсим результат
         decision = parser.parse(raw_response)
-        print(f"[decide_action] Parsed decision: {decision}")
+        logger.info(f"[decide_action] Parsed decision: {decision}")
 
     except Exception as e:
-        print(f"[decide_action] Decision error: {e}")
+        logger.info(f"[decide_action] Decision error: {e}")
         decision = {"action": "chat_response"}
-        print(f"[decide_action] Defaulting decision to: {decision}")
+        logger.info(f"[decide_action] Defaulting decision to: {decision}")
 
     # Считаем время выполнения
     elapsed = time.perf_counter() - start
     timing_info = state.get("timing_info", {})
     timing_info["decide_action_sec"] = round(elapsed, 4)
     state["timing_info"] = timing_info
-    print(f"[decide_action] Time elapsed: {elapsed:.4f} sec")
+    logger.info(f"[decide_action] Time elapsed: {elapsed:.4f} sec")
 
     # Сохраняем решение в состоянии
     state["decision"] = decision
-    print(f"[decide_action] Final state: {state}")
+    logger.info(f"[decide_action] Final state: {state}")
 
     return state
 
