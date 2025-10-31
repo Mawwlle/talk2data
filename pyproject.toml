@@ -2,24 +2,18 @@
 name = "talk2data"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["maria <mashak.1998@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "*" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 
-# TODO: пока без TTS, его прикрутим отдельно, скорее всего понадобится ещё одно окружение
+# TODO: пока без TTS, его прикрутим позже, но вероятно в отдельной среде
 
-fastapi = "0.119.1"
 langgraph = "1.0.0"
-matplotlib = "3.8.4"
-numpy = ">=1.21.0,<2.0"
-pandas = "1.5.3"
-plotly = "6.3.1"
 pydantic = "2.12.3"
 python-dotenv = "1.1.1"
-seaborn = "0.13.2"
 torch = "2.6.0"
 transformers = "4.57.1"
 vllm = "0.8.5"
