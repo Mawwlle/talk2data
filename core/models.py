@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 # from TTS.api import TTS
 # import whisper
 env = environ.Env()
-env.read_env(Path("../talk2data"), ".env")
+env_path = Path(__file__).resolve().parent.parent / ".env"
+env.read_env(env_path)
 
 # Настроим локальный кэш (если не указан явно — используем ./cache/huggingface)
 # Это необходимо для более быстрого повторного запуска
@@ -70,6 +71,7 @@ def is_model_and_tokenizer_cached(model_name: str, cache_dir: Path) -> bool:
     return True
 
 is_cached = is_model_and_tokenizer_cached(LLM_MODEL_NAME, CACHE_DIR)
+logger.info(f"Model cache check: {is_cached}, path={CACHE_DIR}")
 
 _tokenizer = None
 _llm = None

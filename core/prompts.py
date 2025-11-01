@@ -1,7 +1,13 @@
 # prompts.py
 
+from typing import TypedDict
+
+class PromptMessage(TypedDict):
+    role: str
+    content: str
+
 # Decision action prompt as chat messages
-DECIDE_ACTION_PROMPT = [
+DECIDE_ACTION_PROMPT: list[PromptMessage] = [
     {
         "role": "system",
         "content": (
@@ -44,7 +50,7 @@ DECIDE_ACTION_PROMPT = [
 
 
 # Chat response prompt as chat messages
-CHAT_RESPONSE_PROMPT = [
+CHAT_RESPONSE_PROMPT: list[PromptMessage] = [
     {
         "role": "system",
         "content": (
@@ -68,7 +74,7 @@ CHAT_RESPONSE_PROMPT = [
 
 
 # Code generation prompt as chat messages
-CODE_GENERATION_PROMPT = [
+CODE_GENERATION_PROMPT: list[PromptMessage] = [
     {
         "role": "system",
         "content": (
@@ -80,10 +86,7 @@ CODE_GENERATION_PROMPT = [
             "2. Assume 'df' exists\n"
             "3. For showing output, use expression form (variable name), not print/display.\n"
             "4. Critical! generate only code wihtout any comments or explanations, just python code!"
-            "Example 1:\n"
-            "User: Plot age distribution\n"
-            "Assistant: ```python\nimport plotly.express as px\n   import pandas as pd\n   ```\n\n2. **Load the dataset**:\n   ```python\n   iris = pd.read_csv('iris.csv')\n   fig = px.box(iris, x='sepal_length', y='sepal_width', color='species')\n   fig.show()\n```"
-            "Example 2:\n"
+            "Example:\n"
             "User: Show first 5 rows\n"
             "Assistant: ```python\nfirst_5 = df.head()\nfirst_5```"
         )

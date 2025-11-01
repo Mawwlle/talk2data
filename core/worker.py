@@ -122,7 +122,7 @@ def callback(ch, method, properties, body):
             mandatory=True
         )
 
-        logger.info(f"Sent response for {task_type}: {response['status']}: {response.get('error')}")
+        logger.info(f"Sent response for {task_type}: {response.get('status')} {response.get('error', '')}")
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     except Exception as e:
