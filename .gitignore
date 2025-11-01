@@ -1,6 +1,6 @@
 .env
 .venv/
 core/cache/
-core/__pycache__
+core/__pycache__/
 core/evaluation_benchmark/
 talk2data-fastAPI/evaluation_results/

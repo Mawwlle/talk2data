@@ -2,6 +2,8 @@ from schemas import AgentState
 from prompts import DECIDE_ACTION_PROMPT
 from string import Template
 
+# Пока сырой тест, в SD-1515 и SD-1516 будет доработано
+
 prompt = "Plot a histogram of sepal_length with 25 bins and add a title."
 
 initial_state = {

@@ -19,6 +19,8 @@ transformers = "4.57.1"
 vllm = "0.8.5"
 pika = "^1.3.2"
 django-environ = "^0.12.0"
+numpy = "^1.26"
+pandas = "^2.1"
 
 
 [build-system]
