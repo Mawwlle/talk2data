@@ -6,7 +6,7 @@ import pika
 from workflow import create_workflow
 from schemas import ConversationRequest
 import logging
-from settings import RABBITMQ_HOST, TASK_QUEUE, RESPONSE_QUEUE
+from settings import RABBITMQ_HOST, TASK_QUEUE, RESPONSE_QUEUE, EXCHANGE
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -113,10 +113,12 @@ def callback(ch, method, properties, body):
             response = {"status": "error", "error": err_msg}
         else:
             response = handler(data)
+            
+        response["project_id"] = data.get("project_id")
 
         # Отправляем результат обратно
         ch.basic_publish(
-            exchange='',
+            exchange=EXCHANGE,
             routing_key=RESPONSE_QUEUE,
             body=json.dumps(response),
             mandatory=True
