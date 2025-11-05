@@ -1,18 +1,16 @@
 # workflow.py
 
 import time
-import base64
-from typing import Any, Dict
 from vllm import SamplingParams
 from langgraph.graph import StateGraph, END
 from langchain_core.output_parsers import JsonOutputParser
 import time
 
 # Import prompt templates and schemas
-from prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
-from schemas import AgentState, Decision
+from core.prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
+from core.schemas import AgentState, Decision
 
-from models import get_llm, get_tokenizer
+from core.models import get_llm, get_tokenizer
 from string import Template
 import logging
 
@@ -23,8 +21,9 @@ logger.info("Loading models...")
 llm = get_llm()
 tokenizer = get_tokenizer()
 logger.info("Models ready!")
+DECIDE_ACTION_DEFAULT = "chat_response"
 
-def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = None) -> str:
+def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = {}) -> str:
     """Format chat template using string.Template to avoid conflicts with braces."""
     formatted_messages = []
 
@@ -88,7 +87,7 @@ def decide_action(state: AgentState) -> AgentState:
 
     except Exception as e:
         logger.info(f"[decide_action] Decision error: {e}")
-        decision = {"action": "chat_response"}
+        decision = {"action": DECIDE_ACTION_DEFAULT}
         logger.info(f"[decide_action] Defaulting decision to: {decision}")
 
     # Считаем время выполнения
@@ -107,7 +106,7 @@ def decide_action(state: AgentState) -> AgentState:
 def route_action(state: AgentState) -> str:
     """Helper to decide next node based on 'decision.action'."""
     try:
-        return state["decision"]["action"]
+        return state.get("decision", {}).get("action", DECIDE_ACTION_DEFAULT)
     except Exception:
         return "chat_response"
 

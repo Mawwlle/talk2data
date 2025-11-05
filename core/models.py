@@ -1,4 +1,5 @@
 # models.py
+from typing import TypedDict
 import torch
 from transformers import AutoTokenizer, AutoConfig
 from vllm import LLM
@@ -18,7 +19,7 @@ env.read_env(env_path)
 # Настроим локальный кэш (если не указан явно — используем ./cache/huggingface)
 # Это необходимо для более быстрого повторного запуска
 os.environ["TRANSFORMERS_CACHE"] = os.getenv("TRANSFORMERS_CACHE", "./cache/huggingface")
-os.environ["HF_HOME"] = os.getenv("HF_HOME", "./cache/huggingface")
+os.environ["HF_HOME"] = os.getenv("HF_HOME", "./core/cache/huggingface")
 
 # Создадим каталог, если его нет
 os.makedirs(os.environ["TRANSFORMERS_CACHE"], exist_ok=True)
@@ -28,25 +29,34 @@ load_dotenv()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 logger.info(f"Using device: {device}")
 
-CACHE_DIR = Path(env.str("TRANSFORMERS_CACHE", "./cache/huggingface"))
-LLM_MODEL_NAME = env.str("LLM_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
-DTYPE = env.str("DTYPE", "float16")
+CACHE_DIR = Path(env.str("TRANSFORMERS_CACHE", "./cache/huggingface")) # type: ignore
+LLM_MODEL_NAME = env("LLM_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
+DTYPE = env.str("DTYPE", "float16") # type: ignore
 
-if env.bool("LOCAL_RUN", False):
-    # Для локального облегчённоего запуска
-    LOCAL_CONFIG = dict(
-        max_model_len=4096,              # ↓ уменьшаем контекст
-        gpu_memory_utilization=0.95,     # ↑ разрешаем использовать больше GPU-памяти
-        enforce_eager=False
-    )
-else:
-    LOCAL_CONFIG = {}
-    
+class LocalConfig(TypedDict, total=False):
+    max_model_len: int
+    gpu_memory_utilization: float
+    enforce_eager: bool
+
+LOCAL_CONFIG: LocalConfig
+
+LOCAL_RUN = env.bool("LOCAL_RUN", False)  # type: ignore
+
+LOCAL_CONFIG = (
+    {
+        "max_model_len": 4096,
+        "gpu_memory_utilization": 0.95,
+        "enforce_eager": False,
+    }
+    if LOCAL_RUN
+    else {}
+)
+
 # Создаём структуру папок
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 os.environ["TRANSFORMERS_CACHE"] = str(CACHE_DIR)
 os.environ["HF_HOME"] = str(CACHE_DIR)
-model_path = CACHE_DIR / f"models--{LLM_MODEL_NAME.replace('/', '--')}" 
+model_path = CACHE_DIR / f"models--{LLM_MODEL_NAME.replace('/', '--')}"  # type: ignore
 
 import os
 from pathlib import Path
@@ -70,7 +80,7 @@ def is_model_and_tokenizer_cached(model_name: str, cache_dir: Path) -> bool:
     
     return True
 
-is_cached = is_model_and_tokenizer_cached(LLM_MODEL_NAME, CACHE_DIR)
+is_cached = is_model_and_tokenizer_cached(LLM_MODEL_NAME, CACHE_DIR) # type: ignore
 logger.info(f"Model cache check: {is_cached}, path={CACHE_DIR}")
 
 _tokenizer = None
@@ -102,7 +112,7 @@ def get_llm():
         logger.info(f"model path {model_path} exists: {is_cached}")
         logger.info("Скачиваю конфигурацию модели...")
         llm_config = AutoConfig.from_pretrained(
-            LLM_MODEL_NAME,
+            LLM_MODEL_NAME, # type: ignore
             cache_dir=CACHE_DIR,
             download_dir=CACHE_DIR,
             local_files_only=is_cached  # если уже скачано, то True
