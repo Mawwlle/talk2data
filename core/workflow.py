@@ -25,8 +25,8 @@ def llm_init():
     global llm
     global tokenizer
     logger.info("Loading models...")
-    llm = get_llm()
     tokenizer = get_tokenizer()
+    llm = get_llm()
     logger.info("Models ready!")
 
 DECIDE_ACTION_DEFAULT = "chat_response"

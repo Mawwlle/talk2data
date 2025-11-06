@@ -6,3 +6,4 @@ core/evaluation_benchmark/
 talk2data-fastAPI/evaluation_results/
 /.vscode
 cache/
+model_weights_presaved/
