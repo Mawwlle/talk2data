@@ -3,10 +3,10 @@ import json
 import time
 import pika
 # from models import whisper_model
-from workflow import create_workflow
+from workflow import create_workflow, llm_init
 from schemas import ConversationRequest
 import logging
-from settings import RABBITMQ_HOST, TASK_QUEUE, RESPONSE_QUEUE
+from settings import RABBITMQ_HOST, TASK_QUEUE, RESPONSE_QUEUE, EXCHANGE, ROUTING_KEY
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -21,6 +21,8 @@ channel.queue_declare(queue=TASK_QUEUE, durable=True)
 channel.queue_declare(queue=RESPONSE_QUEUE, durable=True)
 
 logger.info("Worker connected to RabbitMQ")
+
+llm_init()
 
 
 def handle_converse(data: dict):
@@ -113,11 +115,13 @@ def callback(ch, method, properties, body):
             response = {"status": "error", "error": err_msg}
         else:
             response = handler(data)
+            
+        response["project_id"] = data.get("project_id")
 
         # Отправляем результат обратно
         ch.basic_publish(
-            exchange='',
-            routing_key=RESPONSE_QUEUE,
+            exchange=EXCHANGE,
+            routing_key=ROUTING_KEY,
             body=json.dumps(response),
             mandatory=True
         )
