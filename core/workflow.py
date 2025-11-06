@@ -9,6 +9,8 @@ import time
 # Import prompt templates and schemas
 from core.prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
 from core.schemas import AgentState, Decision
+import torch
+import atexit
 
 from core.models import get_llm, get_tokenizer
 from string import Template
@@ -217,3 +219,16 @@ def create_workflow():
     builder.add_edge("generate_chat_response", END)
     builder.set_entry_point("decide_action")
     return builder.compile()
+
+
+def safe_destroy_process_group():
+    """
+    Безопасный shutdown моделей. Позволяет избежать утечек на GPU
+    """
+    if torch.distributed.is_initialized():
+        try:
+            torch.distributed.destroy_process_group()
+        except Exception as e:
+            logger.error(f"Error during destroy_process_group: {e}")
+
+atexit.register(safe_destroy_process_group)

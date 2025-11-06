@@ -86,9 +86,6 @@ CODE_GENERATION_PROMPT: list[PromptMessage] = [
             "2. Assume 'df' exists\n"
             "3. For showing output, use expression form (variable name), not print/display.\n"
             "4. Critical! generate only code wihtout any comments or explanations, just python code!"
-            "Example:\n"
-            "User: Show first 5 rows\n"
-            "Assistant: ```python\nfirst_5 = df.head()\nfirst_5```"
         )
     },
     {"role": "user", "content": "Request: {input}"}
