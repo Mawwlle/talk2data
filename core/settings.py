@@ -1,4 +1,5 @@
 RABBITMQ_HOST = "localhost"
 TASK_QUEUE = "talk2data.requests"
-RESPONSE_QUEUE = "talk2data.response"
+RESPONSE_QUEUE = "smile_queue_gateway"
 EXCHANGE = "smile_exchange"
+ROUTING_KEY = "talk2data_response"

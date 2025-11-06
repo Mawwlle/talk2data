@@ -18,13 +18,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Прогрев моделей
-logger.info("Loading models...")
-llm = get_llm()
-tokenizer = get_tokenizer()
-logger.info("Models ready!")
+def llm_init():
+    """
+    Прогрев моделей
+    """
+    global llm
+    global tokenizer
+    logger.info("Loading models...")
+    llm = get_llm()
+    tokenizer = get_tokenizer()
+    logger.info("Models ready!")
 
-def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = None) -> str:
+DECIDE_ACTION_DEFAULT = "chat_response"
+
+def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = {}) -> str:
     """Format chat template using string.Template to avoid conflicts with braces."""
     formatted_messages = []
 
@@ -133,6 +140,8 @@ def generate_code_node(state: AgentState) -> AgentState:
     timing_info = state.get("timing_info", {})
     timing_info["generate_code_sec"] = round(elapsed, 4)
     state["timing_info"] = timing_info
+    
+    logger.info(f"[generate_code] Generated code: {code_block}")
 
     state.update({
         "generated_code": code_block,
