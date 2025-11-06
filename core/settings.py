@@ -6,3 +6,4 @@ ROUTING_KEY = "talk2data_response"
 
 LLM_MODEL_NAME="Qwen/Qwen2.5-Coder-0.5B-Instruct"
 LLM_LOCAL_PATH = "model_weights_presaved"
+LLM_LOAD_FORMAT ="safetensors"
