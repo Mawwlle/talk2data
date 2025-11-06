@@ -1,7 +1,7 @@
 .env
 .venv/
-core/cache/
 **/__pycache__/
 core/evaluation_benchmark/
 talk2data-fastAPI/evaluation_results/
 /.vscode
+model_weights_presaved/

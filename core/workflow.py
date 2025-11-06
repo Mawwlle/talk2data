@@ -1,8 +1,6 @@
 # workflow.py
 
 import time
-import base64
-from typing import Any, Dict
 from vllm import SamplingParams
 from langgraph.graph import StateGraph, END
 from langchain_core.output_parsers import JsonOutputParser
@@ -18,14 +16,39 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Прогрев моделей
-logger.info("Loading models...")
-llm = get_llm()
-tokenizer = get_tokenizer()
-logger.info("Models ready!")
+def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
+    """
+    Прогрев моделей с логированием времени и повторными попытками.
+    """
+    global llm
+    global tokenizer
 
-def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict = None) -> str:
+    start_time = time.perf_counter()
+    logger.info("Starting model warm-up...")
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            tokenizer = get_tokenizer()
+            llm = get_llm()
+            elapsed = round(time.perf_counter() - start_time, 2)
+            logger.info(f"Models ready (loaded in {elapsed} sec on attempt {attempt})")
+            return
+        except Exception as e:
+            logger.error(f"LLM init failed on attempt {attempt}/{max_retries}: {e}")
+            if attempt < max_retries:
+                logger.info(f"Retrying in {retry_delay} sec...")
+                time.sleep(retry_delay)
+            else:
+                elapsed = round(time.perf_counter() - start_time, 2)
+                logger.critical(f"Failed to initialize models after {max_retries} attempts (elapsed {elapsed}s)")
+                raise
+
+DECIDE_ACTION_DEFAULT = "chat_response"
+
+def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict | None = None) -> str:
     """Format chat template using string.Template to avoid conflicts with braces."""
+    metadata_fields = metadata_fields or {}
+    
     formatted_messages = []
 
     mapping = {
@@ -133,6 +156,8 @@ def generate_code_node(state: AgentState) -> AgentState:
     timing_info = state.get("timing_info", {})
     timing_info["generate_code_sec"] = round(elapsed, 4)
     state["timing_info"] = timing_info
+    
+    logger.info(f"[generate_code] Generated code: {code_block[:300]}...")
 
     state.update({
         "generated_code": code_block,
