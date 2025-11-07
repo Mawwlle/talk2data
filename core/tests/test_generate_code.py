@@ -3,15 +3,17 @@ import time
 from core.tests.tools import TEST_INITIAL_STATES
 from core.workflow import generate_code_node, llm_init
 import copy
+import logging
 
+logger = logging.getLogger(__name__)
 
 class TestGenerateCode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Инициализируем LLM один раз для всех тестов."""
-        print("\nInitializing LLM...")
+        logger.info("Initializing LLM...")
         llm_init()
-        print("LLM initialized\n")
+        logger.info("LLM initialized")
 
     def setUp(self):
         """Создаём базовое состояние перед каждым тестом."""
@@ -36,9 +38,8 @@ class TestGenerateCode(unittest.TestCase):
         self.assertIn("response_message", result)
         self.assertIn("generate_code_sec", result["timing_info"])
         self.assertGreaterEqual(result["timing_info"]["generate_code_sec"], 0)
-        print("user_input: ", self.sample_state.get("user_input"))
-        print("result: ", result.get("generated_code"))
-        print()
+        logger.info(f"user_input: {self.sample_state.get('user_input')}")
+        logger.info(f"result: {result.get('generated_code')}")
 
     # ------------------------------------------------------------------
     def test_no_code_block_fallback_to_full_text(self):
@@ -52,9 +53,8 @@ class TestGenerateCode(unittest.TestCase):
 
         self.assertTrue(generated, "generated_code не должен быть пустым")
         self.assertNotIn("```", generated, "ожидался текст без ```")
-        print("user_input: ", state.get("user_input"))
-        print("result: ", result.get("generated_code"))
-        print()
+        logger.info(f"user_input: {state.get('user_input')}")
+        logger.info(f"result: {result.get('generated_code')}")
 
     # ------------------------------------------------------------------
     def test_preserves_existing_timing_info(self):
@@ -81,7 +81,7 @@ class TestGenerateCode(unittest.TestCase):
         self.assertGreaterEqual(elapsed, 0)
         self.assertLessEqual(elapsed, total_elapsed + 1.0)
 
-        print(f"generate_code_sec={elapsed:.3f}s (total {total_elapsed:.3f}s)")
+        logger.info(f"generate_code_sec={elapsed:.3f}s (total {total_elapsed:.3f}s)")
         
     def test_generated_code_for_all_cases(self):
         """
@@ -99,9 +99,8 @@ class TestGenerateCode(unittest.TestCase):
                 # ---- Проверяем наличие generated_code ----
                 generated = result.get("generated_code", "").strip()
                 
-                print("user_input: ", result.get("user_input"))
-                print("result code: ", generated)
-                print()
+                logger.info(f"user_input: {result.get('user_input')}")
+                logger.info(f"result code: {generated}")
                 
                 self.assertTrue(len(generated) > 0, f"Case {idx} produced empty code!")
 
