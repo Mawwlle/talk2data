@@ -11,12 +11,17 @@ from core.prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERA
 from core.schemas import AgentState, Decision
 import torch
 import atexit
+import copy
 
 from core.models import get_llm, get_tokenizer
 from string import Template
 import logging
 
 logger = logging.getLogger(__name__)
+
+def init_tokenizer_only():
+    global tokenizer
+    tokenizer = get_tokenizer()
 
 def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
     """
@@ -48,10 +53,9 @@ def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
 DECIDE_ACTION_DEFAULT = "chat_response"
 
 def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict | None = None) -> str:
-    """Format chat template using string.Template to avoid conflicts with braces."""
+    """Format chat template as flat text for code generation."""
     metadata_fields = metadata_fields or {}
-    
-    formatted_messages = []
+    local_prompt = copy.deepcopy(messages_template)
 
     mapping = {
         "input": str(state.get("user_input", "")),
@@ -61,7 +65,8 @@ def format_prompt(messages_template: list, state: AgentState, metadata_fields: d
     if metadata_fields:
         mapping.update({k: str(v) for k, v in metadata_fields.items()})
 
-    for msg in messages_template:
+    formatted_messages = []
+    for msg in local_prompt:
         try:
             tmpl = Template(msg["content"])
             content = tmpl.safe_substitute(mapping)
@@ -142,10 +147,13 @@ def generate_code_node(state: AgentState) -> AgentState:
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
     
     sampling_params = SamplingParams(
-        max_tokens=400,
-        temperature=0.2,
+        max_tokens=512,
+        temperature=0.7,
         top_p=0.95,
-        stop=["<|", "</s>"]
+        stop=["<|", "</s>"],  
+        repetition_penalty=1.05,     
+        presence_penalty=0.5,       
+        seed=42,             
     )
     
     outputs = llm.generate([code_prompt], sampling_params)

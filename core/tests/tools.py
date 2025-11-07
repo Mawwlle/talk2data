@@ -1,5 +1,6 @@
 
 from pathlib import Path
+import copy
 
 # iris dataset
 metadata_default = {'data': [
@@ -18,6 +19,8 @@ metadata_default = {'data': [
                 ['dtype', 'Float64', 'Float64', 'Float64', 'Float64', 'String'], 
                 # ['mode', '5.0', '3.0', '1.5', '0.2', 'nan']
                 ]}
+
+metadata_default = "Columns: sepal_length (float), sepal_width (float), petal_length (float), petal_width (float), species (categorical)"
 
 INITIAL_STATE = {
             # "user_input": prompt,
@@ -40,5 +43,6 @@ with open(commands_path, encoding="utf-8") as lines:
 TEST_INITIAL_STATES = []
 
 for command in TEST_COMMANDS:
-    INITIAL_STATE["user_input"] = command
-    TEST_INITIAL_STATES.append(INITIAL_STATE)
+    state_copy = copy.deepcopy(INITIAL_STATE)
+    state_copy["user_input"] = command
+    TEST_INITIAL_STATES.append(state_copy)

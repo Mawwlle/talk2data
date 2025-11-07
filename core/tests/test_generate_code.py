@@ -2,9 +2,10 @@ import unittest
 import time
 from core.tests.tools import TEST_INITIAL_STATES
 from core.workflow import generate_code_node, llm_init
+import copy
 
 
-class TestGenerateCodeNodeRealLLM(unittest.TestCase):
+class TestGenerateCode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Инициализируем LLM один раз для всех тестов."""
@@ -89,7 +90,7 @@ class TestGenerateCodeNodeRealLLM(unittest.TestCase):
         """
         for idx, state in enumerate(TEST_INITIAL_STATES):
             with self.subTest(case=idx, user_input=state.get("user_input", "")):
-                state_copy = state.copy()
+                state_copy = copy.deepcopy(state)
                 start = time.perf_counter()
                 result = generate_code_node(state_copy)
                 elapsed = result["timing_info"]["generate_code_sec"]
