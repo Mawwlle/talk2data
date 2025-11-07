@@ -1,5 +1,4 @@
 # models.py
-import torch
 import logging
 import settings
 from pathlib import Path
@@ -13,14 +12,10 @@ logger = logging.getLogger(__name__)
 env = environ.Env()
 env.read_env(Path(__file__).resolve().parent.parent / ".env")
 
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-logger.info(f"Using device: {device}")
-
 if env.bool("LOCAL_RUN", False):
     # Для локального облегчённоего запуска
     VLLM_CONFIG = dict(
-        max_model_len=4096,            # ↓ уменьшаем контекст, если оставить по умолчанию, то init engine займёт около 145 секунд
+        # max_model_len=4096,            # ↓ уменьшаем контекст, если оставить по умолчанию, то init engine займёт около 145 секунд
         gpu_memory_utilization=0.95,     # ↑ разрешаем использовать больше GPU-памяти
         enforce_eager=False,
         dtype="float16",

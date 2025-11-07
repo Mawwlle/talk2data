@@ -3,8 +3,8 @@ import json
 import time
 import pika
 # from models import whisper_model
-from workflow import create_workflow, llm_init
-from schemas import ConversationRequest
+from core.workflow import create_workflow, llm_init
+from core.schemas import ConversationRequest
 import logging
 from settings import RABBITMQ_HOST, TASK_QUEUE, RESPONSE_QUEUE, EXCHANGE, ROUTING_KEY
 

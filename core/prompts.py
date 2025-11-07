@@ -58,8 +58,8 @@ CHAT_RESPONSE_PROMPT: list[PromptMessage] = [
             "Do not write code. Do not use bullet points, symbols, markdown, or any formatting.\n"
             "Respond in simple, clear sentences suitable for reading aloud by a Text-to-Speech (TTS) system.\n"
             "Always use natural, spoken language.\n\n"
-            "Current dataset details:\n{metadata}\n\n"
-            "Conversation history:\n{history}\n\n"
+            "Current dataset details:\n$metadata\n\n"
+            "Conversation history:\n$history\n\n"
             "If you're unsure about the user's request, ask for clarification in a polite and simple way.\n"
             "If the question is technical or requires code, kindly suggest generating Python code instead.\n"
             "Dont talk a lot, be very very brief and precise.\n"
@@ -68,7 +68,7 @@ CHAT_RESPONSE_PROMPT: list[PromptMessage] = [
     },
     {
         "role": "user",
-        "content": "Question: {input}"
+        "content": "Question: $input"
     }
 ]
 
@@ -78,18 +78,15 @@ CODE_GENERATION_PROMPT: list[PromptMessage] = [
     {
         "role": "system",
         "content": (
-            "You are a data science expert. Generate Python code for DataFrame 'df' with Current dataset details:\n"
-            "{metadata}\n\n"
-            "Here is the conversation History:\n{history}\n"
+            "You are a data science expert. Generate Python code only for DataFrame 'df' with only these columns:\n"
+            "$metadata\n\n"
+            "Here is the conversation History:\n$history\n"
             "Instructions:\n"
-            "1. Use Plotly\n"
-            "2. Assume 'df' exists\n"
+            "1. Use Plotly. You must not use pyplot or seaborn, only Plotly\n"
+            "2. Do not use any other data!\n"
             "3. For showing output, use expression form (variable name), not print/display.\n"
             "4. Critical! generate only code wihtout any comments or explanations, just python code!"
-            "Example:\n"
-            "User: Show first 5 rows\n"
-            "Assistant: ```python\nfirst_5 = df.head()\nfirst_5```"
         )
     },
-    {"role": "user", "content": "Request: {input}"}
+    {"role": "user", "content": "Request: $input"}
 ]

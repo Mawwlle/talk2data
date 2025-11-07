@@ -7,14 +7,21 @@ from langchain_core.output_parsers import JsonOutputParser
 import time
 
 # Import prompt templates and schemas
-from prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
-from schemas import AgentState, Decision
+from core.prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
+from core.schemas import AgentState, Decision
+import torch
+import atexit
+import copy
 
-from models import get_llm, get_tokenizer
+from core.models import get_llm, get_tokenizer
 from string import Template
 import logging
 
 logger = logging.getLogger(__name__)
+
+def init_tokenizer_only():
+    global tokenizer
+    tokenizer = get_tokenizer()
 
 def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
     """
@@ -46,10 +53,9 @@ def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
 DECIDE_ACTION_DEFAULT = "chat_response"
 
 def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict | None = None) -> str:
-    """Format chat template using string.Template to avoid conflicts with braces."""
+    """Format chat template as flat text for code generation."""
     metadata_fields = metadata_fields or {}
-    
-    formatted_messages = []
+    local_prompt = copy.deepcopy(messages_template)
 
     mapping = {
         "input": str(state.get("user_input", "")),
@@ -59,7 +65,8 @@ def format_prompt(messages_template: list, state: AgentState, metadata_fields: d
     if metadata_fields:
         mapping.update({k: str(v) for k, v in metadata_fields.items()})
 
-    for msg in messages_template:
+    formatted_messages = []
+    for msg in local_prompt:
         try:
             tmpl = Template(msg["content"])
             content = tmpl.safe_substitute(mapping)
@@ -111,7 +118,7 @@ def decide_action(state: AgentState) -> AgentState:
 
     except Exception as e:
         logger.info(f"[decide_action] Decision error: {e}")
-        decision = {"action": "chat_response"}
+        decision = {"action": DECIDE_ACTION_DEFAULT}
         logger.info(f"[decide_action] Defaulting decision to: {decision}")
 
     # Считаем время выполнения
@@ -130,7 +137,7 @@ def decide_action(state: AgentState) -> AgentState:
 def route_action(state: AgentState) -> str:
     """Helper to decide next node based on 'decision.action'."""
     try:
-        return state["decision"]["action"]
+        return state.get("decision", {}).get("action", DECIDE_ACTION_DEFAULT)
     except Exception:
         return "chat_response"
 
@@ -140,10 +147,13 @@ def generate_code_node(state: AgentState) -> AgentState:
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
     
     sampling_params = SamplingParams(
-        max_tokens=400,
-        temperature=0.2,
+        max_tokens=512,
+        temperature=0.7,
         top_p=0.95,
-        stop=["<|", "</s>"]
+        stop=["<|", "</s>"],  
+        repetition_penalty=1.05,     
+        presence_penalty=0.5,       
+        seed=42,             
     )
     
     outputs = llm.generate([code_prompt], sampling_params)
@@ -217,3 +227,16 @@ def create_workflow():
     builder.add_edge("generate_chat_response", END)
     builder.set_entry_point("decide_action")
     return builder.compile()
+
+
+def safe_destroy_process_group():
+    """
+    Безопасный shutdown моделей. Позволяет избежать утечек на GPU
+    """
+    if torch.distributed.is_initialized():
+        try:
+            torch.distributed.destroy_process_group()
+        except Exception as e:
+            logger.error(f"Error during destroy_process_group: {e}")
+
+atexit.register(safe_destroy_process_group)

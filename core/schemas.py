@@ -11,12 +11,12 @@ class AgentState(TypedDict):
     generated_code: Optional[str]
     response_message: Optional[str]
     response_audio: Optional[str]
-    decision: Optional[Dict[str, Any]]
+    decision: dict[str, Any]
 
-    timing_info: Dict[str, float] = Field(default_factory=dict)
+    timing_info: dict[str, float] = Field(default_factory=dict) # type: ignore
 
     class Config:
-        extra = "allow"
+        extra = "allow" # type: ignore
 
 # TypedDict for decision result
 class Decision(TypedDict):

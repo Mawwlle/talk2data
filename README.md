@@ -11,15 +11,19 @@ git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
 
 ### 2. Для локального запуска в .env копируем содержание .env.local, для прода - .env.prod
 
-### 3. Запускаем worker (посылает сообщения через rabbitmq)
+### 3. Перед самым первым запуском скачайте llm веса локально:
 ```bash
-cd core
+CUDA_VISIBLE_DEVICES=0 poetry run python core/download_model_script.py
+```
+
+### 4. Запускаем worker (посылает сообщения через rabbitmq)
+```bash
 CUDA_VISIBLE_DEVICES=0 poetry run python core/worker.py
 ```
 
-### 4. Запускаем контейнеры, (если они ещё не запущены)
+### 5. Запускаем контейнеры, (если они ещё не запущены)
 
-### 5. Запускаем django на gateway и другие необходимые сервисы смайла (если они ещё не запущены)
+### 6. Запускаем django на gateway и другие необходимые сервисы смайла (если они ещё не запущены)
 
 ---
 
