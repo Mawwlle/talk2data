@@ -13,12 +13,12 @@ git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
 
 ### 3. Перед самым первым запуском скачайте llm веса локально:
 ```bash
-CUDA_VISIBLE_DEVICES=0 poetry run python core/download_model_script.py
+CUDA_VISIBLE_DEVICES=0 poetry run python -m core.download_model_script
 ```
 
 ### 4. Запускаем worker (посылает сообщения через rabbitmq)
 ```bash
-CUDA_VISIBLE_DEVICES=0 poetry run python core/worker.py
+CUDA_VISIBLE_DEVICES=0 poetry run python -m core.worker
 ```
 
 ### 5. Запускаем контейнеры, (если они ещё не запущены)

@@ -1,5 +1,6 @@
 # worker.py
 import json
+from pathlib import Path
 import time
 import pika
 # from models import whisper_model
@@ -24,6 +25,26 @@ logger.info("Worker connected to RabbitMQ")
 
 llm_init()
 
+def save_result_locally(result: dict, filename: str = "result.json") -> None:
+    """Сохраняет result в локальный JSON-файл рядом с текущим модулем."""
+    try:
+        file_path = Path(__file__).with_name(filename)
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=4)
+        logger.info("Result saved to %s", file_path)
+    except Exception as e:
+        logger.exception("Failed to save result: %s", e)
+        
+def load_result_locally(filename: str = "result.json") -> dict:
+    """Загружает сохранённый result из JSON-файла."""
+    file_path = Path(__file__).with_name(filename)
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        logger.exception("Failed to load result: %s", e)
+        return {}
+
 
 def handle_converse(data: dict):
     """Обработка текстового запроса (LLM pipeline)."""
@@ -44,6 +65,10 @@ def handle_converse(data: dict):
         }
 
         result = workflow.invoke(initial_state)
+        
+        # для дебага вместо workflow, если нет времени разворачивать llm:
+        # result = load_result_locally()
+        
         total_time = round(time.perf_counter() - start, 3)
 
         # Формируем финальный ответ
