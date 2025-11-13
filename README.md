@@ -16,10 +16,11 @@ git clone https://github.com/mohammad-nour-alawad/talk2data.git && cd talk2data
 CUDA_VISIBLE_DEVICES=0 poetry run python -m core.download_model_script
 ```
 
-### 4. Запускаем worker (посылает сообщения через rabbitmq)
+### 4. Запускаем worker (посылает сообщения через rabbitmq) + инициализируем LLM
 ```bash
 CUDA_VISIBLE_DEVICES=0 poetry run python -m core.worker
 ```
+Когда всё загрузится, в логах получите сообщение вроде "Listening to queque..."
 
 ### 5. Запускаем контейнеры, (если они ещё не запущены)
 
@@ -27,13 +28,13 @@ CUDA_VISIBLE_DEVICES=0 poetry run python -m core.worker
 
 ---
 
-## 🗂 Repository layout (uod for SMILE)
+## 🗂 Repository layout (upd for SMILE)
 
 ```
 .
 ├── core/                  # Всё, что используем в SMILE
-├── talk2data-django/      # Частично перенесён на gateway
-├── talk2data-fastAPI/     # FastAPI service running
+├── talk2data-django/      # Частично перенесён на gateway, пока нам не нужен
+├── talk2data-fastAPI/     # FastAPI service running, пока нам не нужен
 ├── demo.mp4               # 1-min demo.
 ├── LICENSE                # Apache‑2.0
 └── README.md              # You are here
