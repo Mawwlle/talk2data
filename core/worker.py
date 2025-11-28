@@ -6,8 +6,11 @@ import pika
 # from models import whisper_model
 from core.workflow import create_workflow, llm_init
 from core.schemas import ConversationRequest
+import tempfile
+
 import logging
 from settings import RABBITMQ_HOST, TASK_QUEUE, RESPONSE_QUEUE, EXCHANGE, ROUTING_KEY
+from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -23,7 +26,9 @@ channel.queue_declare(queue=RESPONSE_QUEUE, durable=True)
 
 logger.info("Worker connected to RabbitMQ")
 
-llm_init()
+llm_init() 
+
+whisper_model = Voice2Text()
 
 def save_result_locally(result: dict, filename: str = "result.json") -> None:
     """Сохраняет result в локальный JSON-файл рядом с текущим модулем."""
@@ -74,11 +79,10 @@ def handle_converse(data: dict):
         # Формируем финальный ответ
         response = {
             "status": "done",
-            "task": "converse",
+            "task": "llm_agent_response",
             "result": {
                 "code": result.get("generated_code"),
                 "message": result.get("response_message"),
-                "audio": result.get("response_audio"),
                 "updated_history": result["conversation_history"] + [
                     {
                         "user": req.user_input,
@@ -95,14 +99,8 @@ def handle_converse(data: dict):
 
 def handle_transcribe(data: dict):
     """Обработка аудио (Whisper)."""
-    start = time.perf_counter()
-    # Пока пропустим генерацию аудио
-    return {"status": "error", "task": "transcribe", "error": "Not implemented yet"}
-
     try:
         # Преобразуем байты обратно
-        import tempfile
-        from models import whisper_model
 
         audio_bytes = bytes.fromhex(data["file_bytes"])
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
@@ -110,19 +108,18 @@ def handle_transcribe(data: dict):
             tmp_path = tmp.name
 
         result = whisper_model.transcribe(tmp_path)
-        total_time = round(time.perf_counter() - start, 3)
 
         return {
             "status": "done",
             "task": "transcribe",
-            "result": {"text": result["text"], "timing": {"total_time": total_time}},
+            "result": {"text": result["text"]},
         }
     except Exception as e:
         return {"status": "error", "task": "transcribe", "error": str(e)}
 
 task_mapping = {
     "converse": handle_converse,
-    "transcribe": handle_transcribe # будет добавлено позже
+    "transcribe": handle_transcribe
 }
 
 def callback(ch, method, properties, body):

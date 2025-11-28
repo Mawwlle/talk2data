@@ -5665,6 +5665,19 @@ files = [
 ]
 
 [[package]]
+name = "whisper"
+version = "1.1.10"
+description = "Fixed size round-robin style database"
+optional = false
+python-versions = "*"
+files = [
+    {file = "whisper-1.1.10.tar.gz", hash = "sha256:435b4fb843c4c752719bdf0511a652d5be710e9bb35ad9ebe3b133268ee31c44"},
+]
+
+[package.dependencies]
+six = "*"
+
+[[package]]
 name = "wrapt"
 version = "2.0.0"
 description = "Module for decorators, wrappers and monkey patching."
@@ -6276,4 +6289,4 @@ cffi = ["cffi (>=1.17,<2.0)", "cffi (>=2.0.0b)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "72a88bf5a3d1bc129895f0d2f68c55452373b9706a10a5adc47325c9d0ec2841"
+content-hash = "b6e01ac9bf7f488ef40f2f0e6ad2fd6046cf3b9da43d24be72a2f778781ccae0"
