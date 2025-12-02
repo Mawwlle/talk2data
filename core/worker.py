@@ -1,4 +1,5 @@
 # worker.py
+import base64
 import json
 from pathlib import Path
 import time
@@ -100,9 +101,7 @@ def handle_converse(data: dict):
 def handle_transcribe(data: dict):
     """Обработка аудио (Whisper)."""
     try:
-        # Преобразуем байты обратно
-
-        audio_bytes = bytes.fromhex(data["file_bytes"])
+        audio_bytes = base64.b64decode(data["file_bytes"])
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
             tmp.write(audio_bytes)
             tmp_path = tmp.name
