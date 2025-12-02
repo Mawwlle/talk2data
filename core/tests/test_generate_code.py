@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class TestGenerateCode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -30,8 +31,11 @@ class TestGenerateCode(unittest.TestCase):
 
         # Проверяем, что результат похож на код
         self.assertTrue(
-            any(kw in generated for kw in ("print", "=", "def ", "import", "for ", "return")),
-            f"Сгенерированный текст не похож на код:\n{generated}"
+            any(
+                kw in generated
+                for kw in ("print", "=", "def ", "import", "for ", "return")
+            ),
+            f"Сгенерированный текст не похож на код:\n{generated}",
         )
 
         # Проверяем дополнительные поля
@@ -46,7 +50,9 @@ class TestGenerateCode(unittest.TestCase):
         """Если модель не возвращает код в ```python```, результат всё равно должен содержать код."""
         state = self.sample_state.copy()
         # Можно слегка модифицировать prompt, если LLM ожидает вход
-        state["input_data"] = {"user_message": "Напиши простой код без блока ```python```"}
+        state["input_data"] = {
+            "user_message": "Напиши простой код без блока ```python```"
+        }
 
         result = generate_code_node(state)
         generated = result.get("generated_code", "").strip()
@@ -82,7 +88,7 @@ class TestGenerateCode(unittest.TestCase):
         self.assertLessEqual(elapsed, total_elapsed + 1.0)
 
         logger.info(f"generate_code_sec={elapsed:.3f}s (total {total_elapsed:.3f}s)")
-        
+
     def test_generated_code_for_all_cases(self):
         """
         Проверяем генерацию кода для всех user_input из TEST_INITIAL_STATES.
@@ -98,27 +104,39 @@ class TestGenerateCode(unittest.TestCase):
 
                 # ---- Проверяем наличие generated_code ----
                 generated = result.get("generated_code", "").strip()
-                
+
                 logger.info(f"user_input: {result.get('user_input')}")
                 logger.info(f"result code: {generated}")
-                
+
                 self.assertTrue(len(generated) > 0, f"Case {idx} produced empty code!")
 
                 # ---- Проверяем, что выглядит как Python код ----
                 self.assertTrue(
-                    any(kw in generated for kw in ("print", "import", "def", "for", "return")),
-                    f"Case {idx} generated text may not be code:\n{generated}"
+                    any(
+                        kw in generated
+                        for kw in ("print", "import", "def", "for", "return")
+                    ),
+                    f"Case {idx} generated text may not be code:\n{generated}",
                 )
 
                 # ---- Проверяем отсутствие plt и sns ----
-                self.assertNotIn("plt", generated, f"Case {idx} contains forbidden 'plt':\n{generated}")
-                self.assertNotIn("sns", generated, f"Case {idx} contains forbidden 'sns':\n{generated}")
+                self.assertNotIn(
+                    "plt",
+                    generated,
+                    f"Case {idx} contains forbidden 'plt':\n{generated}",
+                )
+                self.assertNotIn(
+                    "sns",
+                    generated,
+                    f"Case {idx} contains forbidden 'sns':\n{generated}",
+                )
 
                 # ---- Проверяем, что response_message присутствует ----
-                self.assertIn("response_message", result, f"Case {idx} missing response_message")
+                self.assertIn(
+                    "response_message", result, f"Case {idx} missing response_message"
+                )
 
                 # ---- Проверяем timing_info ----
                 self.assertIn("generate_code_sec", result["timing_info"])
                 self.assertGreaterEqual(elapsed, 0)
                 self.assertLessEqual(elapsed, total_elapsed + 1.0)
-                

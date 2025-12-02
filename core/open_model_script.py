@@ -13,7 +13,5 @@ _tokenizer = AutoTokenizer.from_pretrained(
 
 
 from vllm import LLM
-llm = LLM(
-    model=LOCAL_PATH,
-    load_format="safetensors"
-)
+
+llm = LLM(model=LOCAL_PATH, load_format="safetensors")

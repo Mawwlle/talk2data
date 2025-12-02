@@ -7,7 +7,11 @@ from langchain_core.output_parsers import JsonOutputParser
 import time
 
 # Import prompt templates and schemas
-from core.prompts import DECIDE_ACTION_PROMPT, CHAT_RESPONSE_PROMPT, CODE_GENERATION_PROMPT
+from core.prompts import (
+    DECIDE_ACTION_PROMPT,
+    CHAT_RESPONSE_PROMPT,
+    CODE_GENERATION_PROMPT,
+)
 from core.schemas import AgentState, Decision
 import torch
 import atexit
@@ -19,9 +23,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def init_tokenizer_only():
     global tokenizer
     tokenizer = get_tokenizer()
+
 
 def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
     """
@@ -47,12 +53,18 @@ def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
                 time.sleep(retry_delay)
             else:
                 elapsed = round(time.perf_counter() - start_time, 2)
-                logger.critical(f"Failed to initialize models after {max_retries} attempts (elapsed {elapsed}s)")
+                logger.critical(
+                    f"Failed to initialize models after {max_retries} attempts (elapsed {elapsed}s)"
+                )
                 raise
+
 
 DECIDE_ACTION_DEFAULT = "chat_response"
 
-def format_prompt(messages_template: list, state: AgentState, metadata_fields: dict | None = None) -> str:
+
+def format_prompt(
+    messages_template: list, state: AgentState, metadata_fields: dict | None = None
+) -> str:
     """Format chat template as flat text for code generation."""
     metadata_fields = metadata_fields or {}
     local_prompt = copy.deepcopy(messages_template)
@@ -78,9 +90,7 @@ def format_prompt(messages_template: list, state: AgentState, metadata_fields: d
         formatted_messages.append({"role": msg["role"], "content": content})
 
     return tokenizer.apply_chat_template(
-        formatted_messages,
-        tokenize=False,
-        add_generation_prompt=True
+        formatted_messages, tokenize=False, add_generation_prompt=True
     )
 
 
@@ -90,7 +100,7 @@ def decide_action(state: AgentState) -> AgentState:
     logger.info(f"[decide_action] Starting with state: {state}")
 
     parser = JsonOutputParser(pydantic_object=Decision)
-    
+
     try:
         # Формируем prompt
         prompt = format_prompt(DECIDE_ACTION_PROMPT, state)
@@ -98,13 +108,13 @@ def decide_action(state: AgentState) -> AgentState:
 
         # Настраиваем параметры сэмплирования
         sampling_params = SamplingParams(
-                max_tokens=100,
-                temperature=0.0,         # полная детерминированность
-                top_p=1.0,               # отключает сэмплирование по вероятностям
-                stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
-                repetition_penalty=1.0   # не трогаем (нет смысла для коротких ответов)
+            max_tokens=100,
+            temperature=0.0,  # полная детерминированность
+            top_p=1.0,  # отключает сэмплирование по вероятностям
+            stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
+            repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
         )
-    
+
         logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
 
         # Генерация ответа от LLM
@@ -134,6 +144,7 @@ def decide_action(state: AgentState) -> AgentState:
 
     return state
 
+
 def route_action(state: AgentState) -> str:
     """Helper to decide next node based on 'decision.action'."""
     try:
@@ -141,21 +152,22 @@ def route_action(state: AgentState) -> str:
     except Exception:
         return "chat_response"
 
+
 def generate_code_node(state: AgentState) -> AgentState:
     """Code generation with structured metadata handling, measure time."""
     start = time.perf_counter()
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
-    
+
     sampling_params = SamplingParams(
         max_tokens=512,
         temperature=0.7,
         top_p=0.95,
-        stop=["<|", "</s>"],  
-        repetition_penalty=1.05,     
-        presence_penalty=0.5,       
-        seed=42,             
+        stop=["<|", "</s>"],
+        repetition_penalty=1.05,
+        presence_penalty=0.5,
+        seed=42,
     )
-    
+
     outputs = llm.generate([code_prompt], sampling_params)
     generated_text = outputs[0].outputs[0].text
 
@@ -166,27 +178,27 @@ def generate_code_node(state: AgentState) -> AgentState:
     timing_info = state.get("timing_info", {})
     timing_info["generate_code_sec"] = round(elapsed, 4)
     state["timing_info"] = timing_info
-    
+
     logger.info(f"[generate_code] Generated code: {code_block[:300]}...")
 
-    state.update({
-        "generated_code": code_block,
-        "response_message": "Here's the generated code:",
-    })
+    state.update(
+        {
+            "generated_code": code_block,
+            "response_message": "Here's the generated code:",
+        }
+    )
     return state
+
 
 def generate_chat_response_node(state: AgentState) -> AgentState:
     """Chat response generation with TTS integration, measure time."""
     start = time.perf_counter()
     chat_prompt = format_prompt(CHAT_RESPONSE_PROMPT, state)
-    
+
     sampling_params = SamplingParams(
-        max_tokens=200,
-        temperature=0.7,
-        top_p=0.9,
-        stop=["</s>"]
+        max_tokens=200, temperature=0.7, top_p=0.9, stop=["</s>"]
     )
-    
+
     outputs = llm.generate([chat_prompt], sampling_params)
     response = outputs[0].outputs[0].text.strip()
     elapsed_llm = time.perf_counter() - start
@@ -210,6 +222,7 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     state["response_message"] = response
     return state
 
+
 def create_workflow():
     builder = StateGraph(AgentState)
     builder.add_node("decide_action", decide_action)
@@ -218,10 +231,7 @@ def create_workflow():
     builder.add_conditional_edges(
         "decide_action",
         route_action,
-        {
-            "code_generation": "generate_code",
-            "chat_response": "generate_chat_response"
-        }
+        {"code_generation": "generate_code", "chat_response": "generate_chat_response"},
     )
     builder.add_edge("generate_code", END)
     builder.add_edge("generate_chat_response", END)
@@ -238,5 +248,6 @@ def safe_destroy_process_group():
             torch.distributed.destroy_process_group()
         except Exception as e:
             logger.error(f"Error during destroy_process_group: {e}")
+
 
 atexit.register(safe_destroy_process_group)

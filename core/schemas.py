@@ -3,6 +3,7 @@
 from typing import List, Dict, Any, Optional, TypedDict
 from pydantic import BaseModel, Field
 
+
 # TypedDict for internal agent state
 class AgentState(TypedDict):
     user_input: str
@@ -13,14 +14,16 @@ class AgentState(TypedDict):
     response_audio: Optional[str]
     decision: dict[str, Any]
 
-    timing_info: dict[str, float] = Field(default_factory=dict) # type: ignore
+    timing_info: dict[str, float] = Field(default_factory=dict)  # type: ignore
 
     class Config:
-        extra = "allow" # type: ignore
+        extra = "allow"  # type: ignore
+
 
 # TypedDict for decision result
 class Decision(TypedDict):
     action: str
+
 
 # Pydantic model for conversation requests
 class ConversationRequest(BaseModel):

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import time
 import pika
+
 # from models import whisper_model
 from core.workflow import create_workflow, llm_init
 from core.schemas import ConversationRequest
@@ -15,8 +16,7 @@ from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
 # Инициализация соединения
@@ -27,9 +27,10 @@ channel.queue_declare(queue=RESPONSE_QUEUE, durable=True)
 
 logger.info("Worker connected to RabbitMQ")
 
-llm_init() 
+llm_init()
 
 whisper_model = Voice2Text()
+
 
 def save_result_locally(result: dict, filename: str = "result.json") -> None:
     """Сохраняет result в локальный JSON-файл рядом с текущим модулем."""
@@ -40,7 +41,8 @@ def save_result_locally(result: dict, filename: str = "result.json") -> None:
         logger.info("Result saved to %s", file_path)
     except Exception as e:
         logger.exception("Failed to save result: %s", e)
-        
+
+
 def load_result_locally(filename: str = "result.json") -> dict:
     """Загружает сохранённый result из JSON-файла."""
     file_path = Path(__file__).with_name(filename)
@@ -71,10 +73,10 @@ def handle_converse(data: dict):
         }
 
         result = workflow.invoke(initial_state)
-        
+
         # для дебага вместо workflow, если нет времени разворачивать llm:
         # result = load_result_locally()
-        
+
         total_time = round(time.perf_counter() - start, 3)
 
         # Формируем финальный ответ
@@ -84,10 +86,12 @@ def handle_converse(data: dict):
             "result": {
                 "code": result.get("generated_code"),
                 "message": result.get("response_message"),
-                "updated_history": result["conversation_history"] + [
+                "updated_history": result["conversation_history"]
+                + [
                     {
                         "user": req.user_input,
-                        "system": result.get("generated_code") or result.get("response_message"),
+                        "system": result.get("generated_code")
+                        or result.get("response_message"),
                     }
                 ],
                 "timing": {**result.get("timing_info", {}), "total_time": total_time},
@@ -116,10 +120,9 @@ def handle_transcribe(data: dict):
     except Exception as e:
         return {"status": "error", "task": "transcribe", "error": str(e)}
 
-task_mapping = {
-    "converse": handle_converse,
-    "transcribe": handle_transcribe
-}
+
+task_mapping = {"converse": handle_converse, "transcribe": handle_transcribe}
+
 
 def callback(ch, method, properties, body):
     """Основная функция обработки входящих задач."""
@@ -128,7 +131,7 @@ def callback(ch, method, properties, body):
         task_type = msg.get("task")
         data = msg.get("data", {})
         handler = task_mapping.get(task_type)
-        
+
         logger.info(f"Received task: {task_type}")
         if handler is None:
             err_msg = f"Unknown task type: {task_type}"
@@ -136,7 +139,7 @@ def callback(ch, method, properties, body):
             response = {"status": "error", "error": err_msg}
         else:
             response = handler(data)
-            
+
         response["project_id"] = data.get("project_id")
 
         # Отправляем результат обратно
@@ -144,10 +147,12 @@ def callback(ch, method, properties, body):
             exchange=EXCHANGE,
             routing_key=ROUTING_KEY,
             body=json.dumps(response),
-            mandatory=True
+            mandatory=True,
         )
 
-        logger.info(f"Sent response for {task_type}: {response.get('status')} {response.get('error', '')}")
+        logger.info(
+            f"Sent response for {task_type}: {response.get('status')} {response.get('error', '')}"
+        )
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     except Exception as e:

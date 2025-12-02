@@ -94,7 +94,9 @@ def sandbox_execute(code: str, df: pd.DataFrame, out_img: str, idx: int):
     for i, fnum in enumerate(plt.get_fignums(), 1):
         try:
             plt.figure(fnum).savefig(
-                os.path.join(out_img, f"{idx}_plt_{i}.png"), dpi=100, bbox_inches="tight"
+                os.path.join(out_img, f"{idx}_plt_{i}.png"),
+                dpi=100,
+                bbox_inches="tight",
             )
         except Exception as e:
             pass
@@ -237,13 +239,13 @@ def run_experiment(dataset_name, csv_path, commands_path, out_dir):
         "avg_chat_resp_gen_time_sec": round(chatgen_sum / max(1, chatgen_cnt), 4)
         if chatgen_cnt
         else 0.0,
-        "avg_tts_time_sec": round(tts_sum / max(1, tts_resp), 4)
-        if tts_resp
-        else 0.0,
+        "avg_tts_time_sec": round(tts_sum / max(1, tts_resp), 4) if tts_resp else 0.0,
     }
     json.dump(
         detailed,
-        open(os.path.join(out_dir, f"{dataset_name}_results.json"), "w", encoding="utf-8"),
+        open(
+            os.path.join(out_dir, f"{dataset_name}_results.json"), "w", encoding="utf-8"
+        ),
         indent=2,
     )
     return summ
@@ -273,7 +275,9 @@ def run_all_experiments():
     overall = [run_experiment(**cfg) for cfg in configs]
     os.makedirs("out", exist_ok=True)
     json.dump(
-        overall, open("evaluation_results/all_experiments_summary.json", "w", encoding="utf-8"), indent=2
+        overall,
+        open("evaluation_results/all_experiments_summary.json", "w", encoding="utf-8"),
+        indent=2,
     )
 
     print("\n=== Aggregate summary ===")
