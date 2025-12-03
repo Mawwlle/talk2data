@@ -1,6 +1,5 @@
 import whisper
-import settings
-
+from core.config import settings
 
 class Voice2Text:
     def __init__(self):

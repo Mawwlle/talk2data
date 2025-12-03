@@ -24,7 +24,9 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock* ./
 
+RUN apt update && apt install ffmpeg -y
 RUN poetry install --no-root --no-dev
+COPY voice2text ./voice2text
 COPY core/ ./core/
 
 RUN mkdir -p /app/data
