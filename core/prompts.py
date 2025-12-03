@@ -2,9 +2,11 @@
 
 from typing import TypedDict
 
+
 class PromptMessage(TypedDict):
     role: str
     content: str
+
 
 # Decision action prompt as chat messages
 DECIDE_ACTION_PROMPT: list[PromptMessage] = [
@@ -25,17 +27,17 @@ DECIDE_ACTION_PROMPT: list[PromptMessage] = [
             "Dataset metadata: $metadata\n\n"
             "### Output format:\n"
             "Respond ONLY with a valid JSON object on a single line in the exact format:\n"
-            "{{\"action\": \"code_generation\"}} or {{\"action\": \"chat_response\"}}\n\n"
+            '{{"action": "code_generation"}} or {{"action": "chat_response"}}\n\n'
             "### Examples:\n"
-            "- 'Show distribution of sales' -> {\"action\": \"code_generation\"}\n"
-            "- 'Plot a histogram for the data' -> {\"action\": \"code_generation\"}\n"
-            "- 'Visualize relationship between age and income' -> {\"action\": \"code_generation\"}\n"
-            "- 'What columns are available?' -> {\"action\": \"chat_response\"}\n"
-            "- 'Explain this code' -> {\"action\": \"chat_response\"}\n"
-            "- 'What is a histogram?' -> {\"action\": \"chat_response\"}\n"
+            '- \'Show distribution of sales\' -> {"action": "code_generation"}\n'
+            '- \'Plot a histogram for the data\' -> {"action": "code_generation"}\n'
+            '- \'Visualize relationship between age and income\' -> {"action": "code_generation"}\n'
+            '- \'What columns are available?\' -> {"action": "chat_response"}\n'
+            '- \'Explain this code\' -> {"action": "chat_response"}\n'
+            '- \'What is a histogram?\' -> {"action": "chat_response"}\n'
             "\n"
             "Return nothing else — no explanation, no notes, just the JSON."
-        )
+        ),
     },
     {
         "role": "user",
@@ -43,10 +45,9 @@ DECIDE_ACTION_PROMPT: list[PromptMessage] = [
             "Conversation History:\n$history\n\n"
             "User Request:\n$input\n\n"
             "Your output must be ONLY one valid JSON object with the key 'action'."
-        )
-    }
+        ),
+    },
 ]
-
 
 
 # Chat response prompt as chat messages
@@ -64,12 +65,9 @@ CHAT_RESPONSE_PROMPT: list[PromptMessage] = [
             "If the question is technical or requires code, kindly suggest generating Python code instead.\n"
             "Dont talk a lot, be very very brief and precise.\n"
             "Important: all the plots should be in plotly only"
-        )
+        ),
     },
-    {
-        "role": "user",
-        "content": "Question: $input"
-    }
+    {"role": "user", "content": "Question: $input"},
 ]
 
 
@@ -86,7 +84,7 @@ CODE_GENERATION_PROMPT: list[PromptMessage] = [
             "2. Do not use any other data!\n"
             "3. For showing output, use expression form (variable name), not print/display.\n"
             "4. Critical! generate only code wihtout any comments or explanations, just python code!"
-        )
+        ),
     },
-    {"role": "user", "content": "Request: $input"}
+    {"role": "user", "content": "Request: $input"},
 ]

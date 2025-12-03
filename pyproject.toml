@@ -22,6 +22,7 @@ django-environ = "^0.12.0"
 numpy = "^1.26"
 pandas = "^2.1"
 pydantic-settings = "^2.12.0"
+whisper = "^1.1.10"
 
 
 [build-system]

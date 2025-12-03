@@ -26,6 +26,11 @@ CUDA_VISIBLE_DEVICES=0 poetry run python -m core.worker
 
 ### 6. Запускаем django на gateway и другие необходимые сервисы смайла (если они ещё не запущены)
 
+### 7. (Optional) Если нужно протестить голосовой ввод, то запускаем следующее (локально или в контейнере):
+```bash
+sudo apt-get update && apt-get install -y ffmpeg
+```
+
 ---
 
 ## 🗂 Repository layout (upd for SMILE)
