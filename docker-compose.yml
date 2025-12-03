@@ -1,0 +1,73 @@
+x-env-common: &env-common
+  STT_MODEL: ${STT_MODEL:-medium}
+  LLM_MODEL: ${LLM_MODEL:-Qwen/Qwen2.5-Coder-0.5B-Instruct}
+  LLM_LOCAL_PATH: ${LLM_LOCAL_PATH:-/model_weights_presaved}
+  DTYPE: ${DTYPE:-float16}
+  LOCAL_RUN: ${LOCAL_RUN:-False}
+
+  TTS_MODEL: ${TTS_MODEL:-tts_models/en/ljspeech/tacotron2-DDC}
+  TTS_SPEAKER: ${TTS_SPEAKER:-ljspeech}
+
+  RABBITMQ_HOST: ${RABBITMQ_HOST:-localhost}
+  RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+  RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+  RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+
+  MODEL_CACHE_DIR: /models
+
+
+x-gpu-resources: &gpu-resources
+  deploy:
+    resources:
+      limits:
+        cpus: "4"
+        memory: 8G
+      reservations:
+        cpus: "2"
+        memory: 4G
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: talk2data-worker
+    environment:
+      <<: *env-common
+    volumes:
+      - ./model_weights_presaved:/model_weights_presaved
+      - ./data:/app/data
+    networks:
+      - talk2data-network
+    command: poetry run python -m core.worker
+    restart: unless-stopped
+    depends_on:
+      model-init:
+        condition: service_completed_successfully
+    <<: *gpu-resources
+
+  model-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: talk2data-model-downloader
+    environment:
+      <<: *env-common
+    volumes:
+      - ./model_weights_presaved:/model_weights_presaved
+    networks:
+      - talk2data-network
+    command: poetry run python -m core.download_model_script
+
+volumes:
+  model_cache:
+    driver: local
+
+networks:
+  talk2data-network:
+    driver: bridge
