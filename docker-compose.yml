@@ -1,11 +1,9 @@
 x-env-common: &env-common
   STT_MODEL: ${STT_MODEL:-medium}
   LLM_MODEL: ${LLM_MODEL:-Qwen/Qwen2.5-Coder-0.5B-Instruct}
-  LLM_LOCAL_PATH: ${LLM_LOCAL_PATH:-model_weights_presaved}
-  TRANSFORMERS_CACHE: ${TRANSFORMERS_CACHE:-/models/huggingface}
-  HF_HOME: ${HF_HOME:-/models/huggingface}
+  LLM_LOCAL_PATH: ${LLM_LOCAL_PATH:-/model_weights_presaved}
   DTYPE: ${DTYPE:-float16}
-  LOCAL_RUN: ${LOCAL_RUN:-True}
+  LOCAL_RUN: ${LOCAL_RUN:-False}
 
   TTS_MODEL: ${TTS_MODEL:-tts_models/en/ljspeech/tacotron2-DDC}
   TTS_SPEAKER: ${TTS_SPEAKER:-ljspeech}
@@ -48,7 +46,23 @@ services:
       - talk2data-network
     command: poetry run python -m core.worker
     restart: unless-stopped
+    depends_on:
+      model-init:
+        condition: service_completed_successfully
     <<: *gpu-resources
+
+  model-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: talk2data-model-downloader
+    environment:
+      <<: *env-common
+    volumes:
+      - ./model_weights_presaved:/model_weights_presaved
+    networks:
+      - talk2data-network
+    command: poetry run python -m core.download_model_script
 
 volumes:
   model_cache:

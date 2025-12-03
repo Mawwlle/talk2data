@@ -1,7 +1,7 @@
 # Скачивание весов в локальную папку
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from config import settings
+from core.config import settings
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

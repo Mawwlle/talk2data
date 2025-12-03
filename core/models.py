@@ -1,6 +1,6 @@
 # models.py
 import logging
-from config import settings
+from core.config import settings
 from pathlib import Path
 from transformers import AutoTokenizer
 from vllm import LLM

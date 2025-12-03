@@ -3,11 +3,12 @@ import json
 from pathlib import Path
 import time
 import pika
+from pika.exceptions import AMQPConnectionError, AMQPChannelError
 # from models import whisper_model
 from core.workflow import create_workflow, llm_init
 from core.schemas import ConversationRequest
 import logging
-from config import settings
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -16,10 +17,32 @@ logging.basicConfig(
 )
 
 # Инициализация соединения
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST))
-channel = connection.channel()
-channel.queue_declare(queue=settings.TASK_QUEUE, durable=True)
-channel.queue_declare(queue=settings.RESPONSE_QUEUE, durable=True)
+try:
+    credentials = pika.PlainCredentials(settings.RABBITMQ_USER, settings.RABBITMQ_PASS)
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host=settings.RABBITMQ_HOST,
+            credentials=credentials,
+            heartbeat=60
+        )
+    )
+
+    if not connection.is_open:
+        raise ConnectionError("RabbitMQ connection failed silently")
+
+    channel = connection.channel()
+
+    channel.queue_declare(queue=settings.TASK_QUEUE, durable=True)
+    channel.queue_declare(queue=settings.RESPONSE_QUEUE, durable=True)
+
+    print("Successfully connected to RabbitMQ")
+
+except AMQPConnectionError as conn_err:
+    print(f"RabbitMQ connection failed: {conn_err}")
+except AMQPChannelError as channel_err:
+    print(f"Channel error: {channel_err}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
 
 logger.info("Worker connected to RabbitMQ")
 
