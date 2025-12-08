@@ -14,6 +14,9 @@ class AppSettings(BaseSettings):
     LLM_MODEL_NAME: str = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
     LLM_LOCAL_PATH: str = "models/model_weights_presaved"
     LLM_LOAD_FORMAT: str = "safetensors"
+    
+    # Speech To Text model
+    STT_MODEL: str = "medium"
 
     model_config = SettingsConfigDict(
         env_file=".env",
