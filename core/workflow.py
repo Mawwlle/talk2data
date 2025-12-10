@@ -202,7 +202,7 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     outputs = llm.generate([chat_prompt], sampling_params)
     response = outputs[0].outputs[0].text.strip()
     elapsed_llm = time.perf_counter() - start
-
+    logger.info(f"[test_response] Generated text response: {response}")
     # Attempt TTS
     # tts_start = time.perf_counter()
     # audio_b64 = None

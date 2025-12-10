@@ -5,6 +5,7 @@ from pathlib import Path
 import time
 import pika
 from pika.exceptions import AMQPConnectionError, AMQPChannelError
+
 # from models import whisper_model
 from core.workflow import create_workflow, llm_init
 from core.schemas import ConversationRequest
@@ -24,9 +25,7 @@ try:
     credentials = pika.PlainCredentials(settings.RABBITMQ_USER, settings.RABBITMQ_PASS)
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(
-            host=settings.RABBITMQ_HOST,
-            credentials=credentials,
-            heartbeat=60
+            host=settings.RABBITMQ_HOST, credentials=credentials, heartbeat=60
         )
     )
 
