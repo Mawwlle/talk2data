@@ -85,7 +85,7 @@ def handle_converse(data: dict):
         initial_state = {
             "user_input": req.user_input,
             "metadata": req.metadata,
-            "conversation_history": req.conversation_history,
+            "conversation_history": req.chat_history,
             "generated_code": None,
             "response_message": None,
             "response_audio": None,

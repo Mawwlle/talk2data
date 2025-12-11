@@ -29,4 +29,4 @@ class Decision(TypedDict):
 class ConversationRequest(BaseModel):
     user_input: str
     metadata: dict[str, Any] = {}
-    conversation_history: List[dict] = []
+    chat_history: List[dict] = []

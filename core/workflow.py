@@ -68,6 +68,8 @@ def format_prompt(
     """Format chat template as flat text for code generation."""
     metadata_fields = metadata_fields or {}
     local_prompt = copy.deepcopy(messages_template)
+    
+    logger.info(f"state: {state}")
 
     mapping = {
         "input": str(state.get("user_input", "")),
@@ -157,7 +159,8 @@ def generate_code_node(state: AgentState) -> AgentState:
     """Code generation with structured metadata handling, measure time."""
     start = time.perf_counter()
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
-
+    
+    logger.info(f"[code_prompt] Prompt for code generation: {code_prompt}")
     sampling_params = SamplingParams(
         max_tokens=512,
         temperature=0.7,
@@ -194,7 +197,7 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     """Chat response generation with TTS integration, measure time."""
     start = time.perf_counter()
     chat_prompt = format_prompt(CHAT_RESPONSE_PROMPT, state)
-
+    logger.info(f"[chat_prompt] Prompt for text generation: {chat_prompt}")
     sampling_params = SamplingParams(
         max_tokens=200, temperature=0.7, top_p=0.9, stop=["</s>"]
     )
