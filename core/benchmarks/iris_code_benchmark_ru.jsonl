@@ -1,0 +1,31 @@
+{
+  "id": "code_001_describe",
+  "user_input": "Напиши код, который выводит статистику по датасету.",
+  "expected_code": "df.describe()",
+  "expected_decision": "code_generation",
+  "metadata": {
+    "tags": ["code", "describe"],
+    "difficulty": "easy"
+    },
+},
+{
+"id": "code_002_pairplot",
+"user_input": "Построй pairplot всех признаков.",
+"expected_code": "# TODO",
+"expected_decision": "code_generation",
+"metadata": {
+    "tags": ["code", "plot"],
+    "difficulty": "medium"
+    }
+},
+{
+  "id": "code_003_train_model",
+  "user_input": "Напиши код, который обучает простой классификатор на этих данных.",
+  "expected_code": "# TODO",
+  "expected_decision": "code_generation",
+  "metadata": {
+    "tags": ["code", "model"],
+    "difficulty": "medium"
+  }
+}
+

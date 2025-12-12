@@ -1,0 +1,43 @@
+{
+  "id": "chat_001_what_is_iris",
+  "user_input": "Поясни, что представляет собой датасет.",
+  "expected_answer": "Датасет с измерениями лепестков и чашелистиков трёх видов ириса.",
+  "expected_decision": "chat_response",
+  "metadata": {
+    "tags": ["chat", "iris description"],
+    "difficulty": "easy"
+  }
+},
+{
+  "id": "chat_002_how_many_classes",
+  "user_input": "Сколько классов в этом датасете?",
+  "expected_answer": "В датасете три класса: setosa, versicolor и virginica.",
+  "expected_decision": "chat_response",
+  "metadata": {
+    "tags": ["chat", "classes"],
+    "difficulty": "easy"
+  }
+},
+{
+  "id": "chat_003_best_features",
+  "user_input": "Какие признаки лучше всего разделяют виды ирисов?",
+  "expected_answer": "Лучше всего классы разделяют длина и ширина лепестка, так как они показывают наибольшие различия между видами.",
+  "expected_decision": "chat_response",
+  "metadata": {
+    "tags": ["chat", "analysis"],
+    "difficulty": "medium"
+  }
+},
+{
+  "id": "chat_004_easiest_class",
+  "user_input": "Какой вид ириса лучше всего отделяется от остальных?",
+  "expected_answer": "Setosa отделяется лучше всего, так как лепестки у него короче и шире, чем у остальных видов.",
+  "expected_decision": "chat_response",
+  "metadata": {
+    "tags": ["chat", "analysis"],
+    "difficulty": "medium"
+  }
+}
+
+
+
