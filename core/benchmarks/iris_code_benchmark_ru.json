@@ -1,0 +1,32 @@
+[
+  {
+    "id": "code_001_describe",
+    "user_input": "Напиши код, который выводит статистику по датасету.",
+    "expected_decision": "code_generation",
+    "expected_code": "df.describe()",
+    "metadata": {
+      "tags": ["code", "describe"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "code_002_pairplot",
+    "user_input": "Построй pairplot всех признаков.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=df.columns, color=\"target\")\nfig.show()",
+    "metadata": {
+      "tags": ["code", "plot"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_003_train_model",
+    "user_input": "Напиши код, который обучает простой классификатор на этих данных.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=df.columns, color=\"target\")\nfig.show()",
+    "metadata": {
+      "tags": ["code", "model"],
+      "difficulty": "medium"
+    }
+  }
+]

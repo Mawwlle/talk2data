@@ -1,0 +1,115 @@
+[
+{
+    "id": "chat_001_what_is_iris",
+    "user_input": "Поясни, что представляет собой датасет.",
+    "expected_decision": "chat_response",
+    "expected_facts": ["датасет содержит измерения лепестков и чашелистиков", "три вида ириса"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "описание ириса"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_002_how_many_classes",
+    "user_input": "Сколько классов в этом датасете?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["три класса", "setosa", "versicolor", "virginica"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "классы"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_003_best_features",
+    "user_input": "Какие признаки лучше всего разделяют виды ирисов?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["длина лепестка", "ширина лепестка"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "анализ"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_004_easiest_class",
+    "user_input": "Какой вид ириса лучше всего отделяется от остальных?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["setosa", "короче лепестки", "шире лепестки"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "анализ"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_001_overfitting",
+    "user_input": "Что такое переобучение в машинном обучении?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "модель слишком хорошо подстраивается под обучающую выборку",
+      "плохо обобщает на новые данные"
+    ],
+    "forbidden_facts": [
+      "переобучение улучшает качество на новых данных"
+    ],
+    "max_tokens": 60,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "theory_002_train_test_split",
+    "user_input": "Зачем используется разделение на обучающую и тестовую выборки?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "оценка качества модели на невидимых данных",
+      "предотвращение утечки данных"
+    ],
+    "forbidden_facts": [
+      "для увеличения точности на обучающей выборке"
+    ],
+    "max_tokens": 60,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "theory_003_regularization",
+    "user_input": "Что такое регуляризация и зачем она нужна?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "добавляет штраф за сложность модели",
+      "уменьшает переобучение"
+    ],
+    "forbidden_facts": [
+      "регуляризация увеличивает разброс модели"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_004_bias_variance",
+    "user_input": "Объясни компромисс между смещением и разбросом.",
+    "expected_decision": "theoretical_response",
+    "expected_facts": [
+      "смещение связано с упрощающими предположениями модели",
+      "разброс связан с чувствительностью к обучающим данным",
+      "существует компромисс между смещением и разбросом"
+    ],
+    "forbidden_facts": [
+      "смещение и разброс можно минимизировать независимо"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "medium"
+    }
+  }
+]

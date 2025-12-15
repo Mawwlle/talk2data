@@ -1,0 +1,116 @@
+[
+  {
+    "id": "chat_001_what_is_iris",
+    "user_input": "Explain what this dataset represents.",
+    "expected_decision": "chat_response",
+    "expected_facts": ["dataset contains measurements of petals and sepals", "three iris species"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "iris description"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_002_how_many_classes",
+    "user_input": "How many classes are in this dataset?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["three classes", "setosa", "versicolor", "virginica"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "classes"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_003_best_features",
+    "user_input": "Which features best separate the iris species?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["petal length", "petal width"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "analysis"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_004_easiest_class",
+    "user_input": "Which iris species is the easiest to separate from the others?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["setosa", "shorter petals", "wider petals"],
+    "forbidden_facts": [],
+    "metadata": {
+      "tags": ["chat", "analysis"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_001_overfitting",
+    "user_input": "What is overfitting in machine learning?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "model fits training data too well",
+      "poor generalization to new data"
+    ],
+    "forbidden_facts": [
+      "overfitting improves performance on unseen data"
+    ],
+    "max_tokens": 60,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "theory_002_train_test_split",
+    "user_input": "Why is a train-test split used?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "evaluate model on unseen data",
+      "prevent data leakage"
+    ],
+    "forbidden_facts": [
+      "to increase training accuracy"
+    ],
+    "max_tokens": 60,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "theory_003_regularization",
+    "user_input": "What is regularization and why is it used?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "adds penalty to model complexity",
+      "reduces overfitting"
+    ],
+    "forbidden_facts": [
+      "regularization increases model variance"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_004_bias_variance",
+    "user_input": "Explain the bias-variance tradeoff.",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "bias refers to error from simplifying assumptions",
+      "variance refers to sensitivity to training data",
+      "tradeoff between bias and variance"
+    ],
+    "forbidden_facts": [
+      "bias and variance can both be minimized independently"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "ml"],
+      "difficulty": "medium"
+    }
+  }
+]
+
