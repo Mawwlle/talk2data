@@ -6,8 +6,13 @@ import re
 import string
 from collections import Counter
 from functools import lru_cache
-
+import io
+import contextlib
+import math
+import builtins
+import numpy as np
 import pandas as pd
+
 import torch
 from torch.nn.functional import cosine_similarity
 from transformers import AutoModel, AutoTokenizer
@@ -62,6 +67,28 @@ def extract_calls(code: str) -> set[str]:
 
     return calls
 
+def _normalize_stdout(text: str) -> str:
+    if not text:
+        return ""
+    lines = [line.rstrip() for line in text.strip().splitlines()]
+    return "\n".join(lines)
+
+
+def _compare_results(expected, actual) -> bool:
+    if isinstance(expected, (float, int)) and isinstance(actual, (float, int)):
+        return math.isclose(float(expected), float(actual), rel_tol=1e-6, abs_tol=1e-6)
+
+    if isinstance(expected, str) and isinstance(actual, str):
+        return expected.strip() == actual.strip()
+
+    if isinstance(expected, pd.DataFrame) and isinstance(actual, pd.DataFrame):
+        return expected.equals(actual)
+
+    if isinstance(expected, np.ndarray) and isinstance(actual, np.ndarray):
+        return np.allclose(expected, actual)
+
+    return expected == actual
+
 
 def tokenize(text: str) -> list[str]:
     translator = str.maketrans("", "", string.punctuation)
@@ -81,6 +108,92 @@ def counter_cosine_similarity(vec_a: Counter[str], vec_b: Counter[str]) -> float
         return 0.0
 
     return dot_product / (norm_a * norm_b)
+
+
+def _sandbox_globals() -> dict:
+    dummy_builtins = {
+        "__builtins__": {
+            name: getattr(builtins, name)
+            for name in [
+                "abs",
+                "all",
+                "any",
+                "bool",
+                "dict",
+                "enumerate",
+                "float",
+                "int",
+                "len",
+                "list",
+                "map",
+                "max",
+                "min",
+                "pow",
+                "range",
+                "repr",
+                "round",
+                "set",
+                "sorted",
+                "str",
+                "sum",
+                "zip",
+                "__import__",
+            ]
+        }
+    }
+
+    np.random.seed(0)
+
+    df = pd.DataFrame(
+        {
+            "sepal_length": [5.1, 4.9, 4.7, 4.6, 5.0],
+            "sepal_width": [3.5, 3.0, 3.2, 3.1, 3.6],
+            "petal_length": [1.4, 1.4, 1.3, 1.5, 1.4],
+            "petal_width": [0.2, 0.2, 0.2, 0.2, 0.2],
+            "species": ["setosa", "setosa", "setosa", "setosa", "setosa"],
+        }
+    )
+
+    return {
+        **dummy_builtins,
+        "np": np,
+        "pd": pd,
+        "Path": Path,
+        "df": df,
+        "math": math,
+    }
+
+
+def _run_code_in_sandbox(code: str) -> tuple[str, object, str | None]:
+    sandbox_globals = _sandbox_globals()
+    sandbox_locals: dict[str, object] = {}
+
+    try:
+        parsed = ast.parse(code)
+    except SyntaxError as exc:
+        return "", None, f"syntax_error: {exc}"
+
+    stdout_buffer = io.StringIO()
+    exec_error: str | None = None
+    result_value: object = None
+
+    try:
+        with contextlib.redirect_stdout(stdout_buffer):
+            if parsed.body and isinstance(parsed.body[-1], ast.Expr):
+                body_without_last = ast.Module(body=parsed.body[:-1], type_ignores=[])
+                last_expr = ast.Expression(parsed.body[-1].value)
+
+                if body_without_last.body:
+                    exec(compile(body_without_last, "<sandbox>", "exec"), sandbox_globals, sandbox_locals)
+
+                result_value = eval(compile(last_expr, "<sandbox>", "eval"), sandbox_globals, sandbox_locals)
+            else:
+                exec(compile(parsed, "<sandbox>", "exec"), sandbox_globals, sandbox_locals)
+    except Exception as exc:  # noqa: BLE001
+        exec_error = f"execution_error: {exc}"
+
+    stdout_text = _normalize_stdout(stdout_buffer.getvalue())
+    return stdout_text, result_value, exec_error
 
 
 @lru_cache(maxsize=1)
@@ -137,15 +250,25 @@ def normalize_results(results: list[dict] | dict | None) -> list[dict]:
 
 # ---------- main eval ----------
 
-def evaluate_code(model_code: str, benchmark: str) -> float:
-    score = 0.0
+def evaluate_code(model_code: str, benchmark: str) -> dict:
+    heuristic_score = 0.0
 
     # 1️⃣ Syntax check
     try:
         ast.parse(model_code)
-        score += 0.3
+        heuristic_score += 0.3
     except SyntaxError:
-        return 0.0
+        return {
+            "score": 0.0,
+            "heuristic_score": 0.0,
+            "exec_score": 0.0,
+            "stdout_match": False,
+            "result_match": False,
+            "errors": {
+                "model": "syntax_error",
+                "expected": None,
+            },
+        }
 
     expected_code = benchmark
 
@@ -155,9 +278,9 @@ def evaluate_code(model_code: str, benchmark: str) -> float:
 
     if expected_imports:
         matched = expected_imports & model_imports
-        score += 0.2 * (len(matched) / len(expected_imports))
+        heuristic_score += 0.2 * (len(matched) / len(expected_imports))
     else:
-        score += 0.2
+        heuristic_score += 0.2
 
     # 3️⃣ Key calls
     expected_calls = extract_calls(expected_code)
@@ -165,9 +288,48 @@ def evaluate_code(model_code: str, benchmark: str) -> float:
 
     if expected_calls:
         matched = expected_calls & model_calls
-        score += 0.4 * (len(matched) / len(expected_calls))
+        heuristic_score += 0.4 * (len(matched) / len(expected_calls))
 
-    return round(min(score, 1.0), 3)
+    # ---------- execution-based scoring ----------
+    expected_stdout, expected_result, expected_error = _run_code_in_sandbox(expected_code)
+    model_stdout, model_result, model_error = _run_code_in_sandbox(model_code)
+
+    stdout_match = expected_error is None and model_error is None and _normalize_stdout(expected_stdout) == _normalize_stdout(model_stdout)
+    result_match = expected_error is None and model_error is None and _compare_results(expected_result, model_result)
+
+    exec_score = 0.0
+    if expected_error is None:
+        if model_error is None:
+            if stdout_match:
+                exec_score += 0.5
+            if result_match:
+                exec_score += 0.5
+        else:
+            exec_score = 0.0
+    else:
+        exec_score = 0.0
+
+    combined_score = round(min((heuristic_score * 0.5) + (exec_score * 0.5), 1.0), 3)
+
+    return {
+        "score": combined_score,
+        "heuristic_score": round(min(heuristic_score, 1.0), 3),
+        "exec_score": round(exec_score, 3),
+        "stdout_match": stdout_match,
+        "result_match": result_match,
+        "errors": {
+            "expected": expected_error,
+            "model": model_error,
+        },
+        "stdout": {
+            "expected": expected_stdout,
+            "model": model_stdout,
+        },
+        "results": {
+            "expected": expected_result,
+            "model": model_result,
+        },
+    }
 
 def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluation/inference_results/eval_0_baseline.json"):
     outputs = normalize_results(load_json(Path(inference_res_path)))
@@ -207,14 +369,18 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
         if baseline_similarity is None and case.get("expected_facts"):
             chat_score = evaluate_chat(model_output.get("response_message", ""), case["expected_facts"], case.get("forbidden_facts"))
 
+        code_score_details = None
         if case.get("expected_code"):
-            code_score = evaluate_code(model_output.get("generated_code",""), case["expected_code"])
+            code_score_details = evaluate_code(model_output.get("generated_code",""), case["expected_code"])
+            code_score = code_score_details.get("score", 0.0)
 
         results.append({
             "id": case["id"],
             "decision_score": decision_score,
             "chat_score": chat_score,
-            "code_score": code_score
+            "baseline_similarity": baseline_similarity,
+            "code_score": code_score,
+            "code_details": code_score_details,
         })
     return results
 
@@ -224,6 +390,9 @@ if __name__ == "__main__":
     test_path = "core/evaluation/inference_results/eval_0_baseline.json"
     
     res = run_eval(test_path)
+    code_score_details = [case.pop('code_details') for case in res]
+    code_df = pd.DataFrame(code_score_details)
+    code_df.to_csv('core/inference_results/eval_0_code_metrics.csv')
     
     res_df = pd.DataFrame(res)
     res_df.to_csv('core/inference_results/eval_0_metrics.csv')
