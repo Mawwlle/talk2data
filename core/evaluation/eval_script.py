@@ -344,6 +344,26 @@ def _generate_visualizations(report: dict, output_dir: Path) -> dict[str, str]:
     return charts
 
 
+def _make_json_safe(value):
+    if isinstance(value, dict):
+        return {k: _make_json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_make_json_safe(v) for v in value]
+    if isinstance(value, tuple) or isinstance(value, set):
+        return [_make_json_safe(v) for v in value]
+    if isinstance(value, pd.DataFrame):
+        return value.to_dict(orient="records")
+    if isinstance(value, pd.Series):
+        return value.to_dict()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, torch.Tensor):
+        return value.tolist()
+    if isinstance(value, Path):
+        return str(value)
+    return value
+
+
 # ---------- main eval ----------
 
 def evaluate_code(model_code: str, benchmark: str) -> dict:
@@ -579,10 +599,11 @@ def generate_report(
     )
     summary_df.to_csv(output_dir / "summary.csv", index=False)
 
+    safe_report = _make_json_safe(report)
     with open(output_dir / "report.json", "w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
+        json.dump(safe_report, f, ensure_ascii=False, indent=2)
 
-    return report
+    return safe_report
 
 # пример использования
 if __name__ == "__main__":
