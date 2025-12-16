@@ -16,6 +16,7 @@ import pandas as pd
 import torch
 from torch.nn.functional import cosine_similarity
 from transformers import AutoModel, AutoTokenizer
+from sklearn.datasets import load_iris
 
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
 
@@ -59,11 +60,10 @@ def extract_calls(code: str) -> set[str]:
     calls = set()
 
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call):
-            if isinstance(node.func, ast.Attribute):
-                calls.add(node.func.attr)
-            elif isinstance(node.func, ast.Name):
-                calls.add(node.func.id)
+        if isinstance(node.func, ast.Attribute):
+            calls.add(node.func.attr)
+        elif isinstance(node.func, ast.Name):
+            calls.add(node.func.id)
 
     return calls
 
@@ -144,13 +144,15 @@ def _sandbox_globals() -> dict:
 
     np.random.seed(0)
 
-    df = pd.DataFrame(
-        {
-            "sepal_length": [5.1, 4.9, 4.7, 4.6, 5.0],
-            "sepal_width": [3.5, 3.0, 3.2, 3.1, 3.6],
-            "petal_length": [1.4, 1.4, 1.3, 1.5, 1.4],
-            "petal_width": [0.2, 0.2, 0.2, 0.2, 0.2],
-            "species": ["setosa", "setosa", "setosa", "setosa", "setosa"],
+    iris = load_iris(as_frame=True)
+    df = iris.frame.copy()
+    df["species"] = df["target"].map(lambda idx: iris.target_names[idx])
+    df = df.drop(columns=["target"]).rename(
+        columns={
+            "sepal length (cm)": "sepal_length",
+            "sepal width (cm)": "sepal_width",
+            "petal length (cm)": "petal_length",
+            "petal width (cm)": "petal_width",
         }
     )
 
