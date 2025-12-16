@@ -12,6 +12,7 @@ import math
 import builtins
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 import torch
 from torch.nn.functional import cosine_similarity
@@ -60,10 +61,14 @@ def extract_calls(code: str) -> set[str]:
     calls = set()
 
     for node in ast.walk(tree):
-        if isinstance(node.func, ast.Attribute):
-            calls.add(node.func.attr)
-        elif isinstance(node.func, ast.Name):
-            calls.add(node.func.id)
+        if not isinstance(node, ast.Call):
+            continue
+
+        func = node.func
+        if isinstance(func, ast.Attribute):
+            calls.add(func.attr)
+        elif isinstance(func, ast.Name):
+            calls.add(func.id)
 
     return calls
 
@@ -250,6 +255,91 @@ def normalize_results(results: list[dict] | dict | None) -> list[dict]:
     return []
 
 
+def _mean(values: list[float]) -> float:
+    numeric = [v for v in values if isinstance(v, (int, float))]
+    if not numeric:
+        return 0.0
+    return round(float(np.mean(numeric)), 3)
+
+
+def _collect_metadata(benchmarks: list[dict]) -> dict[str, dict]:
+    return {case.get("id"): case for case in benchmarks}
+
+
+def _summarize_by_group(results: list[dict], benchmarks_by_id: dict[str, dict], key: str) -> dict[str, dict]:
+    summary: dict[str, dict] = {}
+    for row in results:
+        case_meta = benchmarks_by_id.get(row["id"], {})
+        group_value = None
+        if key == "tags":
+            group_value = case_meta.get("metadata", {}).get("tags", []) or ["untagged"]
+        else:
+            group_value = [case_meta.get("metadata", {}).get(key, "unspecified")]
+
+        for value in group_value:
+            bucket = summary.setdefault(value, {"count": 0, "decision": [], "chat": [], "code": []})
+            bucket["count"] += 1
+            bucket["decision"].append(row.get("decision_score"))
+            bucket["chat"].append(row.get("chat_score"))
+            bucket["code"].append(row.get("code_score"))
+
+    for bucket in summary.values():
+        bucket["decision_avg"] = _mean(bucket.pop("decision"))
+        bucket["chat_avg"] = _mean(bucket.pop("chat"))
+        bucket["code_avg"] = _mean(bucket.pop("code"))
+
+    return summary
+
+
+def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: Path) -> str:
+    labels = list(values.keys())
+    scores = [values[label] for label in labels]
+
+    plt.figure(figsize=(10, 5))
+    bars = plt.bar(labels, scores, color="#3b82f6")
+    plt.title(title)
+    plt.ylabel(ylabel)
+    plt.ylim(0, 1)
+    plt.xticks(rotation=30, ha="right")
+
+    for bar, score in zip(bars, scores):
+        plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01, f"{score:.2f}", ha="center")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+    return str(output_path)
+
+
+def _generate_visualizations(report: dict, output_dir: Path) -> dict[str, str]:
+    charts: dict[str, str] = {}
+    summary = report.get("summary", {})
+    chart_dir = output_dir / "charts"
+
+    charts["overall_scores"] = _save_plot(
+        {
+            "decision": summary.get("decision_accuracy", 0.0),
+            "chat": summary.get("chat_score_avg", 0.0),
+            "code": summary.get("code_score_avg", 0.0),
+        },
+        "Средние метрики по всем кейсам",
+        "Score",
+        chart_dir / "overall_scores.png",
+    )
+
+    difficulty = report.get("by_difficulty", {})
+    if difficulty:
+        charts["difficulty"] = _save_plot(
+            {k: v.get("decision_avg", 0.0) for k, v in difficulty.items()},
+            "Decision score по уровням сложности",
+            "Decision score",
+            chart_dir / "decision_by_difficulty.png",
+        )
+
+    return charts
+
+
 # ---------- main eval ----------
 
 def evaluate_code(model_code: str, benchmark: str) -> dict:
@@ -333,6 +423,14 @@ def evaluate_code(model_code: str, benchmark: str) -> dict:
         },
     }
 
+def _load_all_benchmarks() -> list[dict]:
+    paths = sorted(BENCHMARKS_DIR.glob("*.json"))
+    benchmarks: list[dict] = []
+    for path in paths:
+        benchmarks += load_json(path)
+    return benchmarks
+
+
 def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluation/inference_results/eval_0_baseline.json"):
     outputs = normalize_results(load_json(Path(inference_res_path)))
 
@@ -345,10 +443,7 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
     output_by_id = {item.get("benchmark_id"): item for item in outputs}
     baseline_by_id = {item.get("benchmark_id"): item for item in baseline_outputs}
 
-    paths = sorted(BENCHMARKS_DIR.glob("*.json"))
-    benchmarks: list[dict] = []
-    for path in paths:
-        benchmarks += load_json(path)
+    benchmarks = _load_all_benchmarks()
 
     results = []
     for case in benchmarks:
@@ -384,17 +479,112 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
             "code_score": code_score,
             "code_details": code_score_details,
         })
-    return results
+    return results, benchmarks
+
+
+def build_report(results: list[dict], benchmarks: list[dict]) -> dict:
+    benchmarks_by_id = _collect_metadata(benchmarks)
+    enriched_cases: list[dict] = []
+
+    for row in results:
+        meta = benchmarks_by_id.get(row["id"], {})
+        meta_info = meta.get("metadata", {})
+        enriched_cases.append(
+            {
+                **row,
+                "user_input": meta.get("user_input"),
+                "tags": meta_info.get("tags", []),
+                "difficulty": meta_info.get("difficulty", "unspecified"),
+            }
+        )
+
+    summary = {
+        "cases_total": len(enriched_cases),
+        "missing": len([case for case in enriched_cases if case.get("error")]),
+        "decision_accuracy": _mean([case.get("decision_score") for case in enriched_cases if not case.get("error")]),
+        "chat_score_avg": _mean([case.get("chat_score") for case in enriched_cases if not case.get("error")]),
+        "code_score_avg": _mean([case.get("code_score") for case in enriched_cases if not case.get("error")]),
+        "baseline_similarity_avg": _mean([case.get("baseline_similarity") for case in enriched_cases if not case.get("error")]),
+    }
+
+    by_difficulty = _summarize_by_group(enriched_cases, benchmarks_by_id, "difficulty")
+    by_tag = _summarize_by_group(enriched_cases, benchmarks_by_id, "tags")
+
+    critical_cases = []
+    for case in enriched_cases:
+        if case.get("error"):
+            critical_cases.append({"id": case["id"], "reason": case["error"]})
+            continue
+
+        if (case.get("decision_score") == 0) or (case.get("chat_score") is not None and case.get("chat_score") < 0.7) or (case.get("code_score") is not None and case.get("code_score") < 0.7):
+            critical_cases.append(
+                {
+                    "id": case["id"],
+                    "decision_score": case.get("decision_score"),
+                    "chat_score": case.get("chat_score"),
+                    "code_score": case.get("code_score"),
+                    "difficulty": case.get("difficulty"),
+                }
+            )
+
+    return {
+        "summary": summary,
+        "by_difficulty": by_difficulty,
+        "by_tag": by_tag,
+        "cases": enriched_cases,
+        "focus_cases": critical_cases,
+    }
+
+
+def generate_report(
+    inference_res_path: str,
+    baseline_path: str | None = "core/evaluation/inference_results/eval_0_baseline.json",
+    output_dir: str | Path = "core/evaluation/reports",
+) -> dict:
+    results, benchmarks = run_eval(inference_res_path, baseline_path)
+    report = build_report(results, benchmarks)
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    charts = _generate_visualizations(report, output_dir)
+    report["charts"] = charts
+
+    cases_df = pd.DataFrame(report["cases"])
+    cases_df.to_csv(output_dir / "cases.csv", index=False)
+
+    summary_df = pd.DataFrame(
+        [
+            {
+                "metric": "decision_accuracy",
+                "value": report["summary"].get("decision_accuracy", 0.0),
+            },
+            {
+                "metric": "chat_score_avg",
+                "value": report["summary"].get("chat_score_avg", 0.0),
+            },
+            {
+                "metric": "code_score_avg",
+                "value": report["summary"].get("code_score_avg", 0.0),
+            },
+            {
+                "metric": "baseline_similarity_avg",
+                "value": report["summary"].get("baseline_similarity_avg", 0.0),
+            },
+        ]
+    )
+    summary_df.to_csv(output_dir / "summary.csv", index=False)
+
+    with open(output_dir / "report.json", "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+
+    return report
 
 # пример использования
 if __name__ == "__main__":
-    # Загружаем модель для эмбеддингов
+    # Пример запуска: формируем полный отчёт и сохраняем метрики и графики
     test_path = "core/evaluation/inference_results/eval_0_baseline.json"
-    
-    res = run_eval(test_path)
-    code_score_details = [case.pop('code_details') for case in res]
-    code_df = pd.DataFrame(code_score_details)
-    code_df.to_csv('core/inference_results/eval_0_code_metrics.csv')
-    
-    res_df = pd.DataFrame(res)
-    res_df.to_csv('core/inference_results/eval_0_metrics.csv')
+    report = generate_report(test_path)
+
+    print("Отчёт сформирован. Ключевые метрики:")
+    print(json.dumps(report.get("summary", {}), ensure_ascii=False, indent=2))
