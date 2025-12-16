@@ -1,0 +1,5 @@
+metric,value
+decision_accuracy,0.864
+chat_score_avg,1.0
+code_score_avg,0.806
+baseline_similarity_avg,1.0

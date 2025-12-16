@@ -1,0 +1,108 @@
+{
+  "summary": {
+    "cases_total": 22,
+    "missing": 0,
+    "decision_accuracy": 0.864,
+    "chat_score_avg": 1.0,
+    "code_score_avg": 0.806,
+    "baseline_similarity_avg": 1.0
+  },
+  "by_difficulty": {
+    "easy": {
+      "count": 10,
+      "decision_avg": 1.0,
+      "chat_avg": 1.0,
+      "code_avg": 0.85
+    },
+    "medium": {
+      "count": 12,
+      "decision_avg": 0.75,
+      "chat_avg": 1.0,
+      "code_avg": 0.769
+    }
+  },
+  "by_tag": {
+    "code": {
+      "count": 6,
+      "decision_avg": 1.0,
+      "chat_avg": 1.0,
+      "code_avg": 0.289
+    },
+    "describe": {
+      "count": 2,
+      "decision_avg": 1.0,
+      "chat_avg": 1.0,
+      "code_avg": 0.25
+    },
+    "plot": {
+      "count": 2,
+      "decision_avg": 1.0,
+      "chat_avg": 1.0,
+      "code_avg": 0.35
+    },
+    "model": {
+      "count": 2,
+      "decision_avg": 1.0,
+      "chat_avg": 1.0,
+      "code_avg": 0.267
+    },
+    "chat": {
+      "count": 8,
+      "decision_avg": 0.75,
+      "chat_avg": 1.0,
+      "code_avg": 1.0
+    },
+    "описание ириса": {
+      "count": 2,
+      "decision_avg": 1.0,
+      "chat_avg": 1.0,
+      "code_avg": 1.0
+    },
+    "классы": {
+      "count": 2,
+      "decision_avg": 1.0,
+      "chat_avg": 1.0,
+      "code_avg": 1.0
+    },
+    "анализ": {
+      "count": 4,
+      "decision_avg": 0.5,
+      "chat_avg": 1.0,
+      "code_avg": 1.0
+    },
+    "theory": {
+      "count": 8,
+      "decision_avg": 0.875,
+      "chat_avg": 1.0,
+      "code_avg": 1.0
+    },
+    "ml": {
+      "count": 8,
+      "decision_avg": 0.875,
+      "chat_avg": 1.0,
+      "code_avg": 1.0
+    }
+  },
+  "cases": [
+    {
+      "id": "code_001_describe",
+      "decision_score": true,
+      "chat_score": 1.0,
+      "baseline_similarity": 1.0,
+      "code_score": 0.25,
+      "code_details": {
+        "score": 0.25,
+        "heuristic_score": 0.5,
+        "exec_score": 0.0,
+        "stdout_match": false,
+        "result_match": false,
+        "errors": {
+          "expected": null,
+          "model": "execution_error: name 'go' is not defined"
+        },
+        "stdout": {
+          "expected": "",
+          "model": ""
+        },
+        "results": {
+          "expected": 
