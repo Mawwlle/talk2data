@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
+from sentence_transformers import SentenceTransformer, util
 
 def load_benchmarks(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
@@ -13,17 +14,45 @@ def load_benchmarks(file_path):
 def evaluate_decision(model_decision, expected):
     return model_decision == expected
 
-def evaluate_chat(model_output, expected_facts, forbidden_facts=None):
-    score = 1.0
-    for fact in expected_facts:
-        if fact.lower() not in model_output.lower():
-            score = 0.0
+def evaluate_chat(model_output, expected_facts, forbidden_facts=None, threshold=0.7):
+    """
+    Оценка текстового ответа модели с использованием семантического совпадения.
+    
+    score = (доля семантически найденных expected_facts) - (доля семантически найденных forbidden_facts)
+    threshold - минимальное косинусное сходство для учета факта как найденного
+    """
+    # Получаем embedding для модели
+    output_emb = embed_model.encode(model_output, convert_to_tensor=True)
+    
+    # Проверка expected_facts
+    expected_score = 0.0
+    if expected_facts:
+        found_count = 0
+        for fact in expected_facts:
+            fact_emb = embed_model.encode(fact, convert_to_tensor=True)
+            sim = util.cos_sim(output_emb, fact_emb).item()
+            if sim >= threshold:
+                found_count += 1
+        expected_score = found_count / len(expected_facts)
+    else:
+        expected_score = 1.0
+    
+    # Проверка forbidden_facts
+    forbidden_score = 0.0
     if forbidden_facts:
+        found_count = 0
         for fact in forbidden_facts:
-            if fact.lower() in model_output.lower():
-                score = 0.0
+            fact_emb = embed_model.encode(fact, convert_to_tensor=True)
+            sim = util.cos_sim(output_emb, fact_emb).item()
+            if sim >= threshold:
+                found_count += 1
+        forbidden_score = found_count / len(forbidden_facts)
+    
+    # Итоговый скор
+    score = expected_score - forbidden_score
+    score = max(0.0, min(1.0, score))
+    
     return score
-
 
 # ---------- helpers ----------
 
@@ -53,15 +82,6 @@ def extract_calls(code: str) -> set[str]:
                 calls.add(node.func.id)
 
     return calls
-
-
-def has_side_effect(code: str) -> bool:
-    patterns = [
-        r"\.fit\s*\(",
-        r"\.show\s*\(",
-        r"print\s*\("
-    ]
-    return any(re.search(p, code) for p in patterns)
 
 
 # ---------- main eval ----------
@@ -96,10 +116,6 @@ def evaluate_code(model_code: str, benchmark: str) -> float:
         matched = expected_calls & model_calls
         score += 0.4 * (len(matched) / len(expected_calls))
 
-    # 4️⃣ Side effect
-    if has_side_effect(model_code):
-        score += 0.1
-
     return round(min(score, 1.0), 3)
 
 def run_eval(inference_res_path: str):
@@ -133,7 +149,9 @@ def run_eval(inference_res_path: str):
 
 # пример использования
 if __name__ == "__main__":
-    test_path = "core/evaluation/inference_results/eval_2025-12-15T14:04:22.442639_4971634e.json"
+    # Загружаем модель для эмбеддингов
+    test_path = "core/evaluation/inference_results/eval_0_baseline.json"
+    embed_model = SentenceTransformer('all-MiniLM-L6-v2')
     
     res = run_eval(test_path)
     print(res)

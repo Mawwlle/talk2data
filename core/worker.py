@@ -97,6 +97,9 @@ def handle_converse(data: dict):
 
         # для дебага вместо workflow, если нет времени разворачивать llm:
         # result = load_result_locally()
+        
+        # Чтобы в случае необходимости превратить последний запущенный кейс в бэнчмарк
+        save_result_locally(result)
 
         total_time = round(time.perf_counter() - start, 3)
 
