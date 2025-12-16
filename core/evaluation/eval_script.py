@@ -204,9 +204,13 @@ def _run_code_in_sandbox(code: str) -> tuple[str, object, str | None]:
 
 
 @lru_cache(maxsize=1)
-def _load_embedding_components(model_name: str = "./all-MiniLM-L6-v2"):
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name)
+def _load_embedding_components(
+    model_path: str = "~/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
+):
+    model_path = str(Path(model_path).expanduser())
+
+    tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
+    model = AutoModel.from_pretrained(model_path, local_files_only=True)
     model.eval()
     return tokenizer, model
 
