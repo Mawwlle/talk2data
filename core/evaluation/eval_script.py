@@ -226,12 +226,19 @@ def _compute_embedding(text: str) -> torch.Tensor:
     return sentence_embedding.squeeze(0)
 
 
-def evaluate_text_similarity(baseline_text: str | None, generated_text: str | None) -> float | None:
-    if not baseline_text or not generated_text:
+def evaluate_text_similarity(reference_text: str | None, generated_text: str | None) -> float | None:
+    """Return cosine similarity between reference text and generated text.
+
+    The reference is expected to be a canonical answer (e.g., concatenated
+    expected facts). If no reference is available, the function returns None
+    to avoid producing misleading perfect scores.
+    """
+
+    if not reference_text or not generated_text:
         return None
 
     try:
-        baseline_embedding = _compute_embedding(baseline_text)
+        baseline_embedding = _compute_embedding(reference_text)
         generated_embedding = _compute_embedding(generated_text)
 
         similarity = cosine_similarity(
@@ -241,7 +248,7 @@ def evaluate_text_similarity(baseline_text: str | None, generated_text: str | No
 
         return round(float(similarity), 3)
     except Exception:  # noqa: BLE001
-        baseline_tokens = Counter(tokenize(baseline_text))
+        baseline_tokens = Counter(tokenize(reference_text))
         generated_tokens = Counter(tokenize(generated_text))
         return round(counter_cosine_similarity(baseline_tokens, generated_tokens), 3)
 
@@ -357,7 +364,6 @@ def _make_json_safe(value):
     if isinstance(value, Path):
         return str(value)
     return value
-
 
 def _persist_case_details(cases: list[dict], benchmarks_by_id: dict[str, dict], output_dir: Path) -> Path:
     details_dir = output_dir / "details"
@@ -507,8 +513,15 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
 
         decision_score = evaluate_decision(model_output.get("model_decision", {}).get("action"), case["expected_decision"])
 
-        baseline_response = baseline_by_id.get(case.get("id"), {}).get("response_message") if baseline_by_id else None
-        semantic_similarity = evaluate_text_similarity(baseline_response, model_output.get("response_message"))
+        reference_text = None
+
+        expected_facts = case.get("expected_facts") or []
+        if expected_facts:
+            reference_text = ". ".join(expected_facts)
+        elif baseline_by_id:
+            reference_text = baseline_by_id.get(case.get("id"), {}).get("response_message")
+
+        semantic_similarity = evaluate_text_similarity(reference_text, model_output.get("response_message"))
 
         code_score = 1.0
 
@@ -590,7 +603,7 @@ def generate_report(
     inference_res_path: str,
     baseline_path: str | None = "core/evaluation/inference_results/eval_0_baseline.json",
     output_dir: str | Path = "core/evaluation/reports",
-) -> dict:
+) -> dict | list:
     results, benchmarks = run_eval(inference_res_path, baseline_path)
     report = build_report(results, benchmarks)
     benchmarks_by_id = _collect_metadata(benchmarks)
