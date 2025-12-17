@@ -168,6 +168,30 @@ def counter_cosine_similarity(vec_a: Counter[str], vec_b: Counter[str]) -> float
     return dot_product / (norm_a * norm_b)
 
 
+def _fact_presence_score(fact: str, generated_text: str) -> float:
+    """Estimate how strongly a fact is present in the generated text.
+
+    The score combines embedding cosine similarity (primary) with a token-overlap
+    fallback so we can capture paraphrased mentions instead of requiring exact
+    substring matches.
+    """
+
+    if not fact or not generated_text:
+        return 0.0
+
+    try:
+        fact_embedding = _compute_embedding(fact)
+        text_embedding = _compute_embedding(generated_text)
+        similarity = cosine_similarity(
+            fact_embedding.unsqueeze(0), text_embedding.unsqueeze(0)
+        ).item()
+        return float(similarity)
+    except Exception:  # noqa: BLE001
+        fact_tokens = Counter(tokenize(fact))
+        text_tokens = Counter(tokenize(generated_text))
+        return counter_cosine_similarity(fact_tokens, text_tokens)
+
+
 def _sandbox_globals() -> dict[str, Any]:
     """Prepare globals for sandboxed execution with restricted builtins."""
 
@@ -338,8 +362,14 @@ def evaluate_chat_semantics(
     forbidden_facts: list[str] | None,
     generated_text: str | None,
     fallback_reference: str | None,
+    presence_threshold: float = 0.55,
 ) -> dict[str, Any]:
-    """Compute semantic score for chat responses with fact coverage and penalties."""
+    """Compute semantic score for chat responses with semantic fact coverage.
+
+    Fact presence is determined semantically (embedding cosine with token-overlap
+    fallback) rather than by exact substring search so paraphrases count as
+    coverage, and forbidden facts can be penalized even when phrased differently.
+    """
 
     expected_facts = expected_facts or []
     forbidden_facts = forbidden_facts or []
@@ -354,12 +384,21 @@ def evaluate_chat_semantics(
             "forbidden_hits": [],
         }
 
-    normalized_text = generated_text.lower()
-    expected_hits = [fact for fact in expected_facts if fact and fact.lower() in normalized_text]
-    forbidden_hits = [fact for fact in forbidden_facts if fact and fact.lower() in normalized_text]
+    expected_hit_scores: list[tuple[str, float]] = []
+    forbidden_hit_scores: list[tuple[str, float]] = []
 
-    coverage = len(expected_hits) / len(expected_facts) if expected_facts else 1.0
-    penalty = len(forbidden_hits) / len(forbidden_facts) if forbidden_facts else 0.0
+    for fact in expected_facts:
+        score = _fact_presence_score(fact, generated_text)
+        if score >= presence_threshold:
+            expected_hit_scores.append((fact, round(score, 3)))
+
+    for fact in forbidden_facts:
+        score = _fact_presence_score(fact, generated_text)
+        if score >= presence_threshold:
+            forbidden_hit_scores.append((fact, round(score, 3)))
+
+    coverage = len(expected_hit_scores) / len(expected_facts) if expected_facts else 1.0
+    penalty = len(forbidden_hit_scores) / len(forbidden_facts) if forbidden_facts else 0.0
 
     reference_text = ". ".join(expected_facts) if expected_facts else fallback_reference
     similarity = evaluate_text_similarity(reference_text, generated_text)
@@ -373,8 +412,8 @@ def evaluate_chat_semantics(
         "similarity": similarity,
         "expected_coverage": round(coverage, 3),
         "forbidden_penalty": round(penalty, 3) if forbidden_facts else 0.0,
-        "expected_hits": expected_hits,
-        "forbidden_hits": forbidden_hits,
+        "expected_hits": expected_hit_scores,
+        "forbidden_hits": forbidden_hit_scores,
     }
 
 
@@ -650,7 +689,7 @@ def _render_case_markdown(
     lines.append(f"# {title}")
     lines.append("")
     lines.append("## Методика расчёта метрик")
-    lines.append("### Semantic similarity (только для chat_response)")
+    lines.append("### Semantic similarity (только для chat_response/theoretical_response)")
     lines.append("Формула:")
     lines.append("```text")
     lines.append("semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty")
@@ -660,7 +699,8 @@ def _render_case_markdown(
     lines.append("попавших в ответ (штраф). similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый")
     lines.append("референс) и ответом модели.")
     lines.append("Источники: взято из распространённой практике оценки фактологичности QA (cosine по sentence-transformers, coverage/penalty как")
-    lines.append("в rag-as-a-service baseline и open-domain QA leaderboard). Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,")
+    lines.append("в rag-as-a-service baseline и open-domain QA leaderboard). Факт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55")
+    lines.append("(или высокая токеновая схожесть), что позволяет засчитывать перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,")
     lines.append("давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1]).")
     lines.append("")
     lines.append("### Code score (только для code_generation)")
@@ -736,9 +776,11 @@ def _render_case_markdown(
                 f"  - expected_coverage: {semantic_details.get('expected_coverage')} | forbidden_penalty: {semantic_details.get('forbidden_penalty')}"
             )
             if semantic_details.get("expected_hits"):
-                lines.append("  - покрытые факты: " + "; ".join(semantic_details.get("expected_hits", [])))
+                formatted = [f"{fact} (score {score})" for fact, score in semantic_details.get("expected_hits", [])]
+                lines.append("  - покрытые факты: " + "; ".join(formatted))
             if semantic_details.get("forbidden_hits"):
-                lines.append("  - упомянутые запрещённые факты: " + "; ".join(semantic_details.get("forbidden_hits", [])))
+                formatted = [f"{fact} (score {score})" for fact, score in semantic_details.get("forbidden_hits", [])]
+                lines.append("  - упомянутые запрещённые факты: " + "; ".join(formatted))
 
         if case.get("expected_decision") == "code_generation":
             details = case.get("code_details") or {}
@@ -1077,7 +1119,7 @@ def generate_report(
 
 
 if __name__ == "__main__":
-    # Пример запуска: формируем полный отчёт и сохраняем метрики и графики
+    # Пример запуска: формируем полный отчёт и сохраняем метрии и графики
     test_path = "core/evaluation/inference_results/eval_0_baseline.json"
     report = generate_report(test_path)
 
