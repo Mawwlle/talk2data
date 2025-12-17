@@ -19,6 +19,7 @@ if env.bool("LOCAL_RUN", False):
         gpu_memory_utilization=0.95,  # ↑ разрешаем использовать больше GPU-памяти
         enforce_eager=False,
         dtype="float16",
+        tensor_parallel_size=1 # for evaluation
     )
 else:
     LOCAL_CONFIG = {}

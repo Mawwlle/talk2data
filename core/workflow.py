@@ -163,7 +163,7 @@ def generate_code_node(state: AgentState) -> AgentState:
     logger.info(f"[code_prompt] Prompt for code generation: {code_prompt}")
     sampling_params = SamplingParams(
         max_tokens=512,
-        temperature=0.7,
+        temperature=0.0, # 0.7
         top_p=0.95,
         stop=["<|", "</s>"],
         repetition_penalty=1.05,
@@ -199,7 +199,11 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     chat_prompt = format_prompt(CHAT_RESPONSE_PROMPT, state)
     logger.info(f"[chat_prompt] Prompt for text generation: {chat_prompt}")
     sampling_params = SamplingParams(
-        max_tokens=200, temperature=0.7, top_p=0.9, stop=["</s>"]
+        max_tokens=200, 
+        temperature=0.0, # 0.7
+        top_p=0.9, 
+        stop=["</s>"]
+        seed=42,
     )
 
     outputs = llm.generate([chat_prompt], sampling_params)

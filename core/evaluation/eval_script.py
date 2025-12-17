@@ -351,6 +351,37 @@ def _make_json_safe(value):
     return value
 
 
+def _persist_case_details(cases: list[dict], benchmarks_by_id: dict[str, dict], output_dir: Path) -> Path:
+    details_dir = output_dir / "details"
+    details_dir.mkdir(parents=True, exist_ok=True)
+
+    index: list[dict[str, str]] = []
+    for case in cases:
+        meta = benchmarks_by_id.get(case.get("id"), {})
+        detail = {
+            "id": case.get("id"),
+            "user_input": meta.get("user_input"),
+            "response_message": case.get("response_message"),
+            "expected_facts": meta.get("expected_facts"),
+            "forbidden_facts": meta.get("forbidden_facts"),
+            "expected_code": meta.get("expected_code"),
+            "model_generated_code": case.get("model_generated_code"),
+            "code_details": case.get("code_details"),
+        }
+
+        detail_path = details_dir / f"{case.get('id')}.json"
+        with open(detail_path, "w", encoding="utf-8") as f:
+            json.dump(_make_json_safe(detail), f, ensure_ascii=False, indent=2)
+
+        index.append({"id": case.get("id"), "path": str(detail_path)})
+
+    index_path = details_dir / "index.json"
+    with open(index_path, "w", encoding="utf-8") as f:
+        json.dump(index, f, ensure_ascii=False, indent=2)
+
+    return details_dir
+
+
 # ---------- main eval ----------
 
 def evaluate_code(model_code: str, benchmark: str) -> dict:
@@ -485,6 +516,7 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
             "code_score": code_score,
             "code_details": code_score_details,
             "model_generated_code": model_output.get("generated_code"),
+            "response_message": model_output.get("response_message"),
         })
     return results, benchmarks
 
@@ -553,6 +585,7 @@ def generate_report(
 ) -> dict:
     results, benchmarks = run_eval(inference_res_path, baseline_path)
     report = build_report(results, benchmarks)
+    benchmarks_by_id = _collect_metadata(benchmarks)
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -560,7 +593,15 @@ def generate_report(
     charts = _generate_visualizations(report, output_dir)
     report["charts"] = charts
 
+    details_dir = _persist_case_details(report["cases"], benchmarks_by_id, output_dir)
+    report["details_dir"] = str(details_dir)
+
     cases_df = pd.DataFrame(report["cases"])
+    cases_df = cases_df.drop(columns=[
+        "model_generated_code",
+        "response_message",
+        "code_details",
+    ], errors="ignore")
     cases_df.to_csv(output_dir / "cases.csv", index=False)
 
     summary_df = pd.DataFrame(
