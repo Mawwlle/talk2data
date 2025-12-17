@@ -23,7 +23,7 @@
     "id": "code_003_train_model",
     "user_input": "Напиши код, который обучает простой классификатор на этих данных.",
     "expected_decision": "code_generation",
-    "expected_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=df.columns, color=\"target\")\nfig.show()",
+    "expected_code": "from sklearn.linear_model import LogisticRegression\n\nX = df.drop(columns=[\"target\"])\ny = df[\"target\"]\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X, y)",
     "metadata": {
       "tags": ["code", "model"],
       "difficulty": "medium"

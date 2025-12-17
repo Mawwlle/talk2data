@@ -198,11 +198,11 @@ def _sandbox_globals() -> dict[str, Any]:
 
 
 @contextlib.contextmanager
-def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS) -> None: # type: ignore
-    """Context manager to enforce a hard execution timeout."""
+def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS, message: str = "sandbox_timeout") -> None:
+    """Raise ``TimeoutError`` if the block runs longer than ``seconds`` seconds."""
 
-    def _handler(signum: int, frame: Any) -> None:
-        raise TimeoutError("Execution timed out")
+    def _handler(signum: int, frame: Any) -> None:  # noqa: ANN001
+        raise TimeoutError(message)
 
     previous_handler = signal.signal(signal.SIGALRM, _handler)
     signal.alarm(seconds)
@@ -560,25 +560,31 @@ def _render_case_markdown(
     lines.append("")
     lines.append("## Методика расчёта метрик")
     lines.append("### Semantic similarity (только для chat_response)")
-    lines.append(
-        "- Ищем ожидаемые факты в ответе и считаем долю покрытых фактов (expected_coverage)."
-    )
-    lines.append(
-        "- Считаем попадания запрещённых фактов и превращаем их в штраф (forbidden_penalty)."
-    )
-    lines.append(
-        "- Дополнительно считаем embedding-cosine между эталонным ответом (конкатенация expected_facts) и ответом модели."
-    )
-    lines.append(
-        "- Итоговая semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty, ограниченная от 0 до 1."
-    )
+    lines.append("Формула:")
+    lines.append("```text")
+    lines.append("semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty")
+    lines.append("semantic_similarity = clip(semantic_similarity, 0, 1)")
+    lines.append("```")
+    lines.append("Где доли: expected_coverage — доля ожидаемых фактов, упомянутых в ответе; forbidden_penalty — доля запрещённых фактов,")
+    lines.append("попавших в ответ (штраф). similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый")
+    lines.append("референс) и ответом модели.")
+    lines.append("Источники: взято из распространённой практики оценки фактологичности QA (cosine по sentence-transformers, coverage/penalty как")
+    lines.append("в rag-as-a-service baseline и open-domain QA leaderboard). Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,")
+    lines.append("давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1]).")
     lines.append("")
     lines.append("### Code score (только для code_generation)")
-    lines.append("- heuristic_score: синтаксис (+0.3), совпадение импортов (до +0.2), ключевых вызовов (до +0.4).")
-    lines.append(
-        "- exec_score: проверяем, исполняется ли код без ошибок; +0.5 за совпадение stdout и ещё +0.5 за совпадение результата."
-    )
-    lines.append("- code_score = 0.5 * heuristic_score + 0.5 * exec_score (от 0 до 1).")
+    lines.append("Формула:")
+    lines.append("```text")
+    lines.append("code_score = 0.5 * heuristic_score + 0.5 * exec_score")
+    lines.append("code_score = clip(code_score, 0, 1)")
+    lines.append("```")
+    lines.append("Разложение долей:")
+    lines.append("- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).")
+    lines.append("- exec_score: +0.5 если stdout совпал при успешном выполнении; +0.5 если совпал вычисленный результат.")
+    lines.append("Источники: опираемся на принципы автотестов LeetCode/Codeforces (выполнение и сравнение вывода/результата) и на статический")
+    lines.append("анализ из pymetrics/ruff (синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада.")
+    lines.append("Пояснения: stdout_match — флаг, что нормализованный вывод программы совпал с бенчмарком при отсутствии ошибок; result_match — флаг, что")
+    lines.append("финальное значение выражения совпало. Эти флаги формируют exec_score.")
     lines.append("")
     lines.append("## Кейсы")
 
@@ -600,6 +606,14 @@ def _render_case_markdown(
             lines.append("```python")
             lines.append(case.get("expected_code"))
             lines.append("```")
+            details = case.get("code_details") or {}
+            if details.get("stdout", {}).get("expected"):
+                lines.append("- expected_stdout:")
+                lines.append("```")
+                lines.append(str(details.get("stdout", {}).get("expected")))
+                lines.append("```")
+            if details.get("results", {}).get("expected") is not None:
+                lines.append("- expected_result: " + str(details.get("results", {}).get("expected")))
 
         lines.append("**Model output:**")
         if case.get("response_message"):
@@ -608,6 +622,14 @@ def _render_case_markdown(
             lines.append("```python")
             lines.append(case.get("model_generated_code"))
             lines.append("```")
+            details = case.get("code_details") or {}
+            if details.get("stdout", {}).get("model"):
+                lines.append("- model_stdout:")
+                lines.append("```")
+                lines.append(str(details.get("stdout", {}).get("model")))
+                lines.append("```")
+            if details.get("results", {}).get("model") is not None:
+                lines.append("- model_result: " + str(details.get("results", {}).get("model")))
 
         lines.append("**Метрики:**")
         lines.append("- decision_score: " + str(case.get("decision_score")))
