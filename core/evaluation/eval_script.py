@@ -27,18 +27,6 @@ def load_benchmarks(file_path):
 def evaluate_decision(model_decision, expected):
     return model_decision == expected
 
-def evaluate_chat(model_output, expected_facts, forbidden_facts=None):
-    score = 1.0
-    for fact in expected_facts:
-        if fact.lower() not in model_output.lower():
-            score = 0.0
-    if forbidden_facts:
-        for fact in forbidden_facts:
-            if fact.lower() in model_output.lower():
-                score = 0.0
-    return score
-
-
 # ---------- helpers ----------
 
 def extract_imports(code: str) -> set[str]:
@@ -280,15 +268,15 @@ def _summarize_by_group(results: list[dict], benchmarks_by_id: dict[str, dict], 
             group_value = [case_meta.get("metadata", {}).get(key, "unspecified")]
 
         for value in group_value:
-            bucket = summary.setdefault(value, {"count": 0, "decision": [], "chat": [], "code": []})
+            bucket = summary.setdefault(value, {"count": 0, "decision": [], "semantic_similarity": [], "code": []})
             bucket["count"] += 1
             bucket["decision"].append(row.get("decision_score"))
-            bucket["chat"].append(row.get("chat_score"))
+            bucket["semantic_similarity"].append(row.get("semantic_similarity"))
             bucket["code"].append(row.get("code_score"))
 
     for bucket in summary.values():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
-        bucket["chat_avg"] = _mean(bucket.pop("chat"))
+        bucket["semantic_similarity_avg"] = _mean(bucket.pop("semantic_similarity"))
         bucket["code_avg"] = _mean(bucket.pop("code"))
 
     return summary
@@ -323,7 +311,7 @@ def _generate_visualizations(report: dict, output_dir: Path) -> dict[str, str]:
     charts["overall_scores"] = _save_plot(
         {
             "decision": summary.get("decision_accuracy", 0.0),
-            "chat": summary.get("chat_score_avg", 0.0),
+            "semantic_similarity": summary.get("semantic_similarity_avg", 0.0),
             "code": summary.get("code_score_avg", 0.0),
         },
         "Средние метрики по всем кейсам",
@@ -334,10 +322,10 @@ def _generate_visualizations(report: dict, output_dir: Path) -> dict[str, str]:
     difficulty = report.get("by_difficulty", {})
     if difficulty:
         charts["difficulty"] = _save_plot(
-            {k: v.get("decision_avg", 0.0) for k, v in difficulty.items()},
-            "Decision score по уровням сложности",
-            "Decision score",
-            chart_dir / "decision_by_difficulty.png",
+            {k: v.get("semantic_similarity_avg", 0.0) for k, v in difficulty.items()},
+            "Semantic similarity по уровням сложности",
+            "Semantic similarity",
+            chart_dir / "semantic_similarity_by_difficulty.png",
         )
 
     return charts
@@ -481,13 +469,9 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
         decision_score = evaluate_decision(model_output.get("model_decision", {}).get("action"), case["expected_decision"])
 
         baseline_response = baseline_by_id.get(case.get("id"), {}).get("response_message") if baseline_by_id else None
-        baseline_similarity = evaluate_text_similarity(baseline_response, model_output.get("response_message"))
+        semantic_similarity = evaluate_text_similarity(baseline_response, model_output.get("response_message"))
 
-        chat_score = baseline_similarity if baseline_similarity is not None else 1.0
         code_score = 1.0
-
-        if baseline_similarity is None and case.get("expected_facts"):
-            chat_score = evaluate_chat(model_output.get("response_message", ""), case["expected_facts"], case.get("forbidden_facts"))
 
         code_score_details = None
         if case.get("expected_code"):
@@ -497,10 +481,10 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
         results.append({
             "id": case["id"],
             "decision_score": decision_score,
-            "chat_score": chat_score,
-            "baseline_similarity": baseline_similarity,
+            "semantic_similarity": semantic_similarity,
             "code_score": code_score,
             "code_details": code_score_details,
+            "model_generated_code": model_output.get("generated_code"),
         })
     return results, benchmarks
 
@@ -525,9 +509,8 @@ def build_report(results: list[dict], benchmarks: list[dict]) -> dict:
         "cases_total": len(enriched_cases),
         "missing": len([case for case in enriched_cases if case.get("error")]),
         "decision_accuracy": _mean([case.get("decision_score") for case in enriched_cases if not case.get("error")]),
-        "chat_score_avg": _mean([case.get("chat_score") for case in enriched_cases if not case.get("error")]),
+        "semantic_similarity_avg": _mean([case.get("semantic_similarity") for case in enriched_cases if not case.get("error")]),
         "code_score_avg": _mean([case.get("code_score") for case in enriched_cases if not case.get("error")]),
-        "baseline_similarity_avg": _mean([case.get("baseline_similarity") for case in enriched_cases if not case.get("error")]),
     }
 
     by_difficulty = _summarize_by_group(enriched_cases, benchmarks_by_id, "difficulty")
@@ -539,12 +522,16 @@ def build_report(results: list[dict], benchmarks: list[dict]) -> dict:
             critical_cases.append({"id": case["id"], "reason": case["error"]})
             continue
 
-        if (case.get("decision_score") == 0) or (case.get("chat_score") is not None and case.get("chat_score") < 0.7) or (case.get("code_score") is not None and case.get("code_score") < 0.7):
+        if (
+            case.get("decision_score") == 0
+            or (case.get("semantic_similarity") is not None and case.get("semantic_similarity") < 0.7)
+            or (case.get("code_score") is not None and case.get("code_score") < 0.7)
+        ):
             critical_cases.append(
                 {
                     "id": case["id"],
                     "decision_score": case.get("decision_score"),
-                    "chat_score": case.get("chat_score"),
+                    "semantic_similarity": case.get("semantic_similarity"),
                     "code_score": case.get("code_score"),
                     "difficulty": case.get("difficulty"),
                 }
@@ -583,16 +570,12 @@ def generate_report(
                 "value": report["summary"].get("decision_accuracy", 0.0),
             },
             {
-                "metric": "chat_score_avg",
-                "value": report["summary"].get("chat_score_avg", 0.0),
+                "metric": "semantic_similarity_avg",
+                "value": report["summary"].get("semantic_similarity_avg", 0.0),
             },
             {
                 "metric": "code_score_avg",
                 "value": report["summary"].get("code_score_avg", 0.0),
-            },
-            {
-                "metric": "baseline_similarity_avg",
-                "value": report["summary"].get("baseline_similarity_avg", 0.0),
             },
         ]
     )
