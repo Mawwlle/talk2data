@@ -197,6 +197,17 @@ def _sandbox_globals() -> dict[str, Any]:
     }
 
 
+def _infer_language_from_filename(path: Path) -> str:
+    """Best-effort language inference from a benchmark filename."""
+
+    name = path.stem.lower()
+    if name.endswith("_en"):
+        return "en"
+    if name.endswith("_ru"):
+        return "ru"
+    return "unknown"
+
+
 @contextlib.contextmanager
 def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS, message: str = "sandbox_timeout") -> None:
     """Raise ``TimeoutError`` if the block runs longer than ``seconds`` seconds."""
@@ -389,22 +400,27 @@ def _mean(values: list[float | None]) -> float:
     return round(float(np.mean(numeric)), 3)
 
 
-def _collect_metadata(benchmarks: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Create a mapping from benchmark id to metadata."""
+def _collect_metadata(benchmarks: list[dict[str, Any]]) -> dict[tuple[str | None, str], dict[str, Any]]:
+    """Create a mapping from (benchmark id, language) to metadata."""
 
-    return {case.get("id"): case for case in benchmarks}
+    mapping: dict[tuple[str | None, str], dict[str, Any]] = {}
+    for case in benchmarks:
+        language = case.get("metadata", {}).get("language", "unknown")
+        mapping[(case.get("id"), language)] = case
+    return mapping
 
 
 def _summarize_by_group(
     results: list[dict[str, Any]],
-    benchmarks_by_id: dict[str, dict[str, Any]],
+    benchmarks_by_id: dict[tuple[str | None, str], dict[str, Any]],
     key: str,
 ) -> dict[str, dict[str, Any]]:
     """Aggregate metrics by difficulty or tags."""
 
     summary: dict[str, dict[str, Any]] = {}
     for row in results:
-        case_meta = benchmarks_by_id.get(row["id"], {})
+        meta_key = (row.get("id"), row.get("language", "unknown"))
+        case_meta = benchmarks_by_id.get(meta_key, {})
         if key == "tags":
             group_values = case_meta.get("metadata", {}).get("tags", []) or ["untagged"]
         else:
@@ -419,6 +435,29 @@ def _summarize_by_group(
             bucket["decision"].append(row.get("decision_score"))
             bucket["semantic_similarity"].append(row.get("semantic_similarity"))
             bucket["code"].append(row.get("code_score"))
+
+    for bucket in summary.values():
+        bucket["decision_avg"] = _mean(bucket.pop("decision"))
+        bucket["semantic_similarity_avg"] = _mean(bucket.pop("semantic_similarity"))
+        bucket["code_avg"] = _mean(bucket.pop("code"))
+
+    return summary
+
+
+def _summarize_by_language(results: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Aggregate metrics by benchmark language."""
+
+    summary: dict[str, dict[str, Any]] = {}
+    for row in results:
+        lang = row.get("language", "unknown")
+        bucket = summary.setdefault(
+            lang,
+            {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
+        )
+        bucket["count"] += 1
+        bucket["decision"].append(row.get("decision_score"))
+        bucket["semantic_similarity"].append(row.get("semantic_similarity"))
+        bucket["code"].append(row.get("code_score"))
 
     for bucket in summary.values():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -473,6 +512,38 @@ def _aggregate_code_metrics(cases: list[dict[str, Any]]) -> dict[str, float]:
     }
 
 
+def _save_language_comparison(
+    language_summary: dict[str, dict[str, float]],
+    output_path: Path,
+) -> str:
+    """Save grouped bar plot comparing metrics across languages."""
+
+    if not language_summary:
+        return ""
+
+    languages = sorted(language_summary.keys())
+    metrics = ["decision_avg", "semantic_similarity_avg", "code_avg"]
+    metric_labels = ["Decision", "Semantic", "Code"]
+    x = np.arange(len(languages))
+    bar_width = 0.22
+
+    plt.figure(figsize=(10, 5))
+    for idx, (metric, label) in enumerate(zip(metrics, metric_labels)):
+        scores = [language_summary[lang].get(metric, 0.0) for lang in languages]
+        plt.bar(x + idx * bar_width, scores, width=bar_width, label=label)
+
+    plt.xticks(x + bar_width, languages)
+    plt.ylim(0, 1)
+    plt.ylabel("Score")
+    plt.title("Сравнение метрик по языкам ввода")
+    plt.legend()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+    return str(output_path)
+
+
 def _generate_visualizations(report: dict[str, Any], output_dir: Path) -> dict[str, str]:
     """Generate charts for key metrics and return their paths."""
 
@@ -522,6 +593,13 @@ def _generate_visualizations(report: dict[str, Any], output_dir: Path) -> dict[s
                 chart_dir / "code_metrics.png",
             )
 
+    language_summary = report.get("by_language", {})
+    if language_summary:
+        charts["language_comparison"] = _save_language_comparison(
+            language_summary,
+            chart_dir / "language_comparison.png",
+        )
+
     return charts
 
 
@@ -547,16 +625,29 @@ def _make_json_safe(value: Any) -> Any:
     return value
 
 
+def _describe_visual_output(code_text: str) -> str:
+    """Provide a readable hint for visual outputs without raw JSON dumps."""
+
+    lowered = code_text.lower()
+    if "plotly" in lowered or "px." in lowered:
+        return "Интерактивный график (Plotly)"
+    if "plt." in lowered or "matplotlib" in lowered:
+        return "Статический график (matplotlib)"
+    return "Графический вывод"
+
+
 def _render_case_markdown(
     cases: list[dict[str, Any]],
     output_dir: Path,
+    filename: str = "cases_report.md",
+    title: str = "Детальный отчёт по кейсам",
 ) -> Path:
     """Render a human-friendly markdown report for all cases."""
 
-    report_path = output_dir / "cases_report.md"
+    report_path = output_dir / filename
     lines: list[str] = []
 
-    lines.append("# Детальный отчёт по кейсам")
+    lines.append(f"# {title}")
     lines.append("")
     lines.append("## Методика расчёта метрик")
     lines.append("### Semantic similarity (только для chat_response)")
@@ -568,7 +659,7 @@ def _render_case_markdown(
     lines.append("Где доли: expected_coverage — доля ожидаемых фактов, упомянутых в ответе; forbidden_penalty — доля запрещённых фактов,")
     lines.append("попавших в ответ (штраф). similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый")
     lines.append("референс) и ответом модели.")
-    lines.append("Источники: взято из распространённой практики оценки фактологичности QA (cosine по sentence-transformers, coverage/penalty как")
+    lines.append("Источники: взято из распространённой практике оценки фактологичности QA (cosine по sentence-transformers, coverage/penalty как")
     lines.append("в rag-as-a-service baseline и open-domain QA leaderboard). Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,")
     lines.append("давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1]).")
     lines.append("")
@@ -589,7 +680,9 @@ def _render_case_markdown(
     lines.append("## Кейсы")
 
     for case in cases:
-        lines.append(f"### {case.get('id')} ({case.get('expected_decision')}, difficulty: {case.get('difficulty')})")
+        lines.append(
+            f"### {case.get('id')} ({case.get('expected_decision')}, language: {case.get('language')}, difficulty: {case.get('difficulty')})"
+        )
         lines.append("")
         lines.append(f"**User input:** {case.get('user_input')}")
 
@@ -614,6 +707,8 @@ def _render_case_markdown(
                 lines.append("```")
             if details.get("results", {}).get("expected") is not None:
                 lines.append("- expected_result: " + str(details.get("results", {}).get("expected")))
+            if not details.get("stdout", {}).get("expected") and details.get("results", {}).get("expected") is None:
+                lines.append("- expected_output: " + _describe_visual_output(case.get("expected_code", "")))
 
         lines.append("**Model output:**")
         if case.get("response_message"):
@@ -628,7 +723,7 @@ def _render_case_markdown(
                 lines.append("```")
                 lines.append(str(details.get("stdout", {}).get("model")))
                 lines.append("```")
-            if details.get("results", {}).get("model") is not None:
+            if details.get("results") is not None:
                 lines.append("- model_result: " + str(details.get("results", {}).get("model")))
 
         lines.append("**Метрики:**")
@@ -752,12 +847,27 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
 
 
 def _load_all_benchmarks() -> list[dict[str, Any]]:
-    """Load all benchmark cases from the configured directory."""
+    """Load all benchmark cases from the configured directory with language tags."""
 
     paths = sorted(BENCHMARKS_DIR.glob("*.json"))
     benchmarks: list[dict[str, Any]] = []
+    seen: set[tuple[str | None, str]] = set()
+
     for path in paths:
-        benchmarks += load_json(path)
+        language = _infer_language_from_filename(path)
+        for case in load_json(path):
+            case_id = case.get("id")
+            key = (case_id, language)
+            if key in seen:
+                print(
+                    f"[benchmarks] duplicate id '{case_id}' for language {language} in {path.name} ignored",
+                )
+                continue
+
+            seen.add(key)
+            meta = {**case.get("metadata", {}), "language": language}
+            benchmarks.append({**case, "metadata": meta})
+
     return benchmarks
 
 
@@ -778,12 +888,17 @@ def run_eval(inference_res_path: str, baseline_path: str | None = DEFAULT_BASELI
     benchmarks = _load_all_benchmarks()
 
     results: list[dict[str, Any]] = []
-    for case in benchmarks:
+    total_cases = len(benchmarks)
+
+    for idx, case in enumerate(benchmarks, start=1):
+        print(f"[eval] ({idx}/{total_cases}) processing {case.get('id')}")
+        language = case.get("metadata", {}).get("language", "unknown")
         model_output = output_by_id.get(case.get("id"))
         if not model_output:
             results.append({
                 "id": case["id"],
                 "expected_decision": case.get("expected_decision"),
+                "language": language,
                 "error": "missing_model_output",
             })
             continue
@@ -816,6 +931,7 @@ def run_eval(inference_res_path: str, baseline_path: str | None = DEFAULT_BASELI
         results.append({
             "id": case["id"],
             "expected_decision": case.get("expected_decision"),
+            "language": language,
             "decision_score": decision_score,
             "semantic_similarity": semantic_similarity,
             "semantic_details": semantic_details,
@@ -834,7 +950,8 @@ def build_report(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
     enriched_cases: list[dict[str, Any]] = []
 
     for row in results:
-        meta = benchmarks_by_id.get(row["id"], {})
+        meta_key = (row.get("id"), row.get("language", "unknown"))
+        meta = benchmarks_by_id.get(meta_key, {})
         meta_info = meta.get("metadata", {})
         enriched_cases.append(
             {
@@ -842,6 +959,7 @@ def build_report(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
                 "user_input": meta.get("user_input"),
                 "tags": meta_info.get("tags", []),
                 "difficulty": meta_info.get("difficulty", "unspecified"),
+                "language": meta_info.get("language", row.get("language", "unknown")),
                 "expected_decision": meta.get("expected_decision"),
                 "expected_facts": meta.get("expected_facts"),
                 "forbidden_facts": meta.get("forbidden_facts"),
@@ -859,6 +977,7 @@ def build_report(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
 
     by_difficulty = _summarize_by_group(enriched_cases, benchmarks_by_id, "difficulty")
     by_tag = _summarize_by_group(enriched_cases, benchmarks_by_id, "tags")
+    by_language = _summarize_by_language(enriched_cases)
 
     critical_cases = []
     for case in enriched_cases:
@@ -885,6 +1004,7 @@ def build_report(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
         "summary": summary,
         "by_difficulty": by_difficulty,
         "by_tag": by_tag,
+        "by_language": by_language,
         "cases": enriched_cases,
         "focus_cases": critical_cases,
     }
@@ -906,8 +1026,21 @@ def generate_report(
     charts = _generate_visualizations(report, output_dir)
     report["charts"] = charts
 
-    case_report_path = _render_case_markdown(report["cases"], output_dir)
-    report["case_report_path"] = str(case_report_path)
+    report_paths: dict[str, str] = {}
+    all_cases_path = _render_case_markdown(report["cases"], output_dir)
+    report_paths["all"] = str(all_cases_path)
+
+    languages = sorted({case.get("language", "unknown") for case in report["cases"]})
+    for lang in languages:
+        lang_cases = [case for case in report["cases"] if case.get("language") == lang]
+        if not lang_cases:
+            continue
+        filename = f"cases_report_{lang}.md"
+        title = f"Детальный отчёт по кейсам ({lang})"
+        lang_path = _render_case_markdown(lang_cases, output_dir, filename=filename, title=title)
+        report_paths[lang] = str(lang_path)
+
+    report["case_report_path"] = report_paths
 
     cases_df = pd.DataFrame(report["cases"])
     cases_df["heuristic_score"] = cases_df["code_details"].apply(lambda x: x.get("heuristic_score") if isinstance(x, dict) else None)

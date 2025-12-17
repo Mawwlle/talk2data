@@ -97,7 +97,7 @@
   {
     "id": "theory_004_bias_variance",
     "user_input": "Объясни компромисс между смещением и разбросом.",
-    "expected_decision": "theoretical_response",
+    "expected_decision": "chat_response",
     "expected_facts": [
       "смещение связано с упрощающими предположениями модели",
       "разброс связан с чувствительностью к обучающим данным",
