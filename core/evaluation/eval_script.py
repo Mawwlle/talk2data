@@ -2,7 +2,6 @@ import json
 
 import ast
 from pathlib import Path
-import re
 import string
 from collections import Counter
 from functools import lru_cache
