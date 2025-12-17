@@ -1,51 +1,107 @@
-import json
+from __future__ import annotations
 
 import ast
-from pathlib import Path
+import builtins
+import contextlib
+import io
+import json
+import math
+import signal
 import string
 from collections import Counter
 from functools import lru_cache
-import io
-import contextlib
-import math
-import builtins
+from pathlib import Path
+from typing import Any
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 import torch
+from sklearn.datasets import load_iris
 from torch.nn.functional import cosine_similarity
 from transformers import AutoModel, AutoTokenizer
-from sklearn.datasets import load_iris
 
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
 
-def load_benchmarks(file_path):
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+DEFAULT_EMBEDDING_MODEL = (
+    "~/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/"
+    "snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
+)
+DEFAULT_BASELINE_PATH = "core/evaluation/inference_results/eval_0_baseline.json"
+RANDOM_SEED = 0
+SANDBOX_FILENAME = "<sandbox>"
+SANDBOX_TIMEOUT_SECONDS = 5
+SAFE_BUILTINS = [
+    "abs",
+    "all",
+    "any",
+    "bool",
+    "dict",
+    "enumerate",
+    "float",
+    "int",
+    "len",
+    "list",
+    "map",
+    "max",
+    "min",
+    "pow",
+    "range",
+    "repr",
+    "round",
+    "set",
+    "sorted",
+    "str",
+    "sum",
+    "zip",
+    "__import__",
+]
+
+SandboxResult = tuple[str, Any | None, str | None]
+
+
+# ---------------------------------------------------------------------------
+# Basic helpers
+# ---------------------------------------------------------------------------
+def load_benchmarks(file_path: str | Path) -> list[dict[str, Any]]:
+    """Load benchmarks from a JSONL file."""
+
     with open(file_path, "r", encoding="utf-8") as f:
         return [json.loads(line) for line in f]
 
-def evaluate_decision(model_decision, expected):
+
+def evaluate_decision(model_decision: Any, expected: Any) -> bool:
+    """Return whether the model decision matches the expected decision."""
+
     return model_decision == expected
 
-# ---------- helpers ----------
 
+# ---------- parsing helpers ----------
 def extract_imports(code: str) -> set[str]:
+    """Extract imported modules from Python code."""
+
     tree = ast.parse(code)
-    imports = set()
+    imports: set[str] = set()
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for name in node.names:
                 imports.add(name.name)
         elif isinstance(node, ast.ImportFrom):
-            imports.add(node.module)
+            if node.module:
+                imports.add(node.module)
 
     return imports
 
 
 def extract_calls(code: str) -> set[str]:
+    """Extract called function names from Python code."""
+
     tree = ast.parse(code)
-    calls = set()
+    calls: set[str] = set()
 
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
@@ -59,14 +115,20 @@ def extract_calls(code: str) -> set[str]:
 
     return calls
 
+
+# ---------- execution helpers ----------
 def _normalize_stdout(text: str) -> str:
+    """Normalize stdout by trimming trailing spaces for stable comparison."""
+
     if not text:
         return ""
     lines = [line.rstrip() for line in text.strip().splitlines()]
     return "\n".join(lines)
 
 
-def _compare_results(expected, actual) -> bool:
+def _compare_results(expected: Any, actual: Any) -> bool:
+    """Compare execution results with tolerance for numerics and arrays."""
+
     if isinstance(expected, (float, int)) and isinstance(actual, (float, int)):
         return math.isclose(float(expected), float(actual), rel_tol=1e-6, abs_tol=1e-6)
 
@@ -83,11 +145,15 @@ def _compare_results(expected, actual) -> bool:
 
 
 def tokenize(text: str) -> list[str]:
+    """Tokenize text by removing punctuation and lowercasing."""
+
     translator = str.maketrans("", "", string.punctuation)
     return text.lower().translate(translator).split()
 
 
 def counter_cosine_similarity(vec_a: Counter[str], vec_b: Counter[str]) -> float:
+    """Compute cosine similarity between two Counters."""
+
     if not vec_a or not vec_b:
         return 0.0
 
@@ -102,39 +168,12 @@ def counter_cosine_similarity(vec_a: Counter[str], vec_b: Counter[str]) -> float
     return dot_product / (norm_a * norm_b)
 
 
-def _sandbox_globals() -> dict:
-    dummy_builtins = {
-        "__builtins__": {
-            name: getattr(builtins, name)
-            for name in [
-                "abs",
-                "all",
-                "any",
-                "bool",
-                "dict",
-                "enumerate",
-                "float",
-                "int",
-                "len",
-                "list",
-                "map",
-                "max",
-                "min",
-                "pow",
-                "range",
-                "repr",
-                "round",
-                "set",
-                "sorted",
-                "str",
-                "sum",
-                "zip",
-                "__import__",
-            ]
-        }
-    }
+def _sandbox_globals() -> dict[str, Any]:
+    """Prepare globals for sandboxed execution with restricted builtins."""
 
-    np.random.seed(0)
+    dummy_builtins = {"__builtins__": {name: getattr(builtins, name) for name in SAFE_BUILTINS}}
+
+    np.random.seed(RANDOM_SEED)
 
     iris = load_iris(as_frame=True)
     df = iris.frame.copy()
@@ -158,9 +197,32 @@ def _sandbox_globals() -> dict:
     }
 
 
-def _run_code_in_sandbox(code: str) -> tuple[str, object, str | None]:
+@contextlib.contextmanager
+def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS, message: str = "sandbox_timeout") -> None:
+    """Raise ``TimeoutError`` if the block runs longer than ``seconds`` seconds."""
+
+    def _handler(signum: int, frame: Any) -> None:  # noqa: ANN001
+        raise TimeoutError(message)
+
+    previous_handler = signal.signal(signal.SIGALRM, _handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, previous_handler)
+
+
+def _run_code_in_sandbox(code: str) -> SandboxResult:
+    """Execute code safely with restricted globals and a hard timeout.
+
+    The function parses user code, executes statements, and if the last node is
+    an expression, evaluates it to produce a return value. Any exceptions are
+    captured as error strings instead of propagating.
+    """
+
     sandbox_globals = _sandbox_globals()
-    sandbox_locals: dict[str, object] = {}
+    sandbox_locals: dict[str, Any] = {}
 
     try:
         parsed = ast.parse(code)
@@ -169,20 +231,23 @@ def _run_code_in_sandbox(code: str) -> tuple[str, object, str | None]:
 
     stdout_buffer = io.StringIO()
     exec_error: str | None = None
-    result_value: object = None
+    result_value: Any | None = None
 
     try:
-        with contextlib.redirect_stdout(stdout_buffer):
-            if parsed.body and isinstance(parsed.body[-1], ast.Expr):
-                body_without_last = ast.Module(body=parsed.body[:-1], type_ignores=[])
-                last_expr = ast.Expression(parsed.body[-1].value)
+        with _enforce_timeout():
+            with contextlib.redirect_stdout(stdout_buffer):
+                if parsed.body and isinstance(parsed.body[-1], ast.Expr):
+                    body_without_last = ast.Module(body=parsed.body[:-1], type_ignores=[])
+                    last_expr = ast.Expression(parsed.body[-1].value)
 
-                if body_without_last.body:
-                    exec(compile(body_without_last, "<sandbox>", "exec"), sandbox_globals, sandbox_locals)
+                    if body_without_last.body:
+                        exec(compile(body_without_last, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
 
-                result_value = eval(compile(last_expr, "<sandbox>", "eval"), sandbox_globals, sandbox_locals)
-            else:
-                exec(compile(parsed, "<sandbox>", "exec"), sandbox_globals, sandbox_locals)
+                    result_value = eval(compile(last_expr, SANDBOX_FILENAME, "eval"), sandbox_globals, sandbox_locals)
+                else:
+                    exec(compile(parsed, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
+    except TimeoutError as exc:
+        exec_error = f"execution_timeout: {exc}"
     except Exception as exc:  # noqa: BLE001
         exec_error = f"execution_error: {exc}"
 
@@ -190,11 +255,13 @@ def _run_code_in_sandbox(code: str) -> tuple[str, object, str | None]:
     return stdout_text, result_value, exec_error
 
 
-DEFAULT_EMBEDDING_MODEL = "~/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
-
-
+# ---------------------------------------------------------------------------
+# Embedding helpers
+# ---------------------------------------------------------------------------
 @lru_cache(maxsize=1)
-def _load_embedding_components(model_path: str = DEFAULT_EMBEDDING_MODEL):
+def _load_embedding_components(model_path: str = DEFAULT_EMBEDDING_MODEL) -> tuple[Any, Any]:
+    """Load tokenizer and model for embedding computation."""
+
     model_path = str(Path(model_path).expanduser())
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
     model = AutoModel.from_pretrained(model_path, local_files_only=True)
@@ -203,6 +270,8 @@ def _load_embedding_components(model_path: str = DEFAULT_EMBEDDING_MODEL):
 
 
 def _compute_embedding(text: str) -> torch.Tensor:
+    """Compute a sentence embedding for the given text."""
+
     tokenizer, model = _load_embedding_components()
     encoded = tokenizer(
         text,
@@ -253,7 +322,12 @@ def evaluate_text_similarity(reference_text: str | None, generated_text: str | N
         return round(counter_cosine_similarity(baseline_tokens, generated_tokens), 3)
 
 
-def normalize_results(results: list[dict] | dict | None) -> list[dict]:
+# ---------------------------------------------------------------------------
+# Result normalization utilities
+# ---------------------------------------------------------------------------
+def normalize_results(results: list[dict[str, Any]] | dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Normalize inference results to a list of dictionaries."""
+
     if isinstance(results, list):
         return results
     if isinstance(results, dict) and "results" in results:
@@ -261,29 +335,41 @@ def normalize_results(results: list[dict] | dict | None) -> list[dict]:
     return []
 
 
-def _mean(values: list[float]) -> float:
-    numeric = [v for v in values if isinstance(v, (int, float))]
+def _mean(values: list[float | None]) -> float:
+    """Compute a rounded mean ignoring non-numeric entries."""
+
+    numeric = [float(v) for v in values if isinstance(v, (int, float))]
     if not numeric:
         return 0.0
     return round(float(np.mean(numeric)), 3)
 
 
-def _collect_metadata(benchmarks: list[dict]) -> dict[str, dict]:
+def _collect_metadata(benchmarks: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Create a mapping from benchmark id to metadata."""
+
     return {case.get("id"): case for case in benchmarks}
 
 
-def _summarize_by_group(results: list[dict], benchmarks_by_id: dict[str, dict], key: str) -> dict[str, dict]:
-    summary: dict[str, dict] = {}
+def _summarize_by_group(
+    results: list[dict[str, Any]],
+    benchmarks_by_id: dict[str, dict[str, Any]],
+    key: str,
+) -> dict[str, dict[str, Any]]:
+    """Aggregate metrics by difficulty or tags."""
+
+    summary: dict[str, dict[str, Any]] = {}
     for row in results:
         case_meta = benchmarks_by_id.get(row["id"], {})
-        group_value = None
         if key == "tags":
-            group_value = case_meta.get("metadata", {}).get("tags", []) or ["untagged"]
+            group_values = case_meta.get("metadata", {}).get("tags", []) or ["untagged"]
         else:
-            group_value = [case_meta.get("metadata", {}).get(key, "unspecified")]
+            group_values = [case_meta.get("metadata", {}).get(key, "unspecified")]
 
-        for value in group_value:
-            bucket = summary.setdefault(value, {"count": 0, "decision": [], "semantic_similarity": [], "code": []})
+        for value in group_values:
+            bucket = summary.setdefault(
+                value,
+                {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
+            )
             bucket["count"] += 1
             bucket["decision"].append(row.get("decision_score"))
             bucket["semantic_similarity"].append(row.get("semantic_similarity"))
@@ -298,6 +384,8 @@ def _summarize_by_group(results: list[dict], benchmarks_by_id: dict[str, dict], 
 
 
 def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: Path) -> str:
+    """Save a simple bar plot and return its file path."""
+
     labels = list(values.keys())
     scores = [values[label] for label in labels]
 
@@ -318,7 +406,9 @@ def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: P
     return str(output_path)
 
 
-def _generate_visualizations(report: dict, output_dir: Path) -> dict[str, str]:
+def _generate_visualizations(report: dict[str, Any], output_dir: Path) -> dict[str, str]:
+    """Generate charts for key metrics and return their paths."""
+
     charts: dict[str, str] = {}
     summary = report.get("summary", {})
     chart_dir = output_dir / "charts"
@@ -346,7 +436,9 @@ def _generate_visualizations(report: dict, output_dir: Path) -> dict[str, str]:
     return charts
 
 
-def _make_json_safe(value):
+def _make_json_safe(value: Any) -> Any:
+    """Convert non-serializable values into JSON-friendly structures."""
+
     if isinstance(value, dict):
         return {k: _make_json_safe(v) for k, v in value.items()}
     if isinstance(value, list):
@@ -365,7 +457,14 @@ def _make_json_safe(value):
         return str(value)
     return value
 
-def _persist_case_details(cases: list[dict], benchmarks_by_id: dict[str, dict], output_dir: Path) -> Path:
+
+def _persist_case_details(
+    cases: list[dict[str, Any]],
+    benchmarks_by_id: dict[str, dict[str, Any]],
+    output_dir: Path,
+) -> Path:
+    """Persist per-case evaluation details and return directory path."""
+
     details_dir = output_dir / "details"
     details_dir.mkdir(parents=True, exist_ok=True)
 
@@ -396,12 +495,15 @@ def _persist_case_details(cases: list[dict], benchmarks_by_id: dict[str, dict], 
     return details_dir
 
 
-# ---------- main eval ----------
+# ---------------------------------------------------------------------------
+# Main evaluation logic
+# ---------------------------------------------------------------------------
+def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
+    """Score generated code using syntax, heuristic, and execution signals."""
 
-def evaluate_code(model_code: str, benchmark: str) -> dict:
     heuristic_score = 0.0
 
-    # 1️⃣ Syntax check
+    # 1️⃣ Syntax check: fail fast on invalid Python
     try:
         ast.parse(model_code)
         heuristic_score += 0.3
@@ -420,7 +522,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict:
 
     expected_code = benchmark
 
-    # 2️⃣ Imports
+    # 2️⃣ Imports: ensure required modules are present
     expected_imports = extract_imports(expected_code)
     model_imports = extract_imports(model_code)
 
@@ -430,7 +532,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict:
     else:
         heuristic_score += 0.2
 
-    # 3️⃣ Key calls
+    # 3️⃣ Key calls: verify important function invocations
     expected_calls = extract_calls(expected_code)
     model_calls = extract_calls(model_code)
 
@@ -442,7 +544,11 @@ def evaluate_code(model_code: str, benchmark: str) -> dict:
     expected_stdout, expected_result, expected_error = _run_code_in_sandbox(expected_code)
     model_stdout, model_result, model_error = _run_code_in_sandbox(model_code)
 
-    stdout_match = expected_error is None and model_error is None and _normalize_stdout(expected_stdout) == _normalize_stdout(model_stdout)
+    stdout_match = (
+        expected_error is None
+        and model_error is None
+        and _normalize_stdout(expected_stdout) == _normalize_stdout(model_stdout)
+    )
     result_match = expected_error is None and model_error is None and _compare_results(expected_result, model_result)
 
     exec_score = 0.0
@@ -479,18 +585,23 @@ def evaluate_code(model_code: str, benchmark: str) -> dict:
         },
     }
 
-def _load_all_benchmarks() -> list[dict]:
+
+def _load_all_benchmarks() -> list[dict[str, Any]]:
+    """Load all benchmark cases from the configured directory."""
+
     paths = sorted(BENCHMARKS_DIR.glob("*.json"))
-    benchmarks: list[dict] = []
+    benchmarks: list[dict[str, Any]] = []
     for path in paths:
         benchmarks += load_json(path)
     return benchmarks
 
 
-def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluation/inference_results/eval_0_baseline.json"):
+def run_eval(inference_res_path: str, baseline_path: str | None = DEFAULT_BASELINE_PATH) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Run evaluation comparing inference results to benchmarks and baseline."""
+
     outputs = normalize_results(load_json(Path(inference_res_path)))
 
-    baseline_outputs = []
+    baseline_outputs: list[dict[str, Any]] = []
     if baseline_path:
         baseline_file = Path(baseline_path)
         if baseline_file.exists():
@@ -501,7 +612,7 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
 
     benchmarks = _load_all_benchmarks()
 
-    results = []
+    results: list[dict[str, Any]] = []
     for case in benchmarks:
         model_output = output_by_id.get(case.get("id"))
         if not model_output:
@@ -519,16 +630,18 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
         if expected_facts:
             reference_text = ". ".join(expected_facts)
         elif baseline_by_id:
-            reference_text = baseline_by_id.get(case.get("id"), {}).get("response_message")
+            baseline_output = baseline_by_id.get(case.get("id"))
+            if baseline_output:
+                reference_text = baseline_output.get("response_message")
 
         semantic_similarity = evaluate_text_similarity(reference_text, model_output.get("response_message"))
 
-        code_score = 1.0
-
         code_score_details = None
-        if case.get("expected_code"):
-            code_score_details = evaluate_code(model_output.get("generated_code",""), case["expected_code"])
-            code_score = code_score_details.get("score", 0.0)
+        code_score = None
+        expected_code = case.get("expected_code")
+        if expected_code:
+            code_score_details = evaluate_code(model_output.get("generated_code", ""), expected_code)
+            code_score = code_score_details.get("score")
 
         results.append({
             "id": case["id"],
@@ -542,9 +655,11 @@ def run_eval(inference_res_path: str, baseline_path: str | None = "core/evaluati
     return results, benchmarks
 
 
-def build_report(results: list[dict], benchmarks: list[dict]) -> dict:
+def build_report(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]) -> dict[str, Any]:
+    """Construct aggregated report data from evaluation results."""
+
     benchmarks_by_id = _collect_metadata(benchmarks)
-    enriched_cases: list[dict] = []
+    enriched_cases: list[dict[str, Any]] = []
 
     for row in results:
         meta = benchmarks_by_id.get(row["id"], {})
@@ -601,9 +716,11 @@ def build_report(results: list[dict], benchmarks: list[dict]) -> dict:
 
 def generate_report(
     inference_res_path: str,
-    baseline_path: str | None = "core/evaluation/inference_results/eval_0_baseline.json",
+    baseline_path: str | None = DEFAULT_BASELINE_PATH,
     output_dir: str | Path = "core/evaluation/reports",
-) -> dict | list:
+) -> dict[str, Any] | list[dict[str, Any]]:
+    """Generate evaluation report files and return the structured report."""
+
     results, benchmarks = run_eval(inference_res_path, baseline_path)
     report = build_report(results, benchmarks)
     benchmarks_by_id = _collect_metadata(benchmarks)
@@ -649,7 +766,7 @@ def generate_report(
 
     return safe_report
 
-# пример использования
+
 if __name__ == "__main__":
     # Пример запуска: формируем полный отчёт и сохраняем метрики и графики
     test_path = "core/evaluation/inference_results/eval_0_baseline.json"
