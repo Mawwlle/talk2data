@@ -276,11 +276,23 @@ def _run_code_in_sandbox(code: str) -> SandboxResult:
                     last_expr = ast.Expression(parsed.body[-1].value)
 
                     if body_without_last.body:
-                        exec(compile(body_without_last, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
+                        exec(
+                            compile(body_without_last, SANDBOX_FILENAME, "exec"),
+                            sandbox_globals,
+                            sandbox_locals,
+                        )
 
-                    result_value = eval(compile(last_expr, SANDBOX_FILENAME, "eval"), sandbox_globals, sandbox_locals)
+                    result_value = eval(
+                        compile(last_expr, SANDBOX_FILENAME, "eval"),
+                        sandbox_globals,
+                        sandbox_locals,
+                    )
                 else:
-                    exec(compile(parsed, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
+                    exec(
+                        compile(parsed, SANDBOX_FILENAME, "exec"),
+                        sandbox_globals,
+                        sandbox_locals,
+                    )
     except TimeoutError as exc:
         exec_error = f"execution_timeout: {exc}"
     except Exception as exc:  # noqa: BLE001
@@ -323,9 +335,7 @@ def _compute_embedding(text: str) -> torch.Tensor:
         summed = masked_embeddings.sum(dim=1)
         counts = attention_mask.sum(dim=1).clamp(min=1e-9)
         sentence_embedding = summed / counts
-        sentence_embedding = torch.nn.functional.normalize(
-            sentence_embedding, p=2, dim=1
-        )
+        sentence_embedding = torch.nn.functional.normalize(sentence_embedding, p=2, dim=1)
 
     return sentence_embedding.squeeze(0)
 
@@ -520,7 +530,12 @@ def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: P
     plt.xticks(rotation=30, ha="right")
 
     for bar, score in zip(bars, scores):
-        plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01, f"{score:.2f}", ha="center")
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.01,
+            f"{score:.2f}",
+            ha="center",
+        )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()
@@ -532,7 +547,9 @@ def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: P
 def _aggregate_code_metrics(cases: list[dict[str, Any]]) -> dict[str, float]:
     """Aggregate code-generation metrics across cases."""
 
-    code_cases = [case for case in cases if case.get("expected_decision") == "code_generation" and not case.get("error")]
+    code_cases = [
+        case for case in cases if case.get("expected_decision") == "code_generation" and not case.get("error")
+    ]
     if not code_cases:
         return {}
 
@@ -749,6 +766,8 @@ def _render_case_markdown(
                 lines.append("- expected_result: " + str(details.get("results", {}).get("expected")))
             if not details.get("stdout", {}).get("expected") and details.get("results", {}).get("expected") is None:
                 lines.append("- expected_output: " + _describe_visual_output(case.get("expected_code", "")))
+            if details.get("errors", {}).get("expected"):
+                lines.append("- expected_error: " + str(details.get("errors", {}).get("expected")))
 
         lines.append("**Model output:**")
         if case.get("response_message"):
@@ -765,11 +784,13 @@ def _render_case_markdown(
                 lines.append("```")
             if details.get("results") is not None:
                 lines.append("- model_result: " + str(details.get("results", {}).get("model")))
+            if details.get("errors", {}).get("model"):
+                lines.append("- model_error: " + str(details.get("errors", {}).get("model")))
 
         lines.append("**Метрики:**")
         lines.append("- decision_score: " + str(case.get("decision_score")))
 
-        if case.get("expected_decision") == "chat_response":
+        if case.get("expected_decision") in CHAT_DECISIONS:
             semantic_details = case.get("semantic_details") or {}
             lines.append(f"- semantic_similarity: {semantic_details.get('score')}")
             lines.append(
@@ -913,7 +934,9 @@ def _load_all_benchmarks() -> list[dict[str, Any]]:
     return benchmarks
 
 
-def run_eval(inference_res_path: str, baseline_path: str | None = DEFAULT_BASELINE_PATH) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def run_eval(
+    inference_res_path: str, baseline_path: str | None = DEFAULT_BASELINE_PATH
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Run evaluation comparing inference results to benchmarks and baseline."""
 
     outputs = normalize_results(load_json(Path(inference_res_path)))
@@ -937,15 +960,19 @@ def run_eval(inference_res_path: str, baseline_path: str | None = DEFAULT_BASELI
         language = case.get("metadata", {}).get("language", "unknown")
         model_output = output_by_id.get(case.get("id"))
         if not model_output:
-            results.append({
-                "id": case["id"],
-                "expected_decision": case.get("expected_decision"),
-                "language": language,
-                "error": "missing_model_output",
-            })
+            results.append(
+                {
+                    "id": case["id"],
+                    "expected_decision": case.get("expected_decision"),
+                    "language": language,
+                    "error": "missing_model_output",
+                }
+            )
             continue
 
-        decision_score = evaluate_decision(model_output.get("model_decision", {}).get("action"), case["expected_decision"])
+        decision_score = evaluate_decision(
+            model_output.get("model_decision", {}).get("action"), case["expected_decision"]
+        )
 
         semantic_similarity = None
         semantic_details = None
@@ -970,18 +997,20 @@ def run_eval(inference_res_path: str, baseline_path: str | None = DEFAULT_BASELI
             code_score_details = evaluate_code(model_output.get("generated_code", ""), case["expected_code"])
             code_score = code_score_details.get("score")
 
-        results.append({
-            "id": case["id"],
-            "expected_decision": case.get("expected_decision"),
-            "language": language,
-            "decision_score": decision_score,
-            "semantic_similarity": semantic_similarity,
-            "semantic_details": semantic_details,
-            "code_score": code_score,
-            "code_details": code_score_details,
-            "model_generated_code": model_output.get("generated_code"),
-            "response_message": model_output.get("response_message"),
-        })
+        results.append(
+            {
+                "id": case["id"],
+                "expected_decision": case.get("expected_decision"),
+                "language": language,
+                "decision_score": decision_score,
+                "semantic_similarity": semantic_similarity,
+                "semantic_details": semantic_details,
+                "code_score": code_score,
+                "code_details": code_score_details,
+                "model_generated_code": model_output.get("generated_code"),
+                "response_message": model_output.get("response_message"),
+            }
+        )
     return results, benchmarks
 
 
@@ -1013,7 +1042,9 @@ def build_report(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
         "cases_total": len(enriched_cases),
         "missing": len([case for case in enriched_cases if case.get("error")]),
         "decision_accuracy": _mean([case.get("decision_score") for case in enriched_cases if not case.get("error")]),
-        "semantic_similarity_avg": _mean([case.get("semantic_similarity") for case in enriched_cases if not case.get("error")]),
+        "semantic_similarity_avg": _mean(
+            [case.get("semantic_similarity") for case in enriched_cases if not case.get("error")]
+        ),
         "code_score_avg": _mean([case.get("code_score") for case in enriched_cases if not case.get("error")]),
     }
 
@@ -1061,6 +1092,7 @@ def generate_report(
 
     results, benchmarks = run_eval(inference_res_path, baseline_path)
     report = build_report(results, benchmarks)
+    benchmarks_by_id = _collect_metadata(benchmarks)
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1085,16 +1117,27 @@ def generate_report(
     report["case_report_path"] = report_paths
 
     cases_df = pd.DataFrame(report["cases"])
-    cases_df["heuristic_score"] = cases_df["code_details"].apply(lambda x: x.get("heuristic_score") if isinstance(x, dict) else None)
-    cases_df["exec_score"] = cases_df["code_details"].apply(lambda x: x.get("exec_score") if isinstance(x, dict) else None)
-    cases_df["stdout_match"] = cases_df["code_details"].apply(lambda x: x.get("stdout_match") if isinstance(x, dict) else None)
-    cases_df["result_match"] = cases_df["code_details"].apply(lambda x: x.get("result_match") if isinstance(x, dict) else None)
-    cases_df = cases_df.drop(columns=[
-        "model_generated_code",
-        "response_message",
-        "code_details",
-        "semantic_details",
-    ], errors="ignore")
+    cases_df["heuristic_score"] = cases_df["code_details"].apply(
+        lambda x: x.get("heuristic_score") if isinstance(x, dict) else None
+    )
+    cases_df["exec_score"] = cases_df["code_details"].apply(
+        lambda x: x.get("exec_score") if isinstance(x, dict) else None
+    )
+    cases_df["stdout_match"] = cases_df["code_details"].apply(
+        lambda x: x.get("stdout_match") if isinstance(x, dict) else None
+    )
+    cases_df["result_match"] = cases_df["code_details"].apply(
+        lambda x: x.get("result_match") if isinstance(x, dict) else None
+    )
+    cases_df = cases_df.drop(
+        columns=[
+            "model_generated_code",
+            "response_message",
+            "code_details",
+            "semantic_details",
+        ],
+        errors="ignore",
+    )
     cases_df.to_csv(output_dir / "cases.csv", index=False)
 
     summary_df = pd.DataFrame(
