@@ -198,11 +198,11 @@ def _sandbox_globals() -> dict[str, Any]:
 
 
 @contextlib.contextmanager
-def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS, message: str = "sandbox_timeout") -> None:
-    """Raise ``TimeoutError`` if the block runs longer than ``seconds`` seconds."""
+def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS) -> None: # type: ignore
+    """Context manager to enforce a hard execution timeout."""
 
-    def _handler(signum: int, frame: Any) -> None:  # noqa: ANN001
-        raise TimeoutError(message)
+    def _handler(signum: int, frame: Any) -> None:
+        raise TimeoutError("Execution timed out")
 
     previous_handler = signal.signal(signal.SIGALRM, _handler)
     signal.alarm(seconds)
@@ -322,6 +322,51 @@ def evaluate_text_similarity(reference_text: str | None, generated_text: str | N
         return round(counter_cosine_similarity(baseline_tokens, generated_tokens), 3)
 
 
+def evaluate_chat_semantics(
+    expected_facts: list[str] | None,
+    forbidden_facts: list[str] | None,
+    generated_text: str | None,
+    fallback_reference: str | None,
+) -> dict[str, Any]:
+    """Compute semantic score for chat responses with fact coverage and penalties."""
+
+    expected_facts = expected_facts or []
+    forbidden_facts = forbidden_facts or []
+
+    if not generated_text:
+        return {
+            "score": None,
+            "similarity": None,
+            "expected_coverage": None,
+            "forbidden_penalty": None,
+            "expected_hits": [],
+            "forbidden_hits": [],
+        }
+
+    normalized_text = generated_text.lower()
+    expected_hits = [fact for fact in expected_facts if fact and fact.lower() in normalized_text]
+    forbidden_hits = [fact for fact in forbidden_facts if fact and fact.lower() in normalized_text]
+
+    coverage = len(expected_hits) / len(expected_facts) if expected_facts else 1.0
+    penalty = len(forbidden_hits) / len(forbidden_facts) if forbidden_facts else 0.0
+
+    reference_text = ". ".join(expected_facts) if expected_facts else fallback_reference
+    similarity = evaluate_text_similarity(reference_text, generated_text)
+    similarity = similarity if similarity is not None else coverage
+
+    raw_score = (similarity * 0.6) + (coverage * 0.4) - (penalty * 0.5)
+    score = round(max(0.0, min(raw_score, 1.0)), 3)
+
+    return {
+        "score": score,
+        "similarity": similarity,
+        "expected_coverage": round(coverage, 3),
+        "forbidden_penalty": round(penalty, 3) if forbidden_facts else 0.0,
+        "expected_hits": expected_hits,
+        "forbidden_hits": forbidden_hits,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Result normalization utilities
 # ---------------------------------------------------------------------------
@@ -406,6 +451,28 @@ def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: P
     return str(output_path)
 
 
+def _aggregate_code_metrics(cases: list[dict[str, Any]]) -> dict[str, float]:
+    """Aggregate code-generation metrics across cases."""
+
+    code_cases = [case for case in cases if case.get("expected_decision") == "code_generation" and not case.get("error")]
+    if not code_cases:
+        return {}
+
+    heuristics = [case.get("code_details", {}).get("heuristic_score") for case in code_cases]
+    exec_scores = [case.get("code_details", {}).get("exec_score") for case in code_cases]
+    stdout_matches = [1.0 if case.get("code_details", {}).get("stdout_match") else 0.0 for case in code_cases]
+    result_matches = [1.0 if case.get("code_details", {}).get("result_match") else 0.0 for case in code_cases]
+    code_scores = [case.get("code_score") for case in code_cases]
+
+    return {
+        "code_score": _mean(code_scores),
+        "heuristic_score": _mean(heuristics),
+        "exec_score": _mean(exec_scores),
+        "stdout_match_rate": _mean(stdout_matches),
+        "result_match_rate": _mean(result_matches),
+    }
+
+
 def _generate_visualizations(report: dict[str, Any], output_dir: Path) -> dict[str, str]:
     """Generate charts for key metrics and return their paths."""
 
@@ -426,12 +493,34 @@ def _generate_visualizations(report: dict[str, Any], output_dir: Path) -> dict[s
 
     difficulty = report.get("by_difficulty", {})
     if difficulty:
-        charts["difficulty"] = _save_plot(
+        charts["decision_by_difficulty"] = _save_plot(
+            {k: v.get("decision_avg", 0.0) for k, v in difficulty.items()},
+            "Точность decision по уровням сложности",
+            "Accuracy",
+            chart_dir / "decision_by_difficulty.png",
+        )
+        charts["semantic_by_difficulty"] = _save_plot(
             {k: v.get("semantic_similarity_avg", 0.0) for k, v in difficulty.items()},
             "Semantic similarity по уровням сложности",
             "Semantic similarity",
             chart_dir / "semantic_similarity_by_difficulty.png",
         )
+
+    if report.get("cases"):
+        code_metrics = _aggregate_code_metrics(report["cases"])
+        if code_metrics:
+            charts["code_metrics"] = _save_plot(
+                {
+                    "code_score": code_metrics.get("code_score", 0.0),
+                    "heuristic": code_metrics.get("heuristic_score", 0.0),
+                    "execution": code_metrics.get("exec_score", 0.0),
+                    "stdout_match": code_metrics.get("stdout_match_rate", 0.0),
+                    "result_match": code_metrics.get("result_match_rate", 0.0),
+                },
+                "Средние кодовые метрики",
+                "Score",
+                chart_dir / "code_metrics.png",
+            )
 
     return charts
 
@@ -458,41 +547,95 @@ def _make_json_safe(value: Any) -> Any:
     return value
 
 
-def _persist_case_details(
+def _render_case_markdown(
     cases: list[dict[str, Any]],
-    benchmarks_by_id: dict[str, dict[str, Any]],
     output_dir: Path,
 ) -> Path:
-    """Persist per-case evaluation details and return directory path."""
+    """Render a human-friendly markdown report for all cases."""
 
-    details_dir = output_dir / "details"
-    details_dir.mkdir(parents=True, exist_ok=True)
+    report_path = output_dir / "cases_report.md"
+    lines: list[str] = []
 
-    index: list[dict[str, str]] = []
+    lines.append("# Детальный отчёт по кейсам")
+    lines.append("")
+    lines.append("## Методика расчёта метрик")
+    lines.append("### Semantic similarity (только для chat_response)")
+    lines.append(
+        "- Ищем ожидаемые факты в ответе и считаем долю покрытых фактов (expected_coverage)."
+    )
+    lines.append(
+        "- Считаем попадания запрещённых фактов и превращаем их в штраф (forbidden_penalty)."
+    )
+    lines.append(
+        "- Дополнительно считаем embedding-cosine между эталонным ответом (конкатенация expected_facts) и ответом модели."
+    )
+    lines.append(
+        "- Итоговая semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty, ограниченная от 0 до 1."
+    )
+    lines.append("")
+    lines.append("### Code score (только для code_generation)")
+    lines.append("- heuristic_score: синтаксис (+0.3), совпадение импортов (до +0.2), ключевых вызовов (до +0.4).")
+    lines.append(
+        "- exec_score: проверяем, исполняется ли код без ошибок; +0.5 за совпадение stdout и ещё +0.5 за совпадение результата."
+    )
+    lines.append("- code_score = 0.5 * heuristic_score + 0.5 * exec_score (от 0 до 1).")
+    lines.append("")
+    lines.append("## Кейсы")
+
     for case in cases:
-        meta = benchmarks_by_id.get(case.get("id"), {})
-        detail = {
-            "id": case.get("id"),
-            "user_input": meta.get("user_input"),
-            "response_message": case.get("response_message"),
-            "expected_facts": meta.get("expected_facts"),
-            "forbidden_facts": meta.get("forbidden_facts"),
-            "expected_code": meta.get("expected_code"),
-            "model_generated_code": case.get("model_generated_code"),
-            "code_details": case.get("code_details"),
-        }
+        lines.append(f"### {case.get('id')} ({case.get('expected_decision')}, difficulty: {case.get('difficulty')})")
+        lines.append("")
+        lines.append(f"**User input:** {case.get('user_input')}")
 
-        detail_path = details_dir / f"{case.get('id')}.json"
-        with open(detail_path, "w", encoding="utf-8") as f:
-            json.dump(_make_json_safe(detail), f, ensure_ascii=False, indent=2)
+        expected_facts = case.get("expected_facts") or []
+        forbidden_facts = case.get("forbidden_facts") or []
 
-        index.append({"id": case.get("id"), "path": str(detail_path)})
+        lines.append("**Ground truth:**")
+        if expected_facts:
+            lines.append("- expected_facts: " + "; ".join(expected_facts))
+        if forbidden_facts:
+            lines.append("- forbidden_facts: " + "; ".join(forbidden_facts))
+        if case.get("expected_code"):
+            lines.append("- expected_code:")
+            lines.append("```python")
+            lines.append(case.get("expected_code"))
+            lines.append("```")
 
-    index_path = details_dir / "index.json"
-    with open(index_path, "w", encoding="utf-8") as f:
-        json.dump(index, f, ensure_ascii=False, indent=2)
+        lines.append("**Model output:**")
+        if case.get("response_message"):
+            lines.append("> " + case.get("response_message").replace("\n", " "))
+        if case.get("model_generated_code"):
+            lines.append("```python")
+            lines.append(case.get("model_generated_code"))
+            lines.append("```")
 
-    return details_dir
+        lines.append("**Метрики:**")
+        lines.append("- decision_score: " + str(case.get("decision_score")))
+
+        if case.get("expected_decision") == "chat_response":
+            semantic_details = case.get("semantic_details") or {}
+            lines.append(f"- semantic_similarity: {semantic_details.get('score')}")
+            lines.append(
+                f"  - expected_coverage: {semantic_details.get('expected_coverage')} | forbidden_penalty: {semantic_details.get('forbidden_penalty')}"
+            )
+            if semantic_details.get("expected_hits"):
+                lines.append("  - покрытые факты: " + "; ".join(semantic_details.get("expected_hits", [])))
+            if semantic_details.get("forbidden_hits"):
+                lines.append("  - упомянутые запрещённые факты: " + "; ".join(semantic_details.get("forbidden_hits", [])))
+
+        if case.get("expected_decision") == "code_generation":
+            details = case.get("code_details") or {}
+            lines.append(f"- code_score: {case.get('code_score')}")
+            lines.append("  - heuristic_score: " + str(details.get("heuristic_score")))
+            lines.append("  - exec_score: " + str(details.get("exec_score")))
+            lines.append("  - stdout_match: " + str(details.get("stdout_match")))
+            lines.append("  - result_match: " + str(details.get("result_match")))
+
+        lines.append("")
+
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+    return report_path
 
 
 # ---------------------------------------------------------------------------
@@ -618,35 +761,42 @@ def run_eval(inference_res_path: str, baseline_path: str | None = DEFAULT_BASELI
         if not model_output:
             results.append({
                 "id": case["id"],
+                "expected_decision": case.get("expected_decision"),
                 "error": "missing_model_output",
             })
             continue
 
         decision_score = evaluate_decision(model_output.get("model_decision", {}).get("action"), case["expected_decision"])
 
-        reference_text = None
+        semantic_similarity = None
+        semantic_details = None
+        if case.get("expected_decision") == "chat_response":
+            baseline_reference = None
+            if baseline_by_id:
+                baseline_output = baseline_by_id.get(case.get("id"))
+                if baseline_output:
+                    baseline_reference = baseline_output.get("response_message")
 
-        expected_facts = case.get("expected_facts") or []
-        if expected_facts:
-            reference_text = ". ".join(expected_facts)
-        elif baseline_by_id:
-            baseline_output = baseline_by_id.get(case.get("id"))
-            if baseline_output:
-                reference_text = baseline_output.get("response_message")
-
-        semantic_similarity = evaluate_text_similarity(reference_text, model_output.get("response_message"))
+            semantic_details = evaluate_chat_semantics(
+                case.get("expected_facts"),
+                case.get("forbidden_facts"),
+                model_output.get("response_message"),
+                baseline_reference,
+            )
+            semantic_similarity = semantic_details.get("score")
 
         code_score_details = None
         code_score = None
-        expected_code = case.get("expected_code")
-        if expected_code:
-            code_score_details = evaluate_code(model_output.get("generated_code", ""), expected_code)
+        if case.get("expected_decision") == "code_generation" and case.get("expected_code"):
+            code_score_details = evaluate_code(model_output.get("generated_code", ""), case["expected_code"])
             code_score = code_score_details.get("score")
 
         results.append({
             "id": case["id"],
+            "expected_decision": case.get("expected_decision"),
             "decision_score": decision_score,
             "semantic_similarity": semantic_similarity,
+            "semantic_details": semantic_details,
             "code_score": code_score,
             "code_details": code_score_details,
             "model_generated_code": model_output.get("generated_code"),
@@ -670,6 +820,10 @@ def build_report(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
                 "user_input": meta.get("user_input"),
                 "tags": meta_info.get("tags", []),
                 "difficulty": meta_info.get("difficulty", "unspecified"),
+                "expected_decision": meta.get("expected_decision"),
+                "expected_facts": meta.get("expected_facts"),
+                "forbidden_facts": meta.get("forbidden_facts"),
+                "expected_code": meta.get("expected_code"),
             }
         )
 
@@ -723,7 +877,6 @@ def generate_report(
 
     results, benchmarks = run_eval(inference_res_path, baseline_path)
     report = build_report(results, benchmarks)
-    benchmarks_by_id = _collect_metadata(benchmarks)
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -731,14 +884,19 @@ def generate_report(
     charts = _generate_visualizations(report, output_dir)
     report["charts"] = charts
 
-    details_dir = _persist_case_details(report["cases"], benchmarks_by_id, output_dir)
-    report["details_dir"] = str(details_dir)
+    case_report_path = _render_case_markdown(report["cases"], output_dir)
+    report["case_report_path"] = str(case_report_path)
 
     cases_df = pd.DataFrame(report["cases"])
+    cases_df["heuristic_score"] = cases_df["code_details"].apply(lambda x: x.get("heuristic_score") if isinstance(x, dict) else None)
+    cases_df["exec_score"] = cases_df["code_details"].apply(lambda x: x.get("exec_score") if isinstance(x, dict) else None)
+    cases_df["stdout_match"] = cases_df["code_details"].apply(lambda x: x.get("stdout_match") if isinstance(x, dict) else None)
+    cases_df["result_match"] = cases_df["code_details"].apply(lambda x: x.get("result_match") if isinstance(x, dict) else None)
     cases_df = cases_df.drop(columns=[
         "model_generated_code",
         "response_message",
         "code_details",
+        "semantic_details",
     ], errors="ignore")
     cases_df.to_csv(output_dir / "cases.csv", index=False)
 
@@ -760,11 +918,7 @@ def generate_report(
     )
     summary_df.to_csv(output_dir / "summary.csv", index=False)
 
-    safe_report = _make_json_safe(report)
-    with open(output_dir / "report.json", "w", encoding="utf-8") as f:
-        json.dump(safe_report, f, ensure_ascii=False, indent=2)
-
-    return safe_report
+    return _make_json_safe(report)
 
 
 if __name__ == "__main__":
