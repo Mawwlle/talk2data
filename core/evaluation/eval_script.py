@@ -190,12 +190,12 @@ def _run_code_in_sandbox(code: str) -> tuple[str, object, str | None]:
     return stdout_text, result_value, exec_error
 
 
-@lru_cache(maxsize=1)
-def _load_embedding_components(
-    model_path: str = "~/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
-):
-    model_path = str(Path(model_path).expanduser())
+DEFAULT_EMBEDDING_MODEL = "~/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
 
+
+@lru_cache(maxsize=1)
+def _load_embedding_components(model_path: str = DEFAULT_EMBEDDING_MODEL):
+    model_path = str(Path(model_path).expanduser())
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
     model = AutoModel.from_pretrained(model_path, local_files_only=True)
     model.eval()
@@ -219,6 +219,9 @@ def _compute_embedding(text: str) -> torch.Tensor:
         summed = masked_embeddings.sum(dim=1)
         counts = attention_mask.sum(dim=1).clamp(min=1e-9)
         sentence_embedding = summed / counts
+        sentence_embedding = torch.nn.functional.normalize(
+            sentence_embedding, p=2, dim=1
+        )
 
     return sentence_embedding.squeeze(0)
 
@@ -227,15 +230,20 @@ def evaluate_text_similarity(baseline_text: str | None, generated_text: str | No
     if not baseline_text or not generated_text:
         return None
 
-    baseline_embedding = _compute_embedding(baseline_text)
-    generated_embedding = _compute_embedding(generated_text)
+    try:
+        baseline_embedding = _compute_embedding(baseline_text)
+        generated_embedding = _compute_embedding(generated_text)
 
-    similarity = cosine_similarity(
-        baseline_embedding.unsqueeze(0),
-        generated_embedding.unsqueeze(0),
-    ).item()
+        similarity = cosine_similarity(
+            baseline_embedding.unsqueeze(0),
+            generated_embedding.unsqueeze(0),
+        ).item()
 
-    return round(similarity, 3)
+        return round(float(similarity), 3)
+    except Exception:  # noqa: BLE001
+        baseline_tokens = Counter(tokenize(baseline_text))
+        generated_tokens = Counter(tokenize(generated_text))
+        return round(counter_cosine_similarity(baseline_tokens, generated_tokens), 3)
 
 
 def normalize_results(results: list[dict] | dict | None) -> list[dict]:

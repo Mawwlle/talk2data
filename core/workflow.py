@@ -202,7 +202,7 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
         max_tokens=200, 
         temperature=0.0, # 0.7
         top_p=0.9, 
-        stop=["</s>"]
+        stop=["</s>"],
         seed=42,
     )
 
