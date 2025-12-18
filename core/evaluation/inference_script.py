@@ -1,9 +1,9 @@
-from core.workflow import create_workflow, llm_init
 import json
 import uuid
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
+from core.workflow import create_workflow, llm_init
 
 BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
@@ -13,14 +13,13 @@ METADATA = {
     "sepal_width": "float",
     "petal_length": "float",
     "petal_width": "float",
-    "species": "category"
-  }
+    "species": "category",
+}
 
 
 def load_json(path: Path) -> list[dict]:
     text = path.read_text(encoding="utf-8").strip()
     return json.loads(text)
-
 
 
 def run_single_case(workflow, benchmark: dict) -> dict:
@@ -56,7 +55,7 @@ def main():
     all_results = {
         "run_id": run_id,
         "timestamp": datetime.utcnow().isoformat(),
-        "results": []
+        "results": [],
     }
 
     benchmark_files = sorted(BENCHMARKS_DIR.glob("*.json"))
@@ -73,11 +72,13 @@ def main():
                 all_results["results"].append(result)
 
             except Exception as e:
-                all_results["results"].append({
-                    "benchmark_id": benchmark["id"],
-                    "benchmark_file": path.name,
-                    "error": str(e),
-                })
+                all_results["results"].append(
+                    {
+                        "benchmark_id": benchmark["id"],
+                        "benchmark_file": path.name,
+                        "error": str(e),
+                    }
+                )
 
     output_path = RESULTS_DIR / f"{run_id}.json"
     with output_path.open("w", encoding="utf-8") as f:

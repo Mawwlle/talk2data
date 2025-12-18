@@ -1,6 +1,7 @@
 # schemas.py
 
-from typing import List, Dict, Any, Optional, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict
+
 from pydantic import BaseModel, Field
 
 

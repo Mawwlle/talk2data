@@ -1,10 +1,12 @@
 # models.py
 import logging
-from core.config import settings
 from pathlib import Path
+
+import environ
 from transformers import AutoTokenizer
 from vllm import LLM
-import environ
+
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ if env.bool("LOCAL_RUN", False):
         gpu_memory_utilization=0.95,  # ↑ разрешаем использовать больше GPU-памяти
         enforce_eager=False,
         dtype="float16",
+        tensor_parallel_size=1,  # for evaluation
     )
 else:
     LOCAL_CONFIG = {}
@@ -54,9 +57,11 @@ def get_llm():
         logger.info("Загружаю модель...")
         _llm = LLM(
             model=settings.LLM_LOCAL_PATH,
-            load_format=settings.LLM_LOAD_FORMAT
-            if hasattr(settings, "LLM_LOAD_FORMAT")
-            else "auto",
+            load_format=(
+                settings.LLM_LOAD_FORMAT
+                if hasattr(settings, "LLM_LOAD_FORMAT")
+                else "auto"
+            ),
             **VLLM_CONFIG,
         )
         logger.info("Модель загружена")
