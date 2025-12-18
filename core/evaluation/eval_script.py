@@ -1,13 +1,13 @@
-from __future__ import annotations
-
 import ast
 import builtins
 import contextlib
 import io
 import json
 import math
+import os
 import signal
 import string
+import threading
 from collections import Counter
 from functools import lru_cache
 from pathlib import Path
@@ -171,13 +171,18 @@ def counter_cosine_similarity(vec_a: Counter[str], vec_b: Counter[str]) -> float
 def _fact_presence_score(fact: str, generated_text: str) -> float:
     """Estimate how strongly a fact is present in the generated text.
 
-    The score combines embedding cosine similarity (primary) with a token-overlap
-    fallback so we can capture paraphrased mentions instead of requiring exact
-    substring matches.
+    The score combines embedding cosine similarity with token overlap so that
+    paraphrases are rewarded but unrelated text with only superficial semantic
+    proximity is penalized. This reduces false detections of facts that are not
+    actually mentioned.
     """
 
     if not fact or not generated_text:
         return 0.0
+
+    lexical_overlap = counter_cosine_similarity(
+        Counter(tokenize(fact)), Counter(tokenize(generated_text))
+    )
 
     try:
         fact_embedding = _compute_embedding(fact)
@@ -185,11 +190,14 @@ def _fact_presence_score(fact: str, generated_text: str) -> float:
         similarity = cosine_similarity(
             fact_embedding.unsqueeze(0), text_embedding.unsqueeze(0)
         ).item()
-        return float(similarity)
+        combined = (0.7 * float(similarity)) + (0.3 * float(lexical_overlap))
     except Exception:  # noqa: BLE001
-        fact_tokens = Counter(tokenize(fact))
-        text_tokens = Counter(tokenize(generated_text))
-        return counter_cosine_similarity(fact_tokens, text_tokens)
+        combined = lexical_overlap
+
+    if lexical_overlap < 0.1:
+        combined *= 0.5
+
+    return combined
 
 
 def _ensure_kaleido() -> bool:
@@ -250,35 +258,28 @@ def _sandbox_globals() -> dict[str, Any]:
         "pd": pd,
         "Path": Path,
         "df": df,
-        "math": math,
     }
 
 
-def _infer_language_from_filename(path: Path) -> str:
-    """Best-effort language inference from a benchmark filename."""
-
-    name = path.stem.lower()
-    if name.endswith("_en"):
-        return "en"
-    if name.endswith("_ru"):
-        return "ru"
-    return "unknown"
-
-
 @contextlib.contextmanager
-def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS, message: str = "sandbox_timeout") -> None:
-    """Raise ``TimeoutError`` if the block runs longer than ``seconds`` seconds."""
+def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS):
+    """Context manager that raises TimeoutError if block execution exceeds limit."""
 
-    def _handler(signum: int, frame: Any) -> None:  # noqa: ANN001
-        raise TimeoutError(message)
+    def _timeout_handler(signum, _):
+        raise TimeoutError("sandbox_timeout")
 
-    previous_handler = signal.signal(signal.SIGALRM, _handler)
+    original_handler = signal.signal(signal.SIGALRM, _timeout_handler)
     signal.alarm(seconds)
+
+    timer = threading.Timer(seconds, lambda: os.kill(os.getpid(), signal.SIGALRM))
+    timer.start()
+
     try:
         yield
     finally:
+        timer.cancel()
         signal.alarm(0)
-        signal.signal(signal.SIGALRM, previous_handler)
+        signal.signal(signal.SIGALRM, original_handler)
 
 
 def _run_code_in_sandbox(code: str) -> SandboxResult:
@@ -469,46 +470,58 @@ def _mean(values: list[float | None]) -> float:
     numeric = [float(v) for v in values if isinstance(v, (int, float))]
     if not numeric:
         return 0.0
-    return round(float(np.mean(numeric)), 3)
+    return round(sum(numeric) / len(numeric), 3)
 
 
-def _collect_metadata(benchmarks: list[dict[str, Any]]) -> dict[tuple[str | None, str], dict[str, Any]]:
-    """Create a mapping from (benchmark id, language) to metadata."""
+def _collect_metadata(benchmarks: list[dict[str, Any]]) -> dict[tuple[str | None, str | None], dict[str, Any]]:
+    """Collect metadata by (id, language) for quick lookup."""
 
-    mapping: dict[tuple[str | None, str], dict[str, Any]] = {}
+    meta: dict[tuple[str | None, str | None], dict[str, Any]] = {}
     for case in benchmarks:
-        language = case.get("metadata", {}).get("language", "unknown")
-        mapping[(case.get("id"), language)] = case
-    return mapping
+        key = (case.get("id"), case.get("metadata", {}).get("language"))
+        meta[key] = case
+    return meta
+
+
+def _infer_language_from_filename(path: Path) -> str:
+    """Infer language from filename suffix: *_en.json or *_ru.json."""
+
+    if path.name.endswith("_ru.json"):
+        return "ru"
+    if path.name.endswith("_en.json"):
+        return "en"
+    return "unknown"
 
 
 def _summarize_by_group(
-    results: list[dict[str, Any]],
-    benchmarks_by_id: dict[tuple[str | None, str], dict[str, Any]],
-    key: str,
-) -> dict[str, dict[str, Any]]:
-    """Aggregate metrics by difficulty or tags."""
+    cases: list[dict[str, Any]],
+    benchmarks_by_id: dict[tuple[str | None, str | None], dict[str, Any]],
+    group_key: str,
+) -> dict[str, dict[str, float]]:
+    """Summarize metrics by a given metadata group (e.g., difficulty or tag)."""
 
     summary: dict[str, dict[str, Any]] = {}
-    for row in results:
-        meta_key = (row.get("id"), row.get("language", "unknown"))
-        case_meta = benchmarks_by_id.get(meta_key, {})
-        if key == "tags":
-            group_values = case_meta.get("metadata", {}).get("tags", []) or ["untagged"]
-        else:
-            group_values = [case_meta.get("metadata", {}).get(key, "unspecified")]
+    for case in cases:
+        meta_key = (case.get("id"), case.get("language", "unknown"))
+        meta = benchmarks_by_id.get(meta_key, {})
+        values = meta.get("metadata", {}).get(group_key, [])
+        if not isinstance(values, list):
+            values = [values]
 
-        for value in group_values:
+        for value in values:
+            if value is None:
+                continue
             bucket = summary.setdefault(
                 value,
                 {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
             )
-            bucket["count"] += 1
-            bucket["decision"].append(row.get("decision_score"))
-            bucket["semantic_similarity"].append(row.get("semantic_similarity"))
-            bucket["code"].append(row.get("code_score"))
+            if not case.get("error"):
+                bucket["count"] += 1
+                bucket["decision"].append(case.get("decision_score"))
+                bucket["semantic_similarity"].append(case.get("semantic_similarity"))
+                bucket["code"].append(case.get("code_score"))
 
-    for bucket in summary.values():
+    for value, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
         bucket["semantic_similarity_avg"] = _mean(bucket.pop("semantic_similarity"))
         bucket["code_avg"] = _mean(bucket.pop("code"))
@@ -516,27 +529,46 @@ def _summarize_by_group(
     return summary
 
 
-def _summarize_by_language(results: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Aggregate metrics by benchmark language."""
+def _summarize_by_language(
+    cases: list[dict[str, Any]],
+) -> dict[str, dict[str, float]]:
+    """Summarize metrics by language."""
 
     summary: dict[str, dict[str, Any]] = {}
-    for row in results:
-        lang = row.get("language", "unknown")
+    for case in cases:
+        lang = case.get("language", "unknown")
         bucket = summary.setdefault(
             lang,
             {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
         )
-        bucket["count"] += 1
-        bucket["decision"].append(row.get("decision_score"))
-        bucket["semantic_similarity"].append(row.get("semantic_similarity"))
-        bucket["code"].append(row.get("code_score"))
+        if not case.get("error"):
+            bucket["count"] += 1
+            bucket["decision"].append(case.get("decision_score"))
+            bucket["semantic_similarity"].append(case.get("semantic_similarity"))
+            bucket["code"].append(case.get("code_score"))
 
-    for bucket in summary.values():
+    for lang, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
         bucket["semantic_similarity_avg"] = _mean(bucket.pop("semantic_similarity"))
         bucket["code_avg"] = _mean(bucket.pop("code"))
 
     return summary
+
+
+def _make_dataframe(values: list[dict[str, Any]]) -> pd.DataFrame:
+    """Convert list of dicts to DataFrame, handling nested values."""
+
+    def _flatten(item: dict[str, Any]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for k, v in item.items():
+            if isinstance(v, dict):
+                for sub_k, sub_v in v.items():
+                    result[f"{k}.{sub_k}"] = sub_v
+            else:
+                result[k] = v
+        return result
+
+    return pd.DataFrame([_flatten(v) for v in values])
 
 
 def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: Path) -> str:
@@ -577,16 +609,12 @@ def _aggregate_code_metrics(cases: list[dict[str, Any]]) -> dict[str, float]:
         return {}
 
     heuristics = [case.get("code_details", {}).get("heuristic_score") for case in code_cases]
-    exec_scores = [case.get("code_details", {}).get("exec_score") for case in code_cases]
-    stdout_matches = [1.0 if case.get("code_details", {}).get("stdout_match") else 0.0 for case in code_cases]
     result_matches = [1.0 if case.get("code_details", {}).get("result_match") else 0.0 for case in code_cases]
     code_scores = [case.get("code_score") for case in code_cases]
 
     return {
         "code_score": _mean(code_scores),
         "heuristic_score": _mean(heuristics),
-        "exec_score": _mean(exec_scores),
-        "stdout_match_rate": _mean(stdout_matches),
         "result_match_rate": _mean(result_matches),
     }
 
@@ -663,8 +691,6 @@ def _generate_visualizations(report: dict[str, Any], output_dir: Path) -> dict[s
                 {
                     "code_score": code_metrics.get("code_score", 0.0),
                     "heuristic": code_metrics.get("heuristic_score", 0.0),
-                    "execution": code_metrics.get("exec_score", 0.0),
-                    "stdout_match": code_metrics.get("stdout_match_rate", 0.0),
                     "result_match": code_metrics.get("result_match_rate", 0.0),
                 },
                 "Средние кодовые метрики",
@@ -689,18 +715,14 @@ def _make_json_safe(value: Any) -> Any:
         return {k: _make_json_safe(v) for k, v in value.items()}
     if isinstance(value, list):
         return [_make_json_safe(v) for v in value]
-    if isinstance(value, tuple) or isinstance(value, set):
-        return [_make_json_safe(v) for v in value]
-    if isinstance(value, pd.DataFrame):
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, (pd.Series, pd.DataFrame)):
         return value.to_dict(orient="records")
-    if isinstance(value, pd.Series):
-        return value.to_dict()
     if isinstance(value, np.ndarray):
         return value.tolist()
     if isinstance(value, torch.Tensor):
         return value.tolist()
-    if isinstance(value, Path):
-        return str(value)
     return value
 
 
@@ -713,6 +735,19 @@ def _describe_visual_output(code_text: str) -> str:
     if "plt." in lowered or "matplotlib" in lowered:
         return "Статический график (matplotlib)"
     return "Графический вывод"
+
+
+def _rel_image_path(image_path: str | None, report_path: Path) -> str:
+    """Render a stable relative path for images in markdown reports."""
+
+    if not image_path:
+        return ""
+
+    resolved_path = Path(image_path)
+    try:
+        return resolved_path.relative_to(report_path.parent).as_posix()
+    except ValueError:
+        return resolved_path.as_posix()
 
 
 def _render_plotly_image(code_text: str, output_path: Path) -> tuple[str | None, str | None]:
@@ -786,16 +821,15 @@ def _render_case_markdown(
     lines.append("### Code score (только для code_generation)")
     lines.append("Формула:")
     lines.append("```text")
-    lines.append("code_score = 0.5 * heuristic_score + 0.5 * exec_score")
+    lines.append("code_score = 0.5 * heuristic_score + 0.5 * result_match")
     lines.append("code_score = clip(code_score, 0, 1)")
     lines.append("```")
     lines.append("Разложение долей:")
     lines.append("- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).")
-    lines.append("- exec_score: +0.5 если stdout совпал при успешном выполнении; +0.5 если совпал вычисленный результат.")
-    lines.append("Источники: опираемся на принципы автотестов LeetCode/Codeforces (выполнение и сравнение вывода/результата) и на статический")
-    lines.append("анализ из pymetrics/ruff (синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада.")
-    lines.append("Пояснения: stdout_match — флаг, что нормализованный вывод программы совпал с бенчмарком при отсутствии ошибок; result_match — флаг, что")
-    lines.append("финальное значение выражения совпало. Эти флаги формируют exec_score.")
+    lines.append("- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.")
+    lines.append("Источники: опираемся на принципы автотестов LeetCode/Codeforces (проверка результата) и на статический анализ из pymetrics/ruff")
+    lines.append("(синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада. Оценка stdout исключена, чтобы избежать шума от")
+    lines.append("незначимых различий вывода и сосредоточиться на корректности вычислений.")
     lines.append("")
     lines.append("## Кейсы")
 
@@ -820,16 +854,17 @@ def _render_case_markdown(
             lines.append(case.get("expected_code"))
             lines.append("```")
             details = case.get("code_details") or {}
-            lines.append("- expected_stdout:")
+            lines.append("- expected_result:\n ")
+            lines.append("```python")
+            lines.append(details.get("results", {}).get("expected"))
             lines.append("```")
-            lines.append(str(details.get("stdout", {}).get("expected")))
-            lines.append("```")
-            lines.append("- expected_result: " + str(details.get("results", {}).get("expected")))
-            if not details.get("stdout", {}).get("expected") and details.get("results", {}).get("expected") is None:
+            if details.get("results", {}).get("expected") is None:
                 lines.append("- expected_output: " + _describe_visual_output(case.get("expected_code", "")))
             lines.append("- expected_error: " + str(details.get("errors", {}).get("expected")))
             if case.get("expected_plot_path"):
-                lines.append(f"- expected_plot: ![expected plot]({case.get('expected_plot_path')})")
+                lines.append(
+                    f"- expected_plot:\n\n ![expected plot]({ _rel_image_path(case.get('expected_plot_path'), report_path) })"
+                )
             elif case.get("expected_plot_error"):
                 lines.append(f"- expected_plot_error: {case.get('expected_plot_error')}")
 
@@ -841,14 +876,15 @@ def _render_case_markdown(
             lines.append(case.get("model_generated_code"))
             lines.append("```")
             details = case.get("code_details") or {}
-            lines.append("- model_stdout:")
-            lines.append("```")
-            lines.append(str(details.get("stdout", {}).get("model")))
-            lines.append("```")
             lines.append("- model_result: " + str(details.get("results", {}).get("model")))
-            lines.append("- model_error: " + str(details.get("errors", {}).get("model")))
+            lines.append("- model_error:\n ")
+            lines.append("```python")             
+            lines.append(details.get("errors", {}).get("model"))
+            lines.append("```")
             if case.get("model_plot_path"):
-                lines.append(f"- model_plot: ![model plot]({case.get('model_plot_path')})")
+                lines.append(
+                    f"- model_plot:\n\n ![model plot]({ _rel_image_path(case.get('model_plot_path'), report_path) })"
+                )
             elif case.get("model_plot_error"):
                 lines.append(f"- model_plot_error: {case.get('model_plot_error')}")
 
@@ -903,8 +939,6 @@ def _render_case_markdown(
                 + " | matched: "
                 + ", ".join(calls_part.get("matched", []))
             )
-            lines.append("  - exec_score: " + str(details.get("exec_score")))
-            lines.append("  - stdout_match: " + str(details.get("stdout_match")))
             lines.append("  - result_match: " + str(details.get("result_match")))
 
         lines.append("")
@@ -964,8 +998,6 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
         return {
             "score": 0.0,
             "heuristic_score": 0.0,
-            "exec_score": 0.0,
-            "stdout_match": False,
             "result_match": False,
             "heuristic_breakdown": heuristic_breakdown,
             "errors": {
@@ -1015,44 +1047,27 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     }
 
     # ---------- execution-based scoring ----------
-    expected_stdout, expected_result, expected_error = _run_code_in_sandbox(expected_code)
-    model_stdout, model_result, model_error = _run_code_in_sandbox(model_code)
+    _, expected_result, expected_error = _run_code_in_sandbox(expected_code)
+    _, model_result, model_error = _run_code_in_sandbox(model_code)
 
-    stdout_match = (
+    result_match = (
         expected_error is None
         and model_error is None
-        and _normalize_stdout(expected_stdout) == _normalize_stdout(model_stdout)
+        and _compare_results(expected_result, model_result)
     )
-    result_match = expected_error is None and model_error is None and _compare_results(expected_result, model_result)
 
-    exec_score = 0.0
-    if expected_error is None:
-        if model_error is None:
-            if stdout_match:
-                exec_score += 0.5
-            if result_match:
-                exec_score += 0.5
-        else:
-            exec_score = 0.0
-    else:
-        exec_score = 0.0
-
-    combined_score = round(min((heuristic_score * 0.5) + (exec_score * 0.5), 1.0), 3)
+    combined_score = round(
+        min((heuristic_score * 0.5) + (0.5 if result_match else 0.0), 1.0), 3
+    )
 
     return {
         "score": combined_score,
         "heuristic_score": round(min(heuristic_score, 1.0), 3),
-        "exec_score": round(exec_score, 3),
-        "stdout_match": stdout_match,
         "result_match": result_match,
         "heuristic_breakdown": heuristic_breakdown,
         "errors": {
             "expected": expected_error,
             "model": model_error,
-        },
-        "stdout": {
-            "expected": expected_stdout,
-            "model": model_stdout,
         },
         "results": {
             "expected": expected_result,
@@ -1269,12 +1284,6 @@ def generate_report(
     cases_df = pd.DataFrame(report["cases"])
     cases_df["heuristic_score"] = cases_df["code_details"].apply(
         lambda x: x.get("heuristic_score") if isinstance(x, dict) else None
-    )
-    cases_df["exec_score"] = cases_df["code_details"].apply(
-        lambda x: x.get("exec_score") if isinstance(x, dict) else None
-    )
-    cases_df["stdout_match"] = cases_df["code_details"].apply(
-        lambda x: x.get("stdout_match") if isinstance(x, dict) else None
     )
     cases_df["result_match"] = cases_df["code_details"].apply(
         lambda x: x.get("result_match") if isinstance(x, dict) else None
