@@ -11,16 +11,25 @@ from torch.nn.functional import cosine_similarity
 from core.evaluation.constants import TEST_RESULT_PATH
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
 from core.evaluation.tools.code_evaluation_tools import (
-    _run_code_in_sandbox, compare_execution_results, extract_calls,
-    extract_imports)
-from core.evaluation.tools.report_helpers import (_mean, attach_plot_previews,
-                                                  generate_visualizations_data,
-                                                  render_case_markdown,
-                                                  summarize_by_group,
-                                                  summarize_by_language)
+    _run_code_in_sandbox,
+    compare_execution_results,
+    extract_calls,
+    extract_imports,
+)
+from core.evaluation.tools.report_helpers import (
+    _mean,
+    attach_plot_previews,
+    generate_visualizations_data,
+    render_case_markdown,
+    summarize_by_group,
+    summarize_by_language,
+)
 from core.evaluation.tools.text_evaluation_tools import (
-    _compute_embedding, counter_cosine_similarity, fact_presence_score,
-    tokenize)
+    _compute_embedding,
+    counter_cosine_similarity,
+    fact_presence_score,
+    tokenize,
+)
 
 
 # ---------------------------------------------------------------------------

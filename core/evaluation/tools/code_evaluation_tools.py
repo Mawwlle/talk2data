@@ -14,9 +14,13 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
 
-from core.evaluation.constants import (RANDOM_SEED, SAFE_BUILTINS,
-                                       SANDBOX_FILENAME,
-                                       SANDBOX_TIMEOUT_SECONDS, SandboxResult)
+from core.evaluation.constants import (
+    RANDOM_SEED,
+    SAFE_BUILTINS,
+    SANDBOX_FILENAME,
+    SANDBOX_TIMEOUT_SECONDS,
+    SandboxResult,
+)
 
 
 def extract_imports(code: str) -> set[str]:

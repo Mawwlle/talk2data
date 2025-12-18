@@ -349,17 +349,14 @@ def render_case_markdown(
     lines.append("semantic_similarity = clip(semantic_similarity, 0, 1)")
     lines.append("```")
     lines.append(
-        "Где доли: expected_coverage — доля ожидаемых фактов, упомянутых в ответе; forbidden_penalty — доля запрещённых фактов,"
+        "Где доли:\n - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;\n - forbidden_penalty — доля запрещённых фактов,"
     )
     lines.append(
-        "попавших в ответ (штраф). similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый"
+        "попавших в ответ (штраф).\n - similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый"
     )
     lines.append("референс) и ответом модели.")
     lines.append(
-        "Источники: взято из распространённой практике оценки фактологичности QA (cosine по sentence-transformers, coverage/penalty как"
-    )
-    lines.append(
-        "в rag-as-a-service baseline и open-domain QA leaderboard). Факт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55"
+        "\n\nФакт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55"
     )
     lines.append(
         "(или высокая токеновая схожесть), что позволяет засчитывать перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,"
@@ -380,15 +377,6 @@ def render_case_markdown(
     )
     lines.append(
         "- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения."
-    )
-    lines.append(
-        "Источники: опираемся на принципы автотестов LeetCode/Codeforces (проверка результата) и на статический анализ из pymetrics/ruff"
-    )
-    lines.append(
-        "(синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада. Оценка stdout исключена, чтобы избежать шума от"
-    )
-    lines.append(
-        "незначимых различий вывода и сосредоточиться на корректности вычислений."
     )
     lines.append("")
     lines.append("## Кейсы")
