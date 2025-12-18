@@ -38,10 +38,6 @@ sudo apt-get update && apt-get install -y ffmpeg
 ```
 .
 ├── core/                  # Всё, что используем в SMILE
-├── talk2data-django/      # Частично перенесён на gateway, пока нам не нужен
-├── talk2data-fastAPI/     # FastAPI service running, пока нам не нужен
-├── demo.mp4               # 1-min demo.
-├── LICENSE                # Apache‑2.0
 └── README.md              # You are here
 ```
 

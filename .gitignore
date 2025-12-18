@@ -1,12 +1,11 @@
 .env
 .venv/
+.ruff_cache/
 **/__pycache__/
 *.py[cod]
 *$py.class
 core/evaluation_benchmark/
-talk2data-fastAPI/evaluation_results/
 .vscode/
 model_weights_presaved/
-all-MiniLM-L6-v2/
 cache/
 reports/
