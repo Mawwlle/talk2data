@@ -33,6 +33,8 @@ code_score = clip(code_score, 0, 1)
 ### code_001_describe (code_generation, language: ru, difficulty: easy)
 
 **User input:** Напиши код, который выводит статистику по датасету.
+
+
 **Ground truth:**
 - expected_code:
 ```python
@@ -52,6 +54,8 @@ min        4.300000     2.000000      1.000000     0.100000
 75%        6.400000     3.300000      5.100000     1.800000
 max        7.900000     4.400000      6.900000     2.500000
 - expected_error: None
+
+
 **Model output:**
 > Here's the generated code:
 ```python
@@ -68,6 +72,8 @@ fig.show()
 - model_result: None
 - model_error: execution_timeout: sandbox_timeout
 - model_plot: ![model plot](core/evaluation/reports/plots/code_001_describe_model.png)
+
+
 **Метрики:**
 - decision_score: True
 - code_score: 0.25
@@ -82,6 +88,8 @@ fig.show()
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
 
 **User input:** Построй pairplot всех признаков.
+
+
 **Ground truth:**
 - expected_code:
 ```python
@@ -97,6 +105,8 @@ fig.show()
 - expected_output: Интерактивный график (Plotly)
 - expected_error: execution_timeout: sandbox_timeout
 - expected_plot: ![expected plot](core/evaluation/reports/plots/code_002_pairplot_expected.png)
+
+
 **Model output:**
 > Here's the generated code:
 ```python
@@ -115,6 +125,8 @@ fig.show()
 - model_result: None
 - model_error: execution_error: module 'plotly.express' has no attribute 'pairplot'
 - model_plot_error: module 'plotly.express' has no attribute 'pairplot'
+
+
 **Метрики:**
 - decision_score: True
 - code_score: 0.35
@@ -129,6 +141,8 @@ fig.show()
 ### code_003_train_model (code_generation, language: ru, difficulty: medium)
 
 **User input:** Напиши код, который обучает простой классификатор на этих данных.
+
+
 **Ground truth:**
 - expected_code:
 ```python
@@ -146,6 +160,8 @@ model.fit(X, y)
 ```
 - expected_result: LogisticRegression(max_iter=200)
 - expected_error: None
+
+
 **Model output:**
 > Here's the generated code:
 ```python
@@ -178,6 +194,8 @@ print(f"Accuracy: {accuracy:.2f}")
 ```
 - model_result: None
 - model_error: execution_error: [Errno 2] No such file or directory: 'your_data.csv'
+
+
 **Метрики:**
 - decision_score: True
 - code_score: 0.383
@@ -192,10 +210,16 @@ print(f"Accuracy: {accuracy:.2f}")
 ### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
 
 **User input:** Поясни, что представляет собой датасет.
+
+
 **Ground truth:**
 - expected_facts: датасет содержит измерения лепестков и чашелистиков; три вида ириса
+
+
 **Model output:**
 > Датасет представляет собой набор данных, содержащий информацию о различных аспектах животных, такие как их размеры, цвета, и семена.
+
+
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.594
@@ -205,10 +229,16 @@ print(f"Accuracy: {accuracy:.2f}")
 ### chat_002_how_many_classes (chat_response, language: ru, difficulty: easy)
 
 **User input:** Сколько классов в этом датасете?
+
+
 **Ground truth:**
 - expected_facts: три класса; setosa; versicolor; virginica
+
+
 **Model output:**
 > В этом датасете 3 класса.
+
+
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.415
@@ -218,8 +248,12 @@ print(f"Accuracy: {accuracy:.2f}")
 ### chat_003_best_features (chat_response, language: ru, difficulty: medium)
 
 **User input:** Какие признаки лучше всего разделяют виды ирисов?
+
+
 **Ground truth:**
 - expected_facts: длина лепестка; ширина лепестка
+
+
 **Model output:**
 > Here's the generated code:
 ```python
@@ -247,6 +281,8 @@ None
 - model_result: None
 - model_error: None
 - model_plot: ![model plot](core/evaluation/reports/plots/chat_003_best_features_model.png)
+
+
 **Метрики:**
 - decision_score: False
 - semantic_similarity: 0.052
@@ -255,10 +291,16 @@ None
 ### chat_004_easiest_class (chat_response, language: ru, difficulty: medium)
 
 **User input:** Какой вид ириса лучше всего отделяется от остальных?
+
+
 **Ground truth:**
 - expected_facts: setosa; короче лепестки; шире лепестки
+
+
 **Model output:**
 > Вид ириса, который лучше всего отделяется от остальных, является квадрат.
+
+
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.459
@@ -268,11 +310,17 @@ None
 ### theory_001_overfitting (chat_response, language: ru, difficulty: easy)
 
 **User input:** Что такое переобучение в машинном обучении?
+
+
 **Ground truth:**
 - expected_facts: модель слишком хорошо подстраивается под обучающую выборку; плохо обобщает на новые данные
 - forbidden_facts: переобучение улучшает качество на новых данных
+
+
 **Model output:**
 > Переобучение в машинном обучении - это процесс, когда модель обучается на данных, которые не соответствуют ожиданиям или требованиям, что приводит к переобучению модели. Это может быть связано с различными факторами, таких как переобучение модели на слишком малых данных, переобучение модели на слишком большом наборе данных, переобучение модели на слишком сложных или сложных задачах, переобучение модели на слишком малых или слишком большом количестве признаков.
+
+
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.206
@@ -281,11 +329,17 @@ None
 ### theory_002_train_test_split (chat_response, language: ru, difficulty: easy)
 
 **User input:** Зачем используется разделение на обучающую и тестовую выборки?
+
+
 **Ground truth:**
 - expected_facts: оценка качества модели на невидимых данных; предотвращение утечки данных
 - forbidden_facts: для увеличения точности на обучающей выборке
+
+
 **Model output:**
 > Зачем используется разделение на обучающую и тестовую выборки? Это делает выборы более эффективным и предсказуемым, особенно при большом количестве данных.
+
+
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.271
@@ -296,11 +350,17 @@ None
 ### theory_003_regularization (chat_response, language: ru, difficulty: medium)
 
 **User input:** Что такое регуляризация и зачем она нужна?
+
+
 **Ground truth:**
 - expected_facts: добавляет штраф за сложность модели; уменьшает переобучение
 - forbidden_facts: регуляризация увеличивает разброс модели
+
+
 **Model output:**
 > Регуляризация - это процесс, который устраняет или убирает ошибки в данных, чтобы они были более точными и полезными для анализа. Она помогает улучшить качество данных, устранить неправильные значения или ошибки в данных, которые могут привести к ошибкам при анализе.
+
+
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.0
@@ -310,11 +370,17 @@ None
 ### theory_004_bias_variance (chat_response, language: ru, difficulty: medium)
 
 **User input:** Объясни компромисс между смещением и разбросом.
+
+
 **Ground truth:**
 - expected_facts: смещение связано с упрощающими предположениями модели; разброс связан с чувствительностью к обучающим данным; существует компромисс между смещением и разбросом
 - forbidden_facts: смещение и разброс можно минимизировать независимо
+
+
 **Model output:**
 > Смещение и разброс - это два различных метода, которые используются для улучшения качества данных. Смещение - это процесс, который позволяет изменить расположение данных в массиве, чтобы улучшить его структуру и качество. Разброс, наоборот, - это процесс, который позволяет изменить распределение данных в массиве, чтобы улучшить его структуру и качество.
+
+
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.334

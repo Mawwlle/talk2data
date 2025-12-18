@@ -33,7 +33,7 @@ DEFAULT_EMBEDDING_MODEL = (
 DEFAULT_BASELINE_PATH = "core/evaluation/inference_results/eval_0_baseline.json"
 RANDOM_SEED = 0
 SANDBOX_FILENAME = "<sandbox>"
-SANDBOX_TIMEOUT_SECONDS = 60
+SANDBOX_TIMEOUT_SECONDS = 20
 SAFE_BUILTINS = [
     "abs",
     "all",
@@ -809,7 +809,7 @@ def _render_case_markdown(
         expected_facts = case.get("expected_facts") or []
         forbidden_facts = case.get("forbidden_facts") or []
 
-        lines.append("\n**Ground truth:**")
+        lines.append("\n\n**Ground truth:**")
         if expected_facts:
             lines.append("- expected_facts: " + "; ".join(expected_facts))
         if forbidden_facts:
@@ -833,7 +833,7 @@ def _render_case_markdown(
             elif case.get("expected_plot_error"):
                 lines.append(f"- expected_plot_error: {case.get('expected_plot_error')}")
 
-        lines.append("\n**Model output:**")
+        lines.append("\n\n**Model output:**")
         if case.get("response_message"):
             lines.append("> " + case.get("response_message").replace("\n", " "))
         if case.get("model_generated_code"):
@@ -852,7 +852,7 @@ def _render_case_markdown(
             elif case.get("model_plot_error"):
                 lines.append(f"- model_plot_error: {case.get('model_plot_error')}")
 
-        lines.append("\n**Метрики:**")
+        lines.append("\n\n**Метрики:**")
         lines.append("- decision_score: " + str(case.get("decision_score")))
 
         if case.get("expected_decision") == "chat_response":
