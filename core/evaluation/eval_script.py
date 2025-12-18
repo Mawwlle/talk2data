@@ -769,7 +769,7 @@ def _render_case_markdown(
     lines.append(f"# {title}")
     lines.append("")
     lines.append("## Методика расчёта метрик")
-    lines.append("### Semantic similarity (только для chat_response/theoretical_response)")
+    lines.append("### Semantic similarity (только для chat_response)")
     lines.append("Формула:")
     lines.append("```text")
     lines.append("semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty")

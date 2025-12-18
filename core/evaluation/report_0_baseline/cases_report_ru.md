@@ -1,7 +1,7 @@
 # Детальный отчёт по кейсам (ru)
 
 ## Методика расчёта метрик
-### Semantic similarity (только для chat_response/theoretical_response)
+### Semantic similarity (только для chat_response)
 Формула:
 ```text
 semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty

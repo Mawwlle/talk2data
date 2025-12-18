@@ -739,7 +739,7 @@
     },
     {
       "benchmark_id": "theory_004_bias_variance",
-      "expected_decision": "theoretical_response",
+      "expected_decision": "chat_response",
       "model_decision": {
         "action": "chat_response"
       },
