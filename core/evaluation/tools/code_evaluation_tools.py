@@ -1,11 +1,5 @@
 # ---------- code parsing helpers ----------
 import ast
-import math
-from typing import Any
-
-import numpy as np
-import pandas as pd
-import ast
 import builtins
 import contextlib
 import io
@@ -20,7 +14,10 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
 
-from core.evaluation.constants import RANDOM_SEED, SAFE_BUILTINS, SANDBOX_FILENAME, SANDBOX_TIMEOUT_SECONDS, SandboxResult
+from core.evaluation.constants import (RANDOM_SEED, SAFE_BUILTINS,
+                                       SANDBOX_FILENAME,
+                                       SANDBOX_TIMEOUT_SECONDS, SandboxResult)
+
 
 def extract_imports(code: str) -> set[str]:
     """Extract imported modules from Python code."""
@@ -57,6 +54,7 @@ def extract_calls(code: str) -> set[str]:
 
     return calls
 
+
 def compare_execution_results(expected: Any, actual: Any) -> bool:
     """Compare execution results with tolerance for numerics and arrays."""
 
@@ -74,18 +72,22 @@ def compare_execution_results(expected: Any, actual: Any) -> bool:
 
     return expected == actual
 
-# --- code execution --- 
+
+# --- code execution ---
+
 
 def _sandbox_globals() -> dict[str, Any]:
     """Prepare globals for sandboxed execution with restricted builtins."""
 
-    dummy_builtins = {"__builtins__": {name: getattr(builtins, name) for name in SAFE_BUILTINS}}
+    dummy_builtins = {
+        "__builtins__": {name: getattr(builtins, name) for name in SAFE_BUILTINS}
+    }
 
     np.random.seed(RANDOM_SEED)
 
     iris = load_iris(as_frame=True)
-    df = iris.frame.copy() # type: ignore
-    df["species"] = df["target"].map(lambda idx: iris.target_names[idx]) # type: ignore
+    df = iris.frame.copy()  # type: ignore
+    df["species"] = df["target"].map(lambda idx: iris.target_names[idx])  # type: ignore
     df = df.drop(columns=["target"]).rename(
         columns={
             "sepal length (cm)": "sepal_length",
@@ -139,7 +141,7 @@ def _run_code_in_sandbox(code: str) -> SandboxResult:
     try:
         parsed = ast.parse(code)
     except SyntaxError as exc:
-        return "", None, f"syntax_error: {exc}" # type: ignore
+        return "", None, f"syntax_error: {exc}"  # type: ignore
 
     stdout_buffer = io.StringIO()
     exec_error: str | None = None
@@ -149,15 +151,29 @@ def _run_code_in_sandbox(code: str) -> SandboxResult:
         with _enforce_timeout():
             with contextlib.redirect_stdout(stdout_buffer):
                 if parsed.body and isinstance(parsed.body[-1], ast.Expr):
-                    body_without_last = ast.Module(body=parsed.body[:-1], type_ignores=[])
+                    body_without_last = ast.Module(
+                        body=parsed.body[:-1], type_ignores=[]
+                    )
                     last_expr = ast.Expression(parsed.body[-1].value)
 
                     if body_without_last.body:
-                        exec(compile(body_without_last, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
+                        exec(
+                            compile(body_without_last, SANDBOX_FILENAME, "exec"),
+                            sandbox_globals,
+                            sandbox_locals,
+                        )
 
-                    result_value = eval(compile(last_expr, SANDBOX_FILENAME, "eval"), sandbox_globals, sandbox_locals)
+                    result_value = eval(
+                        compile(last_expr, SANDBOX_FILENAME, "eval"),
+                        sandbox_globals,
+                        sandbox_locals,
+                    )
                 else:
-                    exec(compile(parsed, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
+                    exec(
+                        compile(parsed, SANDBOX_FILENAME, "exec"),
+                        sandbox_globals,
+                        sandbox_locals,
+                    )
     except TimeoutError as exc:
         exec_error = f"execution_timeout: {exc}"
     except Exception as exc:  # noqa: BLE001

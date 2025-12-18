@@ -10,14 +10,25 @@ from torch.nn.functional import cosine_similarity
 
 from core.evaluation.constants import TEST_RESULT_PATH
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
-from core.evaluation.tools.code_evaluation_tools import compare_execution_results, _run_code_in_sandbox, extract_calls, extract_imports
-from core.evaluation.tools.report_helpers import attach_plot_previews, generate_visualizations_data, _mean, render_case_markdown, summarize_by_group, summarize_by_language
-from core.evaluation.tools.text_evaluation_tools import _compute_embedding, fact_presence_score, counter_cosine_similarity, tokenize
+from core.evaluation.tools.code_evaluation_tools import (
+    _run_code_in_sandbox, compare_execution_results, extract_calls,
+    extract_imports)
+from core.evaluation.tools.report_helpers import (_mean, attach_plot_previews,
+                                                  generate_visualizations_data,
+                                                  render_case_markdown,
+                                                  summarize_by_group,
+                                                  summarize_by_language)
+from core.evaluation.tools.text_evaluation_tools import (
+    _compute_embedding, counter_cosine_similarity, fact_presence_score,
+    tokenize)
+
 
 # ---------------------------------------------------------------------------
 # Import helpers
 # ---------------------------------------------------------------------------
-def validate_list(results: list[dict[str, Any]] | dict[str, Any] | None) -> list[dict[str, Any]]:
+def validate_list(
+    results: list[dict[str, Any]] | dict[str, Any] | None,
+) -> list[dict[str, Any]]:
     """Normalize inference results to a list of dictionaries."""
 
     if isinstance(results, list):
@@ -26,7 +37,10 @@ def validate_list(results: list[dict[str, Any]] | dict[str, Any] | None) -> list
         return results.get("results", [])
     return []
 
-def _collect_benchmark_metadata(benchmarks: list[dict[str, Any]]) -> dict[tuple[str | None, str | None], dict[str, Any]]:
+
+def _collect_benchmark_metadata(
+    benchmarks: list[dict[str, Any]],
+) -> dict[tuple[str | None, str | None], dict[str, Any]]:
     """Collect metadata by (id, language) for quick lookup."""
 
     meta: dict[tuple[str | None, str | None], dict[str, Any]] = {}
@@ -34,6 +48,7 @@ def _collect_benchmark_metadata(benchmarks: list[dict[str, Any]]) -> dict[tuple[
         key = (case.get("id"), case.get("metadata", {}).get("language"))
         meta[key] = case
     return meta
+
 
 def _infer_language_from_filename(path: Path) -> str:
     """Infer language from filename suffix: *_en.json or *_ru.json."""
@@ -43,6 +58,7 @@ def _infer_language_from_filename(path: Path) -> str:
     if path.name.endswith("_en.json"):
         return "en"
     return "unknown"
+
 
 def _load_all_benchmarks() -> list[dict[str, Any]]:
     """Load all benchmark cases from the configured directory with language tags."""
@@ -71,13 +87,16 @@ def _load_all_benchmarks() -> list[dict[str, Any]]:
 
 # --- Evaluations ---
 
+
 def evaluate_decision(model_decision: Any, expected: Any) -> bool:
     """Return whether the model decision matches the expected decision."""
 
     return model_decision == expected
 
 
-def evaluate_text_similarity(reference_text: str | None, generated_text: str | None) -> float | None:
+def evaluate_text_similarity(
+    reference_text: str | None, generated_text: str | None
+) -> float | None:
     """Return cosine similarity between reference text and generated text.
 
     The reference is expected to be a canonical answer (e.g., concatenated
@@ -144,7 +163,9 @@ def evaluate_chat_semantics(
             forbidden_hit_scores.append((fact, round(score, 3)))
 
     coverage = len(expected_hit_scores) / len(expected_facts) if expected_facts else 1.0
-    penalty = len(forbidden_hit_scores) / len(forbidden_facts) if forbidden_facts else 0.0
+    penalty = (
+        len(forbidden_hit_scores) / len(forbidden_facts) if forbidden_facts else 0.0
+    )
 
     reference_text = ". ".join(expected_facts)
     similarity = evaluate_text_similarity(reference_text, generated_text)
@@ -161,6 +182,7 @@ def evaluate_chat_semantics(
         "expected_hits": expected_hit_scores,
         "forbidden_hits": forbidden_hit_scores,
     }
+
 
 # ---------------------------------------------------------------------------
 # Main evaluation logic
@@ -263,7 +285,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
 
 
 def run_eval(
-    inference_res_path: str
+    inference_res_path: str,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Run evaluation comparing inference results to benchmarks and baseline."""
     # 1. inference format check
@@ -274,7 +296,7 @@ def run_eval(
     # 2. Загружаем все бэнчмарки с ground truth
     benchmarks = _load_all_benchmarks()
     total_cases = len(benchmarks)
-    
+
     results: list[dict[str, Any]] = []
 
     # 3. Формируем начальную инфу обо всех кейсах
@@ -294,14 +316,14 @@ def run_eval(
             continue
 
         decision_score = evaluate_decision(
-            model_output.get("model_decision", {}).get("action"), case["expected_decision"]
+            model_output.get("model_decision", {}).get("action"),
+            case["expected_decision"],
         )
 
         # a - проверяем сгенерённый текст
         semantic_similarity = None
         semantic_details = None
         if case.get("expected_decision") == "chat_response":
-
             semantic_details = evaluate_chat_semantics(
                 case.get("expected_facts"),
                 case.get("forbidden_facts"),
@@ -312,8 +334,12 @@ def run_eval(
         # б - проверяем сгенерённый код
         code_score_details = None
         code_score = None
-        if case.get("expected_decision") == "code_generation" and case.get("expected_code"):
-            code_score_details = evaluate_code(model_output.get("generated_code", ""), case["expected_code"])
+        if case.get("expected_decision") == "code_generation" and case.get(
+            "expected_code"
+        ):
+            code_score_details = evaluate_code(
+                model_output.get("generated_code", ""), case["expected_code"]
+            )
             code_score = code_score_details.get("score")
 
         results.append(
@@ -333,7 +359,9 @@ def run_eval(
     return results, benchmarks
 
 
-def build_report_data(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]) -> dict[str, Any]:
+def build_report_data(
+    results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Construct aggregated report data from evaluation results."""
 
     benchmarks_by_id = _collect_benchmark_metadata(benchmarks)
@@ -360,11 +388,23 @@ def build_report_data(results: list[dict[str, Any]], benchmarks: list[dict[str, 
     summary = {
         "cases_total": len(enriched_cases),
         "missing": len([case for case in enriched_cases if case.get("error")]),
-        "decision_accuracy": _mean([case.get("decision_score") for case in enriched_cases if not case.get("error")]),
-        "semantic_similarity_avg": _mean(
-            [case.get("semantic_similarity") for case in enriched_cases if not case.get("error")]
+        "decision_accuracy": _mean(
+            [
+                case.get("decision_score")
+                for case in enriched_cases
+                if not case.get("error")
+            ]
         ),
-        "code_score_avg": _mean([case.get("code_score") for case in enriched_cases if not case.get("error")]),
+        "semantic_similarity_avg": _mean(
+            [
+                case.get("semantic_similarity")
+                for case in enriched_cases
+                if not case.get("error")
+            ]
+        ),
+        "code_score_avg": _mean(
+            [case.get("code_score") for case in enriched_cases if not case.get("error")]
+        ),
     }
 
     by_difficulty = summarize_by_group(enriched_cases, benchmarks_by_id, "difficulty")
@@ -385,10 +425,10 @@ def generate_report(
     """Generate evaluation report files and return the structured report."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # 1. Запускаем Evaluation 
+
+    # 1. Запускаем Evaluation
     results, benchmarks = run_eval(inference_res_path)
-    
+
     # 2. Формируем данные для отчёта
     report = build_report_data(results, benchmarks)
 
@@ -406,7 +446,9 @@ def generate_report(
             continue
         filename = f"cases_report_{lang}.md"
         title = f"Детальный отчёт по кейсам ({lang})"
-        lang_path = render_case_markdown(lang_cases, output_dir, filename=filename, title=title)
+        lang_path = render_case_markdown(
+            lang_cases, output_dir, filename=filename, title=title
+        )
         report_paths[lang] = str(lang_path)
     report["case_report_path"] = report_paths
 

@@ -1,24 +1,27 @@
-
-from pathlib import Path
 import re
+from collections import Counter
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 import torch
 from transformers import AutoModel, AutoTokenizer
-from collections import Counter
 
 from core.evaluation.constants import DEFAULT_EMBEDDING_MODEL
 
-# --- text preprocessers and embeddings --- 
+# --- text preprocessers and embeddings ---
+
 
 def tokenize(text: str) -> list[str]:
     """Return simple whitespace-tokenization with punctuation handling."""
     text = re.sub(r"[^\w\s]", " ", text.lower())
     return text.split()
 
+
 @lru_cache(maxsize=1)
-def _load_embedding_components(model_path: str = DEFAULT_EMBEDDING_MODEL) -> tuple[Any, Any]:
+def _load_embedding_components(
+    model_path: str = DEFAULT_EMBEDDING_MODEL,
+) -> tuple[Any, Any]:
     """Load tokenizer and model for embedding computation."""
 
     model_path = str(Path(model_path).expanduser())
@@ -53,7 +56,9 @@ def _compute_embedding(text: str) -> torch.Tensor:
 
     return sentence_embedding.squeeze(0)
 
-# --- text metrics --- 
+
+# --- text metrics ---
+
 
 def counter_cosine_similarity(counter1: Counter[str], counter2: Counter[str]) -> float:
     """Return cosine similarity between two Counters."""
@@ -72,6 +77,7 @@ def counter_cosine_similarity(counter1: Counter[str], counter2: Counter[str]) ->
         return 0.0
 
     return dot_product / (norm_a * norm_b)
+
 
 def fact_presence_score(fact: str, text: str) -> float:
     """Return semantic presence score for a fact in text (0-1)."""

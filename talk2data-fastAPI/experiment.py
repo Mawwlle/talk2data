@@ -1,10 +1,18 @@
 # experiment.py  – run all datasets and log timings / outputs
-import os, math, base64, json, time, requests
-import pandas as pd
+import base64
+import json
+import math
+import os
+import time
+
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib, matplotlib.pyplot as plt
+import pandas as pd
+import plotly
+import plotly.express as px
+import requests
 import seaborn as sns
-import plotly, plotly.express as px
 
 # non‑interactive backend for Matplotlib
 matplotlib.use("Agg")
@@ -227,18 +235,18 @@ def run_experiment(dataset_name, csv_path, commands_path, out_dir):
         "chat_success": chat_ok,
         "tts_responses": tts_resp,
         "avg_round_trip_time_sec": round(rt_sum / n_cmd, 4) if n_cmd else 0.0,
-        "avg_sandbox_time_sec": round(sandbox_sum / max(1, code_resp), 4)
-        if code_resp
-        else 0.0,
-        "avg_decide_time_sec": round(decide_sum / max(1, decide_cnt), 4)
-        if decide_cnt
-        else 0.0,
-        "avg_code_gen_time_sec": round(codegen_sum / max(1, code_resp), 4)
-        if code_resp
-        else 0.0,
-        "avg_chat_resp_gen_time_sec": round(chatgen_sum / max(1, chatgen_cnt), 4)
-        if chatgen_cnt
-        else 0.0,
+        "avg_sandbox_time_sec": (
+            round(sandbox_sum / max(1, code_resp), 4) if code_resp else 0.0
+        ),
+        "avg_decide_time_sec": (
+            round(decide_sum / max(1, decide_cnt), 4) if decide_cnt else 0.0
+        ),
+        "avg_code_gen_time_sec": (
+            round(codegen_sum / max(1, code_resp), 4) if code_resp else 0.0
+        ),
+        "avg_chat_resp_gen_time_sec": (
+            round(chatgen_sum / max(1, chatgen_cnt), 4) if chatgen_cnt else 0.0
+        ),
         "avg_tts_time_sec": round(tts_sum / max(1, tts_resp), 4) if tts_resp else 0.0,
     }
     json.dump(

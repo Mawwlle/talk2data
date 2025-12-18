@@ -1,6 +1,6 @@
 from core.prompts import CODE_GENERATION_PROMPT
-from core.workflow import format_prompt, init_tokenizer_only
 from core.tests.tools import TEST_INITIAL_STATES
+from core.workflow import format_prompt, init_tokenizer_only
 
 # Пока сырой тест, в SD-1515 и SD-1516 будет доработано
 

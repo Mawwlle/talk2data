@@ -1,14 +1,14 @@
-
-from typing import Any
 from pathlib import Path
+from typing import Any
 
-from matplotlib import pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
 
 from core.evaluation.constants import SANDBOX_FILENAME
 from core.evaluation.tools.code_evaluation_tools import _sandbox_globals
 
 # --- aggregation ---
+
 
 def _mean(values: list[float | None]) -> float:
     """Compute a rounded mean ignoring non-numeric entries."""
@@ -17,7 +17,6 @@ def _mean(values: list[float | None]) -> float:
     if not numeric:
         return 0.0
     return round(sum(numeric) / len(numeric), 3)
-
 
 
 def summarize_by_group(
@@ -81,27 +80,36 @@ def summarize_by_language(
 
     return summary
 
+
 def _aggregate_code_metrics(cases: list[dict[str, Any]]) -> dict[str, float]:
     """Aggregate code-generation metrics across cases."""
 
     code_cases = [
-        case for case in cases if case.get("expected_decision") == "code_generation" and not case.get("error")
+        case
+        for case in cases
+        if case.get("expected_decision") == "code_generation" and not case.get("error")
     ]
     if not code_cases:
         return {}
 
-    heuristics = [case.get("code_details", {}).get("heuristic_score") for case in code_cases]
-    result_matches = [1.0 if case.get("code_details", {}).get("result_match") else 0.0 for case in code_cases]
+    heuristics = [
+        case.get("code_details", {}).get("heuristic_score") for case in code_cases
+    ]
+    result_matches = [
+        1.0 if case.get("code_details", {}).get("result_match") else 0.0
+        for case in code_cases
+    ]
     code_scores = [case.get("code_score") for case in code_cases]
 
     return {
         "code_score": _mean(code_scores),
         "heuristic_score": _mean(heuristics),
-        "result_match_rate": _mean(result_matches), # type: ignore
+        "result_match_rate": _mean(result_matches),  # type: ignore
     }
 
 
 # --- visualization helpers ---
+
 
 def _ensure_kaleido() -> bool:
     """Try to ensure kaleido is available for Plotly image export.
@@ -135,7 +143,10 @@ def _ensure_kaleido() -> bool:
     except Exception:  # noqa: BLE001
         return False
 
-def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: Path) -> str:
+
+def _save_plot(
+    values: dict[str, float], title: str, ylabel: str, output_path: Path
+) -> str:
     """Save a simple bar plot and return its file path."""
 
     labels = list(values.keys())
@@ -195,7 +206,9 @@ def _save_language_comparison(
     return str(output_path)
 
 
-def generate_visualizations_data(report: dict[str, Any], output_dir: Path) -> dict[str, str]:
+def generate_visualizations_data(
+    report: dict[str, Any], output_dir: Path
+) -> dict[str, str]:
     """Generate charts for key metrics and return their paths."""
 
     charts: dict[str, str] = {}
@@ -251,6 +264,7 @@ def generate_visualizations_data(report: dict[str, Any], output_dir: Path) -> di
 
     return charts
 
+
 def _describe_visual_output(code_text: str) -> str:
     """Provide a readable hint for visual outputs without raw JSON dumps."""
 
@@ -275,7 +289,9 @@ def _rel_image_path(image_path: str | None, report_path: Path) -> str:
         return resolved_path.as_posix()
 
 
-def _render_plotly_image(code_text: str, output_path: Path) -> tuple[str | None, str | None]:
+def _render_plotly_image(
+    code_text: str, output_path: Path
+) -> tuple[str | None, str | None]:
     """Execute Plotly code and export figure to PNG."""
 
     if "plotly" not in code_text.lower():
@@ -327,16 +343,30 @@ def render_case_markdown(
     lines.append("### Semantic similarity (только для chat_response)")
     lines.append("Формула:")
     lines.append("```text")
-    lines.append("semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty")
+    lines.append(
+        "semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty"
+    )
     lines.append("semantic_similarity = clip(semantic_similarity, 0, 1)")
     lines.append("```")
-    lines.append("Где доли: expected_coverage — доля ожидаемых фактов, упомянутых в ответе; forbidden_penalty — доля запрещённых фактов,")
-    lines.append("попавших в ответ (штраф). similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый")
+    lines.append(
+        "Где доли: expected_coverage — доля ожидаемых фактов, упомянутых в ответе; forbidden_penalty — доля запрещённых фактов,"
+    )
+    lines.append(
+        "попавших в ответ (штраф). similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый"
+    )
     lines.append("референс) и ответом модели.")
-    lines.append("Источники: взято из распространённой практике оценки фактологичности QA (cosine по sentence-transformers, coverage/penalty как")
-    lines.append("в rag-as-a-service baseline и open-domain QA leaderboard). Факт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55")
-    lines.append("(или высокая токеновая схожесть), что позволяет засчитывать перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,")
-    lines.append("давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1]).")
+    lines.append(
+        "Источники: взято из распространённой практике оценки фактологичности QA (cosine по sentence-transformers, coverage/penalty как"
+    )
+    lines.append(
+        "в rag-as-a-service baseline и open-domain QA leaderboard). Факт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55"
+    )
+    lines.append(
+        "(или высокая токеновая схожесть), что позволяет засчитывать перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,"
+    )
+    lines.append(
+        "давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1])."
+    )
     lines.append("")
     lines.append("### Code score (только для code_generation)")
     lines.append("Формула:")
@@ -345,11 +375,21 @@ def render_case_markdown(
     lines.append("code_score = clip(code_score, 0, 1)")
     lines.append("```")
     lines.append("Разложение долей:")
-    lines.append("- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).")
-    lines.append("- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.")
-    lines.append("Источники: опираемся на принципы автотестов LeetCode/Codeforces (проверка результата) и на статический анализ из pymetrics/ruff")
-    lines.append("(синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада. Оценка stdout исключена, чтобы избежать шума от")
-    lines.append("незначимых различий вывода и сосредоточиться на корректности вычислений.")
+    lines.append(
+        "- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов)."
+    )
+    lines.append(
+        "- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения."
+    )
+    lines.append(
+        "Источники: опираемся на принципы автотестов LeetCode/Codeforces (проверка результата) и на статический анализ из pymetrics/ruff"
+    )
+    lines.append(
+        "(синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада. Оценка stdout исключена, чтобы избежать шума от"
+    )
+    lines.append(
+        "незначимых различий вывода и сосредоточиться на корректности вычислений."
+    )
     lines.append("")
     lines.append("## Кейсы")
 
@@ -371,7 +411,7 @@ def render_case_markdown(
         if case.get("expected_code"):
             lines.append("- expected_code:")
             lines.append("```python")
-            lines.append(case.get("expected_code")) # type: ignore
+            lines.append(case.get("expected_code"))  # type: ignore
             lines.append("```")
             details = case.get("code_details") or {}
             lines.append("- expected_result:\n ")
@@ -380,24 +420,33 @@ def render_case_markdown(
             lines.append(str(expected_result))
             lines.append("```")
             if details.get("results", {}).get("expected") is None:
-                lines.append("- expected_output: " + _describe_visual_output(case.get("expected_code", "")))
-            lines.append("- expected_error: " + str(details.get("errors", {}).get("expected")))
+                lines.append(
+                    "- expected_output: "
+                    + _describe_visual_output(case.get("expected_code", ""))
+                )
+            lines.append(
+                "- expected_error: " + str(details.get("errors", {}).get("expected"))
+            )
             if case.get("expected_plot_path"):
                 lines.append(
-                    f"- expected_plot:\n\n ![expected plot]({ _rel_image_path(case.get('expected_plot_path'), report_path) })"
+                    f"- expected_plot:\n\n ![expected plot]({_rel_image_path(case.get('expected_plot_path'), report_path)})"
                 )
             elif case.get("expected_plot_error"):
-                lines.append(f"- expected_plot_error: {case.get('expected_plot_error')}")
+                lines.append(
+                    f"- expected_plot_error: {case.get('expected_plot_error')}"
+                )
 
         lines.append("\n\n**Model output:**")
         if case.get("response_message"):
-            lines.append("> " + case.get("response_message").replace("\n", " ")) # type: ignore
+            lines.append("> " + case.get("response_message").replace("\n", " "))  # type: ignore
         if case.get("model_generated_code"):
             lines.append("```python")
-            lines.append(case.get("model_generated_code")) # type: ignore
+            lines.append(case.get("model_generated_code"))  # type: ignore
             lines.append("```")
             details = case.get("code_details") or {}
-            lines.append("- model_result: " + str(details.get("results", {}).get("model")))
+            lines.append(
+                "- model_result: " + str(details.get("results", {}).get("model"))
+            )
             lines.append("- model_error:\n ")
             lines.append("```python")
             model_error = details.get("errors", {}).get("model")
@@ -405,7 +454,7 @@ def render_case_markdown(
             lines.append("```")
             if case.get("model_plot_path"):
                 lines.append(
-                    f"- model_plot:\n\n ![model plot]({ _rel_image_path(case.get('model_plot_path'), report_path) })"
+                    f"- model_plot:\n\n ![model plot]({_rel_image_path(case.get('model_plot_path'), report_path)})"
                 )
             elif case.get("model_plot_error"):
                 lines.append(f"- model_plot_error: {case.get('model_plot_error')}")
@@ -420,11 +469,19 @@ def render_case_markdown(
                 f"  - expected_coverage: {semantic_details.get('expected_coverage')} | forbidden_penalty: {semantic_details.get('forbidden_penalty')}"
             )
             if semantic_details.get("expected_hits"):
-                formatted = [f"{fact} (score {score})" for fact, score in semantic_details.get("expected_hits", [])]
+                formatted = [
+                    f"{fact} (score {score})"
+                    for fact, score in semantic_details.get("expected_hits", [])
+                ]
                 lines.append("  - покрытые факты: " + "; ".join(formatted))
             if semantic_details.get("forbidden_hits"):
-                formatted = [f"{fact} (score {score})" for fact, score in semantic_details.get("forbidden_hits", [])]
-                lines.append("  - упомянутые запрещённые факты: " + "; ".join(formatted))
+                formatted = [
+                    f"{fact} (score {score})"
+                    for fact, score in semantic_details.get("forbidden_hits", [])
+                ]
+                lines.append(
+                    "  - упомянутые запрещённые факты: " + "; ".join(formatted)
+                )
 
         if case.get("expected_decision") == "code_generation":
             details = case.get("code_details") or {}

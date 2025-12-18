@@ -1,6 +1,7 @@
 # talk2data_core/urls.py
 
 from django.urls import path
+
 from . import views
 
 urlpatterns = [

@@ -1,6 +1,5 @@
 from transformers import AutoTokenizer
 
-
 LLM_MODEL_NAME = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 LOCAL_PATH = "model_weights_presaved"
 

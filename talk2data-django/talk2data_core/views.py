@@ -1,27 +1,25 @@
 # views.py
 
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import pandas as pd
-import numpy as np
 import base64
 import io
 import json
-import matplotlib
 
+import matplotlib
+import numpy as np
+import pandas as pd
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from talk2data_core.helpers import update_metadata
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-
-import seaborn as sns
 import plotly
 import plotly.express as px
 import plotly.io as pio
-
 import requests
+import seaborn as sns
+from matplotlib.axes import Axes
 
 API_URL = "http://10.32.15.90:6000"
 
@@ -277,6 +275,7 @@ def execute_code(request):
 def _convert_object_to_output(obj):
     import base64
     import io
+
     import plotly
 
     if isinstance(obj, pd.DataFrame):

@@ -1,18 +1,18 @@
 # worker.py
 import base64
 import json
-from pathlib import Path
+import logging
+import tempfile
 import time
-import pika
-from pika.exceptions import AMQPConnectionError, AMQPChannelError
+from pathlib import Path
 
+import pika
+from pika.exceptions import AMQPChannelError, AMQPConnectionError
+
+from core.config import settings
+from core.schemas import ConversationRequest
 # from models import whisper_model
 from core.workflow import create_workflow, llm_init
-from core.schemas import ConversationRequest
-import tempfile
-
-import logging
-from core.config import settings
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ def handle_converse(data: dict):
 
         # для дебага вместо workflow, если нет времени разворачивать llm:
         # result = load_result_locally()
-        
+
         # Чтобы в случае необходимости превратить последний запущенный кейс в бэнчмарк
         save_result_locally(result)
 
