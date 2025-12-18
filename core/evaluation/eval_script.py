@@ -30,7 +30,7 @@ DEFAULT_EMBEDDING_MODEL = (
     "~/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/"
     "snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
 )
-DEFAULT_BASELINE_PATH = "core/evaluation/inference_results/eval_0_baseline.json"
+DEFAULT_BASELINE_PATH = "core/evaluation/inference_results/infer_0_baseline.json"
 RANDOM_SEED = 0
 SANDBOX_FILENAME = "<sandbox>"
 SANDBOX_TIMEOUT_SECONDS = 20
@@ -1323,7 +1323,7 @@ def generate_report(
 if __name__ == "__main__":
     # Пример запуска: формируем полный отчёт и сохраняем метрии и графики
     test_path = "core/evaluation/inference_results/eval_0_baseline.json"
-    report = generate_report(test_path)
+    report = generate_report(DEFAULT_BASELINE_PATH)
 
     print("Отчёт сформирован. Ключевые метрики:")
     print(json.dumps(report.get("summary", {}), ensure_ascii=False, indent=2))
