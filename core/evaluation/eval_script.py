@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ast
 import builtins
 import contextlib
@@ -5,8 +7,8 @@ import io
 import json
 import math
 import os
+import re
 import signal
-import string
 import threading
 from collections import Counter
 from functools import lru_cache
@@ -60,18 +62,12 @@ SAFE_BUILTINS = [
     "__import__",
 ]
 
-SandboxResult = tuple[str, Any | None, str | None]
+SandboxResult = tuple[Any | None, str | None]
 
 
 # ---------------------------------------------------------------------------
-# Basic helpers
+# General helpers
 # ---------------------------------------------------------------------------
-def load_benchmarks(file_path: str | Path) -> list[dict[str, Any]]:
-    """Load benchmarks from a JSON file."""
-
-    with open(file_path, "r", encoding="utf-8") as f:
-        return [json.loads(line) for line in f]
-
 
 def evaluate_decision(model_decision: Any, expected: Any) -> bool:
     """Return whether the model decision matches the expected decision."""
@@ -117,13 +113,6 @@ def extract_calls(code: str) -> set[str]:
 
 
 # ---------- execution helpers ----------
-def _normalize_stdout(text: str) -> str:
-    """Normalize stdout by trimming trailing spaces for stable comparison."""
-
-    if not text:
-        return ""
-    lines = [line.rstrip() for line in text.strip().splitlines()]
-    return "\n".join(lines)
 
 
 def _compare_results(expected: Any, actual: Any) -> bool:
@@ -145,22 +134,23 @@ def _compare_results(expected: Any, actual: Any) -> bool:
 
 
 def tokenize(text: str) -> list[str]:
-    """Tokenize text by removing punctuation and lowercasing."""
+    """Return simple whitespace-tokenization with punctuation handling."""
+    text = re.sub(r"[^\w\s]", " ", text.lower())
+    return text.split()
 
-    translator = str.maketrans("", "", string.punctuation)
-    return text.lower().translate(translator).split()
 
-
-def counter_cosine_similarity(vec_a: Counter[str], vec_b: Counter[str]) -> float:
-    """Compute cosine similarity between two Counters."""
-
-    if not vec_a or not vec_b:
+def counter_cosine_similarity(counter1: Counter[str], counter2: Counter[str]) -> float:
+    """Return cosine similarity between two Counters."""
+    terms = set(counter1.keys()).union(counter2.keys())
+    mag1 = sum(counter1.get(k, 0) ** 2 for k in terms) ** 0.5
+    mag2 = sum(counter2.get(k, 0) ** 2 for k in terms) ** 0.5
+    if mag1 == 0 or mag2 == 0:
         return 0.0
 
-    shared_keys = set(vec_a.keys()) | set(vec_b.keys())
-    dot_product = sum(vec_a.get(k, 0) * vec_b.get(k, 0) for k in shared_keys)
-    norm_a = sum(v * v for v in vec_a.values()) ** 0.5
-    norm_b = sum(v * v for v in vec_b.values()) ** 0.5
+    shared_keys = set(counter1.keys()) | set(counter2.keys())
+    dot_product = sum(counter1.get(k, 0) * counter2.get(k, 0) for k in shared_keys)
+    norm_a = sum(v * v for v in counter1.values()) ** 0.5
+    norm_b = sum(v * v for v in counter2.values()) ** 0.5
 
     if norm_a == 0 or norm_b == 0:
         return 0.0
@@ -168,36 +158,21 @@ def counter_cosine_similarity(vec_a: Counter[str], vec_b: Counter[str]) -> float
     return dot_product / (norm_a * norm_b)
 
 
-def _fact_presence_score(fact: str, generated_text: str) -> float:
-    """Estimate how strongly a fact is present in the generated text.
-
-    The score combines embedding cosine similarity with token overlap so that
-    paraphrases are rewarded but unrelated text with only superficial semantic
-    proximity is penalized. This reduces false detections of facts that are not
-    actually mentioned.
-    """
-
-    if not fact or not generated_text:
-        return 0.0
-
-    lexical_overlap = counter_cosine_similarity(
-        Counter(tokenize(fact)), Counter(tokenize(generated_text))
-    )
+def _fact_presence_score(fact: str, text: str) -> float:
+    """Return semantic presence score for a fact in text (0-1)."""
 
     try:
         fact_embedding = _compute_embedding(fact)
-        text_embedding = _compute_embedding(generated_text)
+        text_embedding = _compute_embedding(text)
         similarity = cosine_similarity(
             fact_embedding.unsqueeze(0), text_embedding.unsqueeze(0)
         ).item()
-        combined = (0.7 * float(similarity)) + (0.3 * float(lexical_overlap))
+        return float(similarity)
     except Exception:  # noqa: BLE001
-        combined = lexical_overlap
+        fact_tokens = Counter(tokenize(fact))
+        text_tokens = Counter(tokenize(text))
+        return counter_cosine_similarity(fact_tokens, text_tokens)
 
-    if lexical_overlap < 0.1:
-        combined *= 0.5
-
-    return combined
 
 
 def _ensure_kaleido() -> bool:
@@ -320,8 +295,7 @@ def _run_code_in_sandbox(code: str) -> SandboxResult:
     except Exception as exc:  # noqa: BLE001
         exec_error = f"execution_error: {exc}"
 
-    stdout_text = _normalize_stdout(stdout_buffer.getvalue())
-    return stdout_text, result_value, exec_error
+    return result_value, exec_error
 
 
 # ---------------------------------------------------------------------------
@@ -445,14 +419,14 @@ def evaluate_chat_semantics(
         "score": score,
         "similarity": similarity,
         "expected_coverage": round(coverage, 3),
-        "forbidden_penalty": round(penalty, 3) if forbidden_facts else 0.0,
+        "forbidden_penalty": round(penalty, 3),
         "expected_hits": expected_hit_scores,
         "forbidden_hits": forbidden_hit_scores,
     }
 
 
 # ---------------------------------------------------------------------------
-# Result normalization utilities
+# Result matching helpers
 # ---------------------------------------------------------------------------
 def normalize_results(results: list[dict[str, Any]] | dict[str, Any] | None) -> list[dict[str, Any]]:
     """Normalize inference results to a list of dictionaries."""
@@ -751,12 +725,7 @@ def _rel_image_path(image_path: str | None, report_path: Path) -> str:
 
 
 def _render_plotly_image(code_text: str, output_path: Path) -> tuple[str | None, str | None]:
-    """Execute plotly code to export a PNG preview.
-
-    Returns (path, error). Path is filled on success; otherwise error contains
-    the failure reason. Execution uses the sandbox globals with plotly/io.show
-    stubbed to avoid opening renderers.
-    """
+    """Execute Plotly code and export figure to PNG."""
 
     if "plotly" not in code_text.lower():
         return None, None
@@ -856,7 +825,8 @@ def _render_case_markdown(
             details = case.get("code_details") or {}
             lines.append("- expected_result:\n ")
             lines.append("```python")
-            lines.append(details.get("results", {}).get("expected"))
+            expected_result = details.get("results", {}).get("expected")
+            lines.append(str(expected_result))
             lines.append("```")
             if details.get("results", {}).get("expected") is None:
                 lines.append("- expected_output: " + _describe_visual_output(case.get("expected_code", "")))
@@ -878,8 +848,9 @@ def _render_case_markdown(
             details = case.get("code_details") or {}
             lines.append("- model_result: " + str(details.get("results", {}).get("model")))
             lines.append("- model_error:\n ")
-            lines.append("```python")             
-            lines.append(details.get("errors", {}).get("model"))
+            lines.append("```python")
+            model_error = details.get("errors", {}).get("model")
+            lines.append(str(model_error))
             lines.append("```")
             if case.get("model_plot_path"):
                 lines.append(
@@ -1047,8 +1018,8 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     }
 
     # ---------- execution-based scoring ----------
-    _, expected_result, expected_error = _run_code_in_sandbox(expected_code)
-    _, model_result, model_error = _run_code_in_sandbox(model_code)
+    expected_result, expected_error = _run_code_in_sandbox(expected_code)
+    model_result, model_error = _run_code_in_sandbox(model_code)
 
     result_match = (
         expected_error is None

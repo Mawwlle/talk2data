@@ -18,16 +18,15 @@ semantic_similarity = clip(semantic_similarity, 0, 1)
 ### Code score (только для code_generation)
 Формула:
 ```text
-code_score = 0.5 * heuristic_score + 0.5 * exec_score
+code_score = 0.5 * heuristic_score + 0.5 * result_match
 code_score = clip(code_score, 0, 1)
 ```
 Разложение долей:
 - heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).
-- exec_score: +0.5 если stdout совпал при успешном выполнении; +0.5 если совпал вычисленный результат.
-Источники: опираемся на принципы автотестов LeetCode/Codeforces (выполнение и сравнение вывода/результата) и на статический
-анализ из pymetrics/ruff (синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада.
-Пояснения: stdout_match — флаг, что нормализованный вывод программы совпал с бенчмарком при отсутствии ошибок; result_match — флаг, что
-финальное значение выражения совпало. Эти флаги формируют exec_score.
+- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.
+Источники: опираемся на принципы автотестов LeetCode/Codeforces (проверка результата) и на статический анализ из pymetrics/ruff
+(синтаксис, импорты, ключевые вызовы) для интерпретируемого разбиения вклада. Оценка stdout исключена, чтобы избежать шума от
+незначимых различий вывода и сосредоточиться на корректности вычислений.
 
 ## Кейсы
 ### code_001_describe (code_generation, language: ru, difficulty: easy)
@@ -40,11 +39,10 @@ code_score = clip(code_score, 0, 1)
 ```python
 df.describe()
 ```
-- expected_stdout:
-```
-
-```
-- expected_result:        sepal_length  sepal_width  petal_length  petal_width
+- expected_result:
+ 
+```python
+       sepal_length  sepal_width  petal_length  petal_width
 count    150.000000   150.000000    150.000000   150.000000
 mean       5.843333     3.057333      3.758000     1.199333
 std        0.828066     0.435866      1.765298     0.762238
@@ -53,6 +51,7 @@ min        4.300000     2.000000      1.000000     0.100000
 50%        5.800000     3.000000      4.350000     1.300000
 75%        6.400000     3.300000      5.100000     1.800000
 max        7.900000     4.400000      6.900000     2.500000
+```
 - expected_error: None
 
 
@@ -65,13 +64,15 @@ import plotly.express as px
 fig = px.scatter(df, x='sepal_length', y='sepal_width', color='species')
 fig.show()
 ```
-- model_stdout:
-```
-
-```
 - model_result: None
-- model_error: execution_timeout: sandbox_timeout
-- model_plot: ![model plot](core/evaluation/reports/plots/code_001_describe_model.png)
+- model_error:
+ 
+```python
+execution_timeout: sandbox_timeout
+```
+- model_plot:
+
+ ![model plot](plots/code_001_describe_model.png)
 
 
 **Метрики:**
@@ -81,8 +82,6 @@ fig.show()
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected:  | model: plotly.express | matched: 
     - calls_score: 0.0 | expected: describe | model: scatter, show | matched: 
-  - exec_score: 0.0
-  - stdout_match: False
   - result_match: False
 
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
@@ -97,14 +96,16 @@ import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color="species")
 fig.show()
 ```
-- expected_stdout:
+- expected_result:
+ 
+```python
+None
 ```
-
-```
-- expected_result: None
 - expected_output: Интерактивный график (Plotly)
 - expected_error: execution_timeout: sandbox_timeout
-- expected_plot: ![expected plot](core/evaluation/reports/plots/code_002_pairplot_expected.png)
+- expected_plot:
+
+ ![expected plot](plots/code_002_pairplot_expected.png)
 
 
 **Model output:**
@@ -118,12 +119,12 @@ fig = px.pairplot(df, diag_kind='histogram')
 # Display the figure
 fig.show()
 ```
-- model_stdout:
-```
-
-```
 - model_result: None
-- model_error: execution_error: module 'plotly.express' has no attribute 'pairplot'
+- model_error:
+ 
+```python
+execution_error: module 'plotly.express' has no attribute 'pairplot'
+```
 - model_plot_error: module 'plotly.express' has no attribute 'pairplot'
 
 
@@ -134,8 +135,6 @@ fig.show()
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected: plotly.express | model: plotly.express | matched: plotly.express
     - calls_score: 0.2 | expected: scatter_matrix, show | model: pairplot, show | matched: show
-  - exec_score: 0.0
-  - stdout_match: False
   - result_match: False
 
 ### code_003_train_model (code_generation, language: ru, difficulty: medium)
@@ -154,11 +153,11 @@ y = df["species"]
 model = LogisticRegression(max_iter=200)
 model.fit(X, y)
 ```
-- expected_stdout:
+- expected_result:
+ 
+```python
+LogisticRegression(max_iter=200)
 ```
-
-```
-- expected_result: LogisticRegression(max_iter=200)
 - expected_error: None
 
 
@@ -188,12 +187,12 @@ model.fit(X_train, y_train)
 accuracy = model.score(X_test, y_test)
 print(f"Accuracy: {accuracy:.2f}")
 ```
-- model_stdout:
-```
-
-```
 - model_result: None
-- model_error: execution_error: [Errno 2] No such file or directory: 'your_data.csv'
+- model_error:
+ 
+```python
+execution_error: [Errno 2] No such file or directory: 'your_data.csv'
+```
 
 
 **Метрики:**
@@ -203,8 +202,6 @@ print(f"Accuracy: {accuracy:.2f}")
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.metrics, sklearn.model_selection | matched: sklearn.linear_model
     - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: LogisticRegression, fit, print, read_csv, score, train_test_split | matched: LogisticRegression, fit
-  - exec_score: 0.0
-  - stdout_match: False
   - result_match: False
 
 ### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
@@ -214,6 +211,7 @@ print(f"Accuracy: {accuracy:.2f}")
 
 **Ground truth:**
 - expected_facts: датасет содержит измерения лепестков и чашелистиков; три вида ириса
+- forbidden_facts: животные
 
 
 **Model output:**
@@ -222,9 +220,10 @@ print(f"Accuracy: {accuracy:.2f}")
 
 **Метрики:**
 - decision_score: True
-- semantic_similarity: 0.594
-  - expected_coverage: 0.5 | forbidden_penalty: 0.0
+- semantic_similarity: 0.094
+  - expected_coverage: 0.5 | forbidden_penalty: 1.0
   - покрытые факты: датасет содержит измерения лепестков и чашелистиков (score 0.619)
+  - упомянутые запрещённые факты: животные (score 0.616)
 
 ### chat_002_how_many_classes (chat_response, language: ru, difficulty: easy)
 
@@ -232,7 +231,7 @@ print(f"Accuracy: {accuracy:.2f}")
 
 
 **Ground truth:**
-- expected_facts: три класса; setosa; versicolor; virginica
+- expected_facts: три класса
 
 
 **Model output:**
@@ -241,8 +240,8 @@ print(f"Accuracy: {accuracy:.2f}")
 
 **Метрики:**
 - decision_score: True
-- semantic_similarity: 0.415
-  - expected_coverage: 0.25 | forbidden_penalty: 0.0
+- semantic_similarity: 0.813
+  - expected_coverage: 1.0 | forbidden_penalty: 0.0
   - покрытые факты: три класса (score 0.688)
 
 ### chat_003_best_features (chat_response, language: ru, difficulty: medium)
@@ -274,13 +273,15 @@ fig = px.scatter(data, x='sepal_length', y='sepal_width', color='species')
 # Show the plot
 fig.show()
 ```
-- model_stdout:
-```
+- model_result: None
+- model_error:
+ 
+```python
 None
 ```
-- model_result: None
-- model_error: None
-- model_plot: ![model plot](core/evaluation/reports/plots/chat_003_best_features_model.png)
+- model_plot:
+
+ ![model plot](plots/chat_003_best_features_model.png)
 
 
 **Метрики:**
