@@ -33,7 +33,7 @@ DEFAULT_EMBEDDING_MODEL = (
 DEFAULT_BASELINE_PATH = "core/evaluation/inference_results/eval_0_baseline.json"
 RANDOM_SEED = 0
 SANDBOX_FILENAME = "<sandbox>"
-SANDBOX_TIMEOUT_SECONDS = 5
+SANDBOX_TIMEOUT_SECONDS = 60
 SAFE_BUILTINS = [
     "abs",
     "all",
@@ -67,7 +67,7 @@ SandboxResult = tuple[str, Any | None, str | None]
 # Basic helpers
 # ---------------------------------------------------------------------------
 def load_benchmarks(file_path: str | Path) -> list[dict[str, Any]]:
-    """Load benchmarks from a JSONL file."""
+    """Load benchmarks from a JSON file."""
 
     with open(file_path, "r", encoding="utf-8") as f:
         return [json.loads(line) for line in f]
@@ -192,6 +192,39 @@ def _fact_presence_score(fact: str, generated_text: str) -> float:
         return counter_cosine_similarity(fact_tokens, text_tokens)
 
 
+def _ensure_kaleido() -> bool:
+    """Try to ensure kaleido is available for Plotly image export.
+
+    Returns True if kaleido is importable after the check; otherwise False.
+    """
+
+    try:
+        import importlib.util  # noqa: WPS433 (used only here)
+
+        if importlib.util.find_spec("kaleido"):
+            return True
+
+        import subprocess  # noqa: WPS433
+
+        subprocess.run(
+            [
+                "python",
+                "-m",
+                "pip",
+                "install",
+                "--quiet",
+                "kaleido",
+            ],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        return importlib.util.find_spec("kaleido") is not None
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _sandbox_globals() -> dict[str, Any]:
     """Prepare globals for sandboxed execution with restricted builtins."""
 
@@ -276,23 +309,11 @@ def _run_code_in_sandbox(code: str) -> SandboxResult:
                     last_expr = ast.Expression(parsed.body[-1].value)
 
                     if body_without_last.body:
-                        exec(
-                            compile(body_without_last, SANDBOX_FILENAME, "exec"),
-                            sandbox_globals,
-                            sandbox_locals,
-                        )
+                        exec(compile(body_without_last, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
 
-                    result_value = eval(
-                        compile(last_expr, SANDBOX_FILENAME, "eval"),
-                        sandbox_globals,
-                        sandbox_locals,
-                    )
+                    result_value = eval(compile(last_expr, SANDBOX_FILENAME, "eval"), sandbox_globals, sandbox_locals)
                 else:
-                    exec(
-                        compile(parsed, SANDBOX_FILENAME, "exec"),
-                        sandbox_globals,
-                        sandbox_locals,
-                    )
+                    exec(compile(parsed, SANDBOX_FILENAME, "exec"), sandbox_globals, sandbox_locals)
     except TimeoutError as exc:
         exec_error = f"execution_timeout: {exc}"
     except Exception as exc:  # noqa: BLE001
@@ -335,7 +356,9 @@ def _compute_embedding(text: str) -> torch.Tensor:
         summed = masked_embeddings.sum(dim=1)
         counts = attention_mask.sum(dim=1).clamp(min=1e-9)
         sentence_embedding = summed / counts
-        sentence_embedding = torch.nn.functional.normalize(sentence_embedding, p=2, dim=1)
+        sentence_embedding = torch.nn.functional.normalize(
+            sentence_embedding, p=2, dim=1
+        )
 
     return sentence_embedding.squeeze(0)
 
@@ -692,6 +715,46 @@ def _describe_visual_output(code_text: str) -> str:
     return "Графический вывод"
 
 
+def _render_plotly_image(code_text: str, output_path: Path) -> tuple[str | None, str | None]:
+    """Execute plotly code to export a PNG preview.
+
+    Returns (path, error). Path is filled on success; otherwise error contains
+    the failure reason. Execution uses the sandbox globals with plotly/io.show
+    stubbed to avoid opening renderers.
+    """
+
+    if "plotly" not in code_text.lower():
+        return None, None
+
+    if not _ensure_kaleido():
+        return None, "kaleido is not available to export PNG"
+
+    env = _sandbox_globals()
+
+    try:
+        import plotly  # noqa: WPS433
+        import plotly.express as px  # noqa: WPS433
+        import plotly.graph_objects as go  # noqa: WPS433
+        import plotly.io as pio  # noqa: WPS433
+
+        def _no_show(*_: Any, **__: Any) -> None:  # noqa: ANN002,ANN003
+            return None
+
+        pio.show = _no_show  # type: ignore[assignment]
+        env.update({"px": px, "go": go, "pio": pio, "plotly": plotly})
+        exec(compile(code_text, SANDBOX_FILENAME, "exec"), env, env)
+
+        fig = env.get("fig")
+        if fig is None:
+            return None, "no figure named 'fig' was created"
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_image(str(output_path))
+        return str(output_path), None
+    except Exception as exc:  # noqa: BLE001
+        return None, str(exc)
+
+
 def _render_case_markdown(
     cases: list[dict[str, Any]],
     output_dir: Path,
@@ -757,17 +820,18 @@ def _render_case_markdown(
             lines.append(case.get("expected_code"))
             lines.append("```")
             details = case.get("code_details") or {}
-            if details.get("stdout", {}).get("expected"):
-                lines.append("- expected_stdout:")
-                lines.append("```")
-                lines.append(str(details.get("stdout", {}).get("expected")))
-                lines.append("```")
-            if details.get("results", {}).get("expected") is not None:
-                lines.append("- expected_result: " + str(details.get("results", {}).get("expected")))
+            lines.append("- expected_stdout:")
+            lines.append("```")
+            lines.append(str(details.get("stdout", {}).get("expected")))
+            lines.append("```")
+            lines.append("- expected_result: " + str(details.get("results", {}).get("expected")))
             if not details.get("stdout", {}).get("expected") and details.get("results", {}).get("expected") is None:
                 lines.append("- expected_output: " + _describe_visual_output(case.get("expected_code", "")))
-            if details.get("errors", {}).get("expected"):
-                lines.append("- expected_error: " + str(details.get("errors", {}).get("expected")))
+            lines.append("- expected_error: " + str(details.get("errors", {}).get("expected")))
+            if case.get("expected_plot_path"):
+                lines.append(f"- expected_plot: ![expected plot]({case.get('expected_plot_path')})")
+            elif case.get("expected_plot_error"):
+                lines.append(f"- expected_plot_error: {case.get('expected_plot_error')}")
 
         lines.append("**Model output:**")
         if case.get("response_message"):
@@ -777,20 +841,21 @@ def _render_case_markdown(
             lines.append(case.get("model_generated_code"))
             lines.append("```")
             details = case.get("code_details") or {}
-            if details.get("stdout", {}).get("model"):
-                lines.append("- model_stdout:")
-                lines.append("```")
-                lines.append(str(details.get("stdout", {}).get("model")))
-                lines.append("```")
-            if details.get("results") is not None:
-                lines.append("- model_result: " + str(details.get("results", {}).get("model")))
-            if details.get("errors", {}).get("model"):
-                lines.append("- model_error: " + str(details.get("errors", {}).get("model")))
+            lines.append("- model_stdout:")
+            lines.append("```")
+            lines.append(str(details.get("stdout", {}).get("model")))
+            lines.append("```")
+            lines.append("- model_result: " + str(details.get("results", {}).get("model")))
+            lines.append("- model_error: " + str(details.get("errors", {}).get("model")))
+            if case.get("model_plot_path"):
+                lines.append(f"- model_plot: ![model plot]({case.get('model_plot_path')})")
+            elif case.get("model_plot_error"):
+                lines.append(f"- model_plot_error: {case.get('model_plot_error')}")
 
         lines.append("**Метрики:**")
         lines.append("- decision_score: " + str(case.get("decision_score")))
 
-        if case.get("expected_decision") in CHAT_DECISIONS:
+        if case.get("expected_decision") == "chat_response":
             semantic_details = case.get("semantic_details") or {}
             lines.append(f"- semantic_similarity: {semantic_details.get('score')}")
             lines.append(
@@ -807,6 +872,37 @@ def _render_case_markdown(
             details = case.get("code_details") or {}
             lines.append(f"- code_score: {case.get('code_score')}")
             lines.append("  - heuristic_score: " + str(details.get("heuristic_score")))
+            breakdown = details.get("heuristic_breakdown", {})
+            syntax_part = breakdown.get("syntax", {})
+            import_part = breakdown.get("imports", {})
+            calls_part = breakdown.get("calls", {})
+            lines.append(
+                "    - syntax_check: "
+                + str(syntax_part.get("score"))
+                + " (ok="
+                + str(syntax_part.get("ok"))
+                + ")"
+            )
+            lines.append(
+                "    - imports_score: "
+                + str(import_part.get("score"))
+                + " | expected: "
+                + ", ".join(import_part.get("expected", []))
+                + " | model: "
+                + ", ".join(import_part.get("model", []))
+                + " | matched: "
+                + ", ".join(import_part.get("matched", []))
+            )
+            lines.append(
+                "    - calls_score: "
+                + str(calls_part.get("score"))
+                + " | expected: "
+                + ", ".join(calls_part.get("expected", []))
+                + " | model: "
+                + ", ".join(calls_part.get("model", []))
+                + " | matched: "
+                + ", ".join(calls_part.get("matched", []))
+            )
             lines.append("  - exec_score: " + str(details.get("exec_score")))
             lines.append("  - stdout_match: " + str(details.get("stdout_match")))
             lines.append("  - result_match: " + str(details.get("result_match")))
@@ -818,6 +914,34 @@ def _render_case_markdown(
     return report_path
 
 
+def _attach_plot_previews(cases: list[dict[str, Any]], output_dir: Path) -> None:
+    """Generate PNG previews for Plotly code in expected/model snippets."""
+
+    plots_dir = output_dir / "plots"
+
+    for case in cases:
+        if case.get("expected_code"):
+            expected_path, expected_err = _render_plotly_image(
+                case["expected_code"],
+                plots_dir / f"{case.get('id')}_expected.png",
+            )
+            if expected_path:
+                case["expected_plot_path"] = expected_path
+            if expected_err:
+                case["expected_plot_error"] = expected_err
+
+        model_code = case.get("model_generated_code")
+        if model_code:
+            model_path, model_err = _render_plotly_image(
+                model_code,
+                plots_dir / f"{case.get('id')}_model.png",
+            )
+            if model_path:
+                case["model_plot_path"] = model_path
+            if model_err:
+                case["model_plot_error"] = model_err
+
+
 # ---------------------------------------------------------------------------
 # Main evaluation logic
 # ---------------------------------------------------------------------------
@@ -825,11 +949,17 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     """Score generated code using syntax, heuristic, and execution signals."""
 
     heuristic_score = 0.0
+    heuristic_breakdown: dict[str, Any] = {
+        "syntax": {"score": 0.0, "ok": False},
+        "imports": {"score": 0.0, "expected": [], "model": [], "matched": []},
+        "calls": {"score": 0.0, "expected": [], "model": [], "matched": []},
+    }
 
     # 1️⃣ Syntax check: fail fast on invalid Python
     try:
         ast.parse(model_code)
         heuristic_score += 0.3
+        heuristic_breakdown["syntax"] = {"score": 0.3, "ok": True}
     except SyntaxError:
         return {
             "score": 0.0,
@@ -837,6 +967,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
             "exec_score": 0.0,
             "stdout_match": False,
             "result_match": False,
+            "heuristic_breakdown": heuristic_breakdown,
             "errors": {
                 "model": "syntax_error",
                 "expected": None,
@@ -851,9 +982,18 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
 
     if expected_imports:
         matched = expected_imports & model_imports
-        heuristic_score += 0.2 * (len(matched) / len(expected_imports))
+        import_score = 0.2 * (len(matched) / len(expected_imports))
     else:
-        heuristic_score += 0.2
+        matched = set()
+        import_score = 0.2
+
+    heuristic_score += import_score
+    heuristic_breakdown["imports"] = {
+        "score": round(import_score, 3),
+        "expected": sorted(expected_imports),
+        "model": sorted(model_imports),
+        "matched": sorted(matched),
+    }
 
     # 3️⃣ Key calls: verify important function invocations
     expected_calls = extract_calls(expected_code)
@@ -861,7 +1001,18 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
 
     if expected_calls:
         matched = expected_calls & model_calls
-        heuristic_score += 0.4 * (len(matched) / len(expected_calls))
+        call_score = 0.4 * (len(matched) / len(expected_calls))
+    else:
+        matched = set()
+        call_score = 0.0
+
+    heuristic_score += call_score
+    heuristic_breakdown["calls"] = {
+        "score": round(call_score, 3),
+        "expected": sorted(expected_calls),
+        "model": sorted(model_calls),
+        "matched": sorted(matched),
+    }
 
     # ---------- execution-based scoring ----------
     expected_stdout, expected_result, expected_error = _run_code_in_sandbox(expected_code)
@@ -894,6 +1045,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
         "exec_score": round(exec_score, 3),
         "stdout_match": stdout_match,
         "result_match": result_match,
+        "heuristic_breakdown": heuristic_breakdown,
         "errors": {
             "expected": expected_error,
             "model": model_error,
@@ -1099,6 +1251,8 @@ def generate_report(
 
     charts = _generate_visualizations(report, output_dir)
     report["charts"] = charts
+
+    _attach_plot_previews(report["cases"], output_dir)
 
     report_paths: dict[str, str] = {}
     all_cases_path = _render_case_markdown(report["cases"], output_dir)
