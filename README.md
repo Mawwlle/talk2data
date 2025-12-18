@@ -33,10 +33,26 @@ sudo apt-get update && apt-get install -y ffmpeg
 
 ---
 
-## 🗂 Repository layout (upd for SMILE)
+## 🗂 Repository layout
 
 ```
-.
-├── core/                  # Всё, что используем в SMILE
+├── core/                  # LLM логика, конфиги, тесты и вспомогательные скрипты
+│   ├── benchmarks/        # Наборы данных и скрипты для бенчмарков
+│   ├── evaluation/        # Отчёты и инструменты оценки качества
+│   ├── tests/             # Юнит-тесты
+│   ├── config.py          # Настройки проекта
+│   ├── download_model_script.py  # Скачивание весов моделей
+│   ├── open_model_script.py      # Инициализация/запуск моделей
+│   ├── prompts.py         # Подготовленные промпты
+│   ├── schemas.py         # Pydantic-схемы
+│   ├── workflow.py        # Основные пайплайны
+│   └── worker.py          # Обработчик очереди сообщений
+├── voice2text/            # Голосовой ввод и распознавание речи
+│   └── whisper_model.py   # Обёртка над Whisper
+├── Dockerfile.worker      # Образ worker-сервиса
+├── docker-compose.yml     # Композиция сервисов
+├── pyproject.toml         # Настройки poetry и зависимостей
+├── poetry.lock            # Зафиксированные версии зависимостей
+├── LICENSE                # Лицензия
 └── README.md              # You are here
 ```
