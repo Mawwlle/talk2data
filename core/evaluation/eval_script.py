@@ -1244,7 +1244,6 @@ def generate_report(
 
     results, benchmarks = run_eval(inference_res_path, baseline_path)
     report = build_report(results, benchmarks)
-    benchmarks_by_id = _collect_metadata(benchmarks)
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1255,9 +1254,6 @@ def generate_report(
     _attach_plot_previews(report["cases"], output_dir)
 
     report_paths: dict[str, str] = {}
-    all_cases_path = _render_case_markdown(report["cases"], output_dir)
-    report_paths["all"] = str(all_cases_path)
-
     languages = sorted({case.get("language", "unknown") for case in report["cases"]})
     for lang in languages:
         lang_cases = [case for case in report["cases"] if case.get("language") == lang]
