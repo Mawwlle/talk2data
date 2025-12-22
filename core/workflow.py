@@ -24,6 +24,38 @@ from core.schemas import AgentState, Decision
 logger = logging.getLogger(__name__)
 
 
+def _build_logit_bias(forbidden_strings: list[str] | None = None) -> dict[int, float]:
+    """Map forbidden strings to strong negative logit bias for vLLM sampling."""
+
+    if not forbidden_strings:
+        return {}
+
+    local_tokenizer = globals().get("tokenizer") or get_tokenizer()
+    bias: dict[int, float] = {}
+
+    for text in forbidden_strings:
+        try:
+            token_ids = local_tokenizer.encode(text, add_special_tokens=False)
+            for token_id in token_ids:
+                bias[token_id] = -100.0
+        except Exception as exc:
+            logger.warning("[logit_bias] Failed to encode '%s': %s", text, exc)
+
+    return bias
+
+
+def _sampling_with_forbidden(**kwargs) -> SamplingParams:
+    """Helper to include logit_bias for forbidden strings when building SamplingParams."""
+
+    forbidden_strings = kwargs.pop("forbidden_strings", None)
+    logit_bias = _build_logit_bias(forbidden_strings)
+
+    if logit_bias:
+        kwargs["logit_bias"] = logit_bias
+
+    return SamplingParams(**kwargs)
+
+
 def init_tokenizer_only():
     global tokenizer
     tokenizer = get_tokenizer()
@@ -161,7 +193,18 @@ def generate_code_node(state: AgentState) -> AgentState:
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
 
     logger.info(f"[code_prompt] Prompt for code generation: {code_prompt}")
-    sampling_params = SamplingParams(
+    forbidden_strings = state.get(
+        "forbidden_functions",
+        [
+            "print",
+            "pd.read_csv",
+            "pandas.read_csv",
+            "pd.DataFrame",
+            "pandas.DataFrame",
+        ],
+    )
+
+    sampling_params = _sampling_with_forbidden(
         max_tokens=512,
         temperature=0.0,  # 0.7
         top_p=0.95,
@@ -169,6 +212,7 @@ def generate_code_node(state: AgentState) -> AgentState:
         repetition_penalty=1.05,
         presence_penalty=0.5,
         seed=42,
+        forbidden_strings=forbidden_strings,
     )
 
     outputs = llm.generate([code_prompt], sampling_params)
