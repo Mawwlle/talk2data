@@ -51,9 +51,10 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 def main():
     llm_init()
     workflow = create_workflow()
+    infer_result_path = f"infer_{RESULT_ID}"
 
     all_results = {
-        "run_id": RESULT_ID,
+        "run_id": infer_result_path,
         "timestamp": datetime.utcnow().isoformat(),
         "results": [],
     }
@@ -80,7 +81,7 @@ def main():
                     }
                 )
 
-    output_path = RESULTS_DIR / f"{RESULT_ID}.json"
+    output_path = RESULTS_DIR / f"{infer_result_path}.json"
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=2)
 
