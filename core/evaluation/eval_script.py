@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import ast
-from collections import Counter
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 from torch.nn.functional import cosine_similarity
 
-from core.evaluation.constants import TEST_RESULT_PATH
+from core.evaluation.constants import TEST_RESULT_PATH, REPORT_OUTPUT_DIR
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
 from core.evaluation.tools.code_evaluation_tools import (
     _run_code_in_sandbox,
@@ -26,9 +25,7 @@ from core.evaluation.tools.report_helpers import (
 )
 from core.evaluation.tools.text_evaluation_tools import (
     _compute_embedding,
-    counter_cosine_similarity,
     fact_presence_score,
-    tokenize,
 )
 
 
@@ -121,15 +118,11 @@ def evaluate_text_similarity(
         generated_embedding = _compute_embedding(generated_text)
 
         similarity = cosine_similarity(
-            baseline_embedding.unsqueeze(0),
-            generated_embedding.unsqueeze(0),
+            baseline_embedding, generated_embedding, dim=0
         ).item()
-
-        return round(float(similarity), 3)
-    except Exception:  # noqa: BLE001
-        baseline_tokens = Counter(tokenize(reference_text))
-        generated_tokens = Counter(tokenize(generated_text))
-        return round(counter_cosine_similarity(baseline_tokens, generated_tokens), 3)
+        return round(similarity, 4)
+    except Exception:
+        return None
 
 
 def evaluate_chat_semantics(
@@ -267,11 +260,14 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     expected_result, expected_error = _run_code_in_sandbox(expected_code)
     model_result, model_error = _run_code_in_sandbox(model_code)
 
-    result_match = (
-        expected_error is None
-        and model_error is None
-        and compare_execution_results(expected_result, model_result)
-    )
+    try:
+        result_match = bool(
+            expected_error is None
+            and model_error is None
+            and compare_execution_results(expected_result, model_result)
+        )
+    except Exception:
+        result_match = False
 
     combined_score = round(
         min((heuristic_score * 0.5) + (0.5 if result_match else 0.0), 1.0), 3
@@ -380,10 +376,10 @@ def build_report_data(
         meta_key = (row.get("id"), row.get("language", "unknown"))
         meta = benchmarks_by_id.get(meta_key, {})
         meta_info = meta.get("metadata", {})
+
         enriched_cases.append(
             {
                 **row,
-                "user_input": meta.get("user_input"),
                 "tags": meta_info.get("tags", []),
                 "difficulty": meta_info.get("difficulty", "unspecified"),
                 "language": meta_info.get("language", row.get("language", "unknown")),
@@ -429,7 +425,7 @@ def build_report_data(
 
 def generate_report(
     inference_res_path: str,
-    output_dir: str | Path = "core/evaluation/reports",
+    output_dir: str | Path = REPORT_OUTPUT_DIR,
 ) -> dict[str, Any]:
     """Generate evaluation report files and return the structured report."""
     output_dir = Path(output_dir)

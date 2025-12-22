@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from core.evaluation.constants import RESULT_ID
 from core.workflow import create_workflow, llm_init
 
 BENCHMARKS_DIR = Path("core/benchmarks")
@@ -48,12 +49,11 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 
 
 def main():
-    run_id = f"eval_{datetime.utcnow().isoformat()}_{uuid.uuid4().hex[:8]}"
     llm_init()
     workflow = create_workflow()
 
     all_results = {
-        "run_id": run_id,
+        "run_id": RESULT_ID,
         "timestamp": datetime.utcnow().isoformat(),
         "results": [],
     }
@@ -80,7 +80,7 @@ def main():
                     }
                 )
 
-    output_path = RESULTS_DIR / f"{run_id}.json"
+    output_path = RESULTS_DIR / f"{RESULT_ID}.json"
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=2)
 
