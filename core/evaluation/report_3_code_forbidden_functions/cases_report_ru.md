@@ -32,7 +32,7 @@ code_score = clip(code_score, 0, 1)
 ## Кейсы
 ### code_001_describe (code_generation, language: ru, difficulty: easy)
 
-**User input:** None
+**User input:** Напиши код, который выводит статистику по датасету.
 
 
 **Ground truth:**
@@ -64,16 +64,16 @@ import pandas as pd
 # Пример данных для визуализации
 data = {
     'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
-    'sepal_width': [3.6, 3.8, 4.2, 4.4, 4.6],
-    'petal_length': [1.4, 1.5, 1.7, 1.8, 1.9],
-    'petal_width': [0.4, 0.5, 0.6, 0.7, 0.8],
+    'sepal_width': [3.6, 3.8, 3.7, 4.2, 4.4],
+    'petal_length': [1.4, 1.5, 1.6, 1.7, 1.8],
+    'petal_width': [0.4, 0.4, 0.4, 0.4, 0.4],
     'species': ['setosa', 'versicolor', 'virginica', 'setosa', 'versicolor']
 }
 
-df = pd.DataFrame(data)
+df_data = pd.Series(data)
 
 # Вычисление статистики по датасету
-statistics = df.describe()
+statistics = df_data.describe()
 
 # Вывод статистики
 result = f"Статистика по датасету:\n{statistics}"
@@ -92,12 +92,12 @@ None
   - heuristic_score: 0.9
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected:  | model: pandas | matched: 
-    - calls_score: 0.4 | expected: describe | model: DataFrame, describe | matched: describe
+    - calls_score: 0.4 | expected: describe | model: Series, describe | matched: describe
   - result_match: False
 
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
 
-**User input:** None
+**User input:** Построй pairplot всех признаков.
 
 
 **Ground truth:**
@@ -122,31 +122,33 @@ None
 **Model output:**
 > Here's the generated code:
 ```python
-import pandas as pd
+import plotly.express as px
 
-# Assuming df is already defined in the environment
-pairplot = df.plot(kind='pairplot', diag_kind='hist')
+# Assuming df is already defined and contains the required columns
+pairplot = px.pairplot(df, diag_kind='kde')
+pairplot.show()
 ```
 - model_result: None
 - model_error:
  
 ```python
-execution_error: pairplot is not a valid plot kind Valid plot kinds: ('line', 'bar', 'barh', 'kde', 'density', 'area', 'hist', 'box', 'pie', 'scatter', 'hexbin')
+execution_error: module 'plotly.express' has no attribute 'pairplot'
 ```
+- model_plot_error: module 'plotly.express' has no attribute 'pairplot'
 
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.15
-  - heuristic_score: 0.3
+- code_score: 0.35
+  - heuristic_score: 0.7
     - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.0 | expected: plotly.express | model: pandas | matched: 
-    - calls_score: 0.0 | expected: scatter_matrix, show | model: plot | matched: 
+    - imports_score: 0.2 | expected: plotly.express | model: plotly.express | matched: plotly.express
+    - calls_score: 0.2 | expected: scatter_matrix, show | model: pairplot, show | matched: show
   - result_match: False
 
 ### code_003_train_model (code_generation, language: ru, difficulty: medium)
 
-**User input:** None
+**User input:** Напиши код, который обучает простой классификатор на этих данных.
 
 
 **Ground truth:**
@@ -183,17 +185,14 @@ data = {
 }
 
 # Создание DataFrame
-df = pd.DataFrame(data)
+df_data = pd.Dataframe(data)
 
 # Обучение классификатора
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
-X = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]
-y = df['species']
-
-# Разделение данных на обучающую и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Разделение данных на тренировочную и тестовую части
+X_train, X_test, y_train, y_test = train_test_split(df_data[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']], df_data['species'], test_size=0.2, random_state=42)
 
 # Обучение модели
 model = LogisticRegression()
@@ -201,17 +200,14 @@ model.fit(X_train, y_train)
 
 # Проверка точности модели
 accuracy = model.score(X_test, y_test)
-prediction = model.predict(X_test)
-correct_predictions = sum(prediction == y_test)
-
 # Вывод результатов
-result = f"Accuracy: {accuracy:.2f}, Correct predictions: {correct_predictions}"
+result = f"Accuracy: {accuracy:.2f}"
 ```
 - model_result: None
 - model_error:
  
 ```python
-None
+execution_error: module 'pandas' has no attribute 'Dataframe'
 ```
 
 
@@ -221,12 +217,12 @@ None
   - heuristic_score: 0.767
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.model_selection | matched: sklearn.linear_model
-    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: DataFrame, LogisticRegression, fit, predict, score, sum, train_test_split | matched: LogisticRegression, fit
+    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: Dataframe, LogisticRegression, fit, score, train_test_split | matched: LogisticRegression, fit
   - result_match: False
 
 ### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
 
-**User input:** None
+**User input:** Поясни, что представляет собой датасет.
 
 
 **Ground truth:**
@@ -247,7 +243,7 @@ None
 
 ### chat_002_how_many_classes (chat_response, language: ru, difficulty: easy)
 
-**User input:** None
+**User input:** Сколько классов в этом датасете?
 
 
 **Ground truth:**
@@ -266,7 +262,7 @@ None
 
 ### chat_003_best_features (chat_response, language: ru, difficulty: medium)
 
-**User input:** None
+**User input:** Какие признаки лучше всего разделяют виды ирисов?
 
 
 **Ground truth:**
@@ -279,50 +275,16 @@ None
 import pandas as pd
 
 # Пример данных для визуализации
-iris_data = {
-    'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
-    'sepal_width': [3.6, 3.8, 3.7, 4.2, 4.4],
-    'petal_length': [1.4, 1.5, 1.6, 1.7, 1.8],
-    'petal_width': [0.4, 0.4, 0.4, 0.4, 0.4],
-    'species': ['setosa', 'versicolor', 'virginica', 'setosa', 'versicolor']
-}
+iris = pd.read_excel('iris.csv')
 
-# Создание DataFrame
-df = pd.DataFrame(iris_data)
+# Выберите признаки, которые лучше всего разделяют виды ирисов
+species_counts = iris['species'].value_counts()
 
-# Выбор признаков для разделяения видов ирисов
-feature_to_split = ['sepal_length', 'sepal_width']
+# Отсортируйте по количеству уникальных видов ирисов
+sorted_species_counts = species_counts.sort_values(ascending=False)
 
-# Разделение данных на признаки и классы
-X = df[feature_to_split]
-y = df['species']
-
-# Определение метода разбиения данных
-from sklearn.model_selection import train_test_split
-
-# Разделение данных на тренировочную и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Вывод результатов
-def plot_feature_distribution(feature_name):
-    """
-    Построение гистограммы для каждого признака.
-
-    :param feature_name: Название признака для построения гистограммы.
-    """
-    plt.figure(figsize=(10, 6))
-    for i, value in enumerate(feature_name):
-        plt.hist(value, bins=30, alpha=0.7, label=value)
-    plt.xlabel(feature_name)
-    plt.ylabel('Frequency')
-    plt.title(f'Feature Distribution for {feature_name}')
-    plt.legend()
-    plt.show()
-
-plot_feature_distribution('sepal_length')
-plot_feature_distribution('sepal_width')
-plot_feature_distribution('petal_length')
-plot_feature_distribution('petal_width')
+# Выведите результат
+result = sorted_species_counts.head(10)
 ```
 - model_result: None
 - model_error:
@@ -339,7 +301,7 @@ None
 
 ### chat_004_easiest_class (chat_response, language: ru, difficulty: medium)
 
-**User input:** None
+**User input:** Какой вид ириса лучше всего отделяется от остальных?
 
 
 **Ground truth:**
@@ -358,7 +320,7 @@ None
 
 ### theory_001_overfitting (chat_response, language: ru, difficulty: easy)
 
-**User input:** None
+**User input:** Что такое переобучение в машинном обучении?
 
 
 **Ground truth:**
@@ -377,7 +339,7 @@ None
 
 ### theory_002_train_test_split (chat_response, language: ru, difficulty: easy)
 
-**User input:** None
+**User input:** Зачем используется разделение на обучающую и тестовую выборки?
 
 
 **Ground truth:**
@@ -398,7 +360,7 @@ None
 
 ### theory_003_regularization (chat_response, language: ru, difficulty: medium)
 
-**User input:** None
+**User input:** Что такое регуляризация и зачем она нужна?
 
 
 **Ground truth:**
@@ -418,7 +380,7 @@ None
 
 ### theory_004_bias_variance (chat_response, language: ru, difficulty: medium)
 
-**User input:** None
+**User input:** Объясни компромисс между смещением и разбросом.
 
 
 **Ground truth:**

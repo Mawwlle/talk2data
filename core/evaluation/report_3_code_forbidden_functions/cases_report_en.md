@@ -32,7 +32,7 @@ code_score = clip(code_score, 0, 1)
 ## Кейсы
 ### code_001_describe_en (code_generation, language: en, difficulty: easy)
 
-**User input:** None
+**User input:** Write code that outputs statistics for the dataset.
 
 
 **Ground truth:**
@@ -61,22 +61,48 @@ max        7.900000     4.400000      6.900000     2.500000
 ```python
 import pandas as pd
 
-# Пример данных для визуализации
-data = {
-    'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
-    'sepal_width': [3.6, 3.8, 4.2, 4.4, 4.6],
-    'petal_length': [1.4, 1.5, 1.7, 1.8, 1.9],
-    'petal_width': [0.4, 0.5, 0.6, 0.7, 0.8],
-    'species': ['setosa', 'versicolor', 'virginica', 'setosa', 'versicolor']
+# Assuming df is already defined in the environment
+# Calculate mean, median, standard deviation, and count of each column
+mean_sepal_length = df['sepal_length'].mean()
+median_sepal_length = df['sepal_length'].median()
+std_sepal_length = df['sepal_length'].std()
+count_sepal_length = df['sepal_length'].count()
+
+mean_petal_length = df['petal_length'].mean()
+median_petal_length = df['petal_length'].median()
+std_petal_length = df['petal_length'].std()
+count_petal_length = df['petal_length'].count()
+
+# Print the results
+result = {
+    'Mean Sepal Length': mean_sepal_length,
+    'Median Sepal Length': median_sepal_length,
+    'Standard Deviation Sepal Length': std_sepal_length,
+    'Count Sepal Length': count_sepal_length,
+
+    'Mean Petal Length': mean_petal_length,
+    'Median Petal Length': median_petal_length,
+    'Standard Deviation Petal Length': std_petal_length,
+    'Count Petal Length': count_petal_length
 }
 
-df = pd.DataFrame(data)
+# Print the result
+for key, value in result.items():
+    if isinstance(value, float):
+        # Convert to string for clarity
+        value_str = str(value)
+    else:
+        value_str = str(value)
+    result[key] = value_str
 
-# Вычисление статистики по датасету
-statistics = df.describe()
-
-# Вывод статистики
-result = f"Статистика по датасету:\n{statistics}"
+# Print the final result
+for key, value in result.items():
+    if isinstance(value, float):
+        # Convert to string for clarity
+        value_str = str(value)
+    else:
+        value_str = str(value)
+    result[key] = value_str
 ```
 - model_result: None
 - model_error:
@@ -88,16 +114,16 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.45
-  - heuristic_score: 0.9
+- code_score: 0.25
+  - heuristic_score: 0.5
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected:  | model: pandas | matched: 
-    - calls_score: 0.4 | expected: describe | model: DataFrame, describe | matched: describe
+    - calls_score: 0.0 | expected: describe | model: count, isinstance, items, mean, median, std, str | matched: 
   - result_match: False
 
 ### code_002_pairplot_en (code_generation, language: en, difficulty: medium)
 
-**User input:** None
+**User input:** Create a pairplot of all features.
 
 
 **Ground truth:**
@@ -122,31 +148,33 @@ None
 **Model output:**
 > Here's the generated code:
 ```python
-import pandas as pd
+import plotly.express as px
 
-# Assuming df is already defined in the environment
-pairplot = df.plot(kind='pairplot', diag_kind='hist')
+# Assuming df is already defined and contains the required columns
+fig = px.pairplot(df, diag_kind='hist')
+fig.show()
 ```
 - model_result: None
 - model_error:
  
 ```python
-execution_error: pairplot is not a valid plot kind Valid plot kinds: ('line', 'bar', 'barh', 'kde', 'density', 'area', 'hist', 'box', 'pie', 'scatter', 'hexbin')
+execution_error: module 'plotly.express' has no attribute 'pairplot'
 ```
+- model_plot_error: module 'plotly.express' has no attribute 'pairplot'
 
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.15
-  - heuristic_score: 0.3
+- code_score: 0.35
+  - heuristic_score: 0.7
     - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.0 | expected: plotly.express | model: pandas | matched: 
-    - calls_score: 0.0 | expected: scatter_matrix, show | model: plot | matched: 
+    - imports_score: 0.2 | expected: plotly.express | model: plotly.express | matched: plotly.express
+    - calls_score: 0.2 | expected: scatter_matrix, show | model: pairplot, show | matched: show
   - result_match: False
 
 ### code_003_train_model_en (code_generation, language: en, difficulty: medium)
 
-**User input:** None
+**User input:** Write code that trains a simple classifier on this data.
 
 
 **Ground truth:**
@@ -173,39 +201,30 @@ LogisticRegression(max_iter=200)
 ```python
 import pandas as pd
 
-# Пример данных для обучения
-data = {
-    'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
-    'sepal_width': [3.6, 3.8, 3.7, 4.2, 4.4],
-    'petal_length': [1.4, 1.5, 1.6, 1.7, 1.8],
-    'petal_width': [0.4, 0.4, 0.4, 0.4, 0.4],
-    'species': ['setosa', 'setosa', 'virginica', 'virginica', 'versicolor']
-}
-
-# Создание DataFrame
-df = pd.DataFrame(data)
-
-# Обучение классификатора
+# Assuming df is your DataFrame with the specified columns
+# Let's assume you have a column named 'species' which contains the target variable
+# For demonstration, let's assume we want to train a simple classifier using a linear model
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
+# Split the data into training and testing sets
 X = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]
 y = df['species']
 
-# Разделение данных на обучающую и тестовую выборки
+# Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Обучение модели
+# Initialize the logistic regression model
 model = LogisticRegression()
+
+# Train the model
 model.fit(X_train, y_train)
 
-# Проверка точности модели
-accuracy = model.score(X_test, y_test)
-prediction = model.predict(X_test)
-correct_predictions = sum(prediction == y_test)
+# Make predictions on the test set
+predictions = model.predict(X_test)
 
-# Вывод результатов
-result = f"Accuracy: {accuracy:.2f}, Correct predictions: {correct_predictions}"
+# Print the accuracy of the model
+accuracy = model.score(X_test, y_test)
 ```
 - model_result: None
 - model_error:
@@ -221,12 +240,12 @@ None
   - heuristic_score: 0.767
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.model_selection | matched: sklearn.linear_model
-    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: DataFrame, LogisticRegression, fit, predict, score, sum, train_test_split | matched: LogisticRegression, fit
+    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: LogisticRegression, fit, predict, score, train_test_split | matched: LogisticRegression, fit
   - result_match: False
 
-### chat_001_what_is_iris (chat_response, language: en, difficulty: easy)
+### chat_001_what_is_iris_en (chat_response, language: en, difficulty: easy)
 
-**User input:** None
+**User input:** Explain what this dataset represents.
 
 
 **Ground truth:**
@@ -234,17 +253,18 @@ None
 
 
 **Model output:**
-> Датасет представляет собой набор данных, содержащий информацию о различных аспектах животных, такие как их размеры, цвета, и семена.
+> This dataset represents a dataset of 150 samples, each containing information about a flower. The dataset includes the following features: - Sepal length - Sepal width - Petal length - Petal width - Species The dataset is used for various purposes, such as: 1. Data analysis: To understand the relationship between different features and the species of flowers. 2. Machine learning: To build models that can predict the species of flowers based on their features. 3. Image classification: To classify images of flowers into different categories. 4. Data visualization: To visualize the dataset and understand its structure. The dataset is available in various formats, including CSV, Excel, and JSON, and can be easily accessed and manipulated using Python libraries such as Pandas.
 
 
 **Метрики:**
 - decision_score: True
-- semantic_similarity: 0.079
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+- semantic_similarity: 0.562
+  - expected_coverage: 0.5 | forbidden_penalty: 0.0
+  - покрытые факты: dataset contains measurements of petals and sepals (score 0.659)
 
-### chat_002_how_many_classes (chat_response, language: en, difficulty: easy)
+### chat_002_how_many_classes_en (chat_response, language: en, difficulty: easy)
 
-**User input:** None
+**User input:** How many classes are in this dataset?
 
 
 **Ground truth:**
@@ -252,17 +272,18 @@ None
 
 
 **Model output:**
-> В этом датасете 3 класса.
+> The dataset contains 5 classes.
 
 
 **Метрики:**
 - decision_score: True
-- semantic_similarity: 0.067
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+- semantic_similarity: 0.352
+  - expected_coverage: 0.25 | forbidden_penalty: 0.0
+  - покрытые факты: three classes (score 0.572)
 
-### chat_003_best_features (chat_response, language: en, difficulty: medium)
+### chat_003_best_features_en (chat_response, language: en, difficulty: medium)
 
-**User input:** None
+**User input:** Which features best separate the iris species?
 
 
 **Ground truth:**
@@ -270,72 +291,17 @@ None
 
 
 **Model output:**
-> Here's the generated code:
-```python
-import pandas as pd
-
-# Пример данных для визуализации
-iris_data = {
-    'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
-    'sepal_width': [3.6, 3.8, 3.7, 4.2, 4.4],
-    'petal_length': [1.4, 1.5, 1.6, 1.7, 1.8],
-    'petal_width': [0.4, 0.4, 0.4, 0.4, 0.4],
-    'species': ['setosa', 'versicolor', 'virginica', 'setosa', 'versicolor']
-}
-
-# Создание DataFrame
-df = pd.DataFrame(iris_data)
-
-# Выбор признаков для разделяения видов ирисов
-feature_to_split = ['sepal_length', 'sepal_width']
-
-# Разделение данных на признаки и классы
-X = df[feature_to_split]
-y = df['species']
-
-# Определение метода разбиения данных
-from sklearn.model_selection import train_test_split
-
-# Разделение данных на тренировочную и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Вывод результатов
-def plot_feature_distribution(feature_name):
-    """
-    Построение гистограммы для каждого признака.
-
-    :param feature_name: Название признака для построения гистограммы.
-    """
-    plt.figure(figsize=(10, 6))
-    for i, value in enumerate(feature_name):
-        plt.hist(value, bins=30, alpha=0.7, label=value)
-    plt.xlabel(feature_name)
-    plt.ylabel('Frequency')
-    plt.title(f'Feature Distribution for {feature_name}')
-    plt.legend()
-    plt.show()
-
-plot_feature_distribution('sepal_length')
-plot_feature_distribution('sepal_width')
-plot_feature_distribution('petal_length')
-plot_feature_distribution('petal_width')
-```
-- model_result: None
-- model_error:
- 
-```python
-None
-```
+> The features that best separate the iris species are sepal length and sepal width.
 
 
 **Метрики:**
-- decision_score: False
-- semantic_similarity: 0.063
+- decision_score: True
+- semantic_similarity: 0.18
   - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
-### chat_004_easiest_class (chat_response, language: en, difficulty: medium)
+### chat_004_easiest_class_en (chat_response, language: en, difficulty: medium)
 
-**User input:** None
+**User input:** Which iris species is the easiest to separate from the others?
 
 
 **Ground truth:**
@@ -343,17 +309,17 @@ None
 
 
 **Model output:**
-> Вид ириса, который лучше всего отделяется от остальных, является квадрат.
+> The easiest iris species to separate from the others is the Iris versicolor.
 
 
 **Метрики:**
 - decision_score: True
-- semantic_similarity: 0.016
+- semantic_similarity: 0.168
   - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
-### theory_001_overfitting (chat_response, language: en, difficulty: easy)
+### theory_001_overfitting_en (chat_response, language: en, difficulty: easy)
 
-**User input:** None
+**User input:** What is overfitting in machine learning?
 
 
 **Ground truth:**
@@ -362,17 +328,18 @@ None
 
 
 **Model output:**
-> Переобучение в машинном обучении - это процесс, когда модель обучается на данных, которые не соответствуют ожиданиям или требованиям, что приводит к переобучению модели. Это может быть связано с различными факторами, таких как переобучение модели на слишком малых данных, переобучение модели на слишком большом наборе данных, переобучение модели на слишком сложных или сложных задачах, переобучение модели на слишком малых или слишком большом количестве признаков.
+> Overfitting is a common problem in machine learning where a model learns the training data too well, making it perform poorly on unseen data. It occurs when a model's performance is significantly improved by training on too many training examples, leading to a poor generalization ability.
 
 
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.0
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+  - expected_coverage: 0.0 | forbidden_penalty: 1.0
+  - упомянутые запрещённые факты: overfitting improves performance on unseen data (score 0.673)
 
-### theory_002_train_test_split (chat_response, language: en, difficulty: easy)
+### theory_002_train_test_split_en (chat_response, language: en, difficulty: easy)
 
-**User input:** None
+**User input:** Why is a train-test split used?
 
 
 **Ground truth:**
@@ -381,17 +348,17 @@ None
 
 
 **Model output:**
-> Зачем используется разделение на обучающую и тестовую выборки? Это делает выборы более эффективным и предсказуемым, особенно при большом количестве данных.
+> A train-test split is used to evaluate the performance of a machine learning model. It is a common technique in machine learning to divide the data into two subsets: one for training the model and another for testing it. This helps in reducing the risk of overfitting by ensuring that the model is not too complex on the training data.
 
 
 **Метрики:**
 - decision_score: True
-- semantic_similarity: 0.0
+- semantic_similarity: 0.117
   - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
-### theory_003_regularization (chat_response, language: en, difficulty: medium)
+### theory_003_regularization_en (chat_response, language: en, difficulty: medium)
 
-**User input:** None
+**User input:** What is regularization and why is it used?
 
 
 **Ground truth:**
@@ -400,17 +367,18 @@ None
 
 
 **Model output:**
-> Регуляризация - это процесс, который устраняет или убирает ошибки в данных, чтобы они были более точными и полезными для анализа. Она помогает улучшить качество данных, устранить неправильные значения или ошибки в данных, которые могут привести к ошибкам при анализе.
+> Regularization is a technique used to prevent overfitting in machine learning models. It involves adding a penalty term to the loss function, which discourages the model from fitting the training data too closely. This penalty term is typically a constant value, often set to a small positive number, such as 1e-5 or 1e-6. Regularization helps prevent the model from becoming too complex and overfitting, which can lead to poor generalization to new data.
 
 
 **Метрики:**
 - decision_score: True
 - semantic_similarity: 0.0
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+  - expected_coverage: 0.0 | forbidden_penalty: 1.0
+  - упомянутые запрещённые факты: regularization increases model variance (score 0.657)
 
-### theory_004_bias_variance (chat_response, language: en, difficulty: medium)
+### theory_004_bias_variance_en (chat_response, language: en, difficulty: medium)
 
-**User input:** None
+**User input:** Explain the bias-variance tradeoff.
 
 
 **Ground truth:**
@@ -419,10 +387,12 @@ None
 
 
 **Model output:**
-> Смещение и разброс - это два различных метода, которые используются для улучшения качества данных. Смещение - это процесс, который позволяет изменить расположение данных в массиве, чтобы улучшить его структуру и качество. Разброс, наоборот, - это процесс, который позволяет изменить распределение данных в массиве, чтобы улучшить его структуру и качество.
+> The bias-variance tradeoff is a fundamental concept in statistics that describes how the variance of a dataset can be reduced by adding more data points. It is a measure of the amount of variation in a dataset that can be explained by adding more data points. The tradeoff is often expressed as a trade-off between the amount of variance explained by the additional data points and the amount of variance that can be explained by the original data points.
 
 
 **Метрики:**
 - decision_score: True
-- semantic_similarity: 0.034
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+- semantic_similarity: 0.075
+  - expected_coverage: 0.333 | forbidden_penalty: 1.0
+  - покрытые факты: tradeoff between bias and variance (score 0.785)
+  - упомянутые запрещённые факты: bias and variance can both be minimized independently (score 0.551)

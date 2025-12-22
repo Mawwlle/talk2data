@@ -37,6 +37,7 @@ SAFE_BUILTINS = [
     "str",
     "sum",
     "zip",
+    "isinstance",
     "__import__",
 ]
 

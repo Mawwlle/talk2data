@@ -88,6 +88,7 @@ CODE_GENERATION_PROMPT: list[PromptMessage] = [
             "Instructions:\n"
             "1. Use Plotly. You must not use pyplot or seaborn, only Plotly.\n"
             "2. Work strictly with the provided in-memory DataFrame named df. It already exists in the environment.\n"
+            "   - A pandas DataFrame `df` already exists.\n"
             "   - Never create or reassign df, never construct sample data dictionaries, and never load files or URLs.\n"
             "   - Do not call pd.read_csv, pd.DataFrame, or similar constructors for new data.\n"
             "   - Operate directly on the existing df variable; all transformations should use this object.\n"

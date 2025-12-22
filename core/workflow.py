@@ -10,6 +10,7 @@ import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
 from vllm import SamplingParams
+from vllm.sampling_params import GuidedDecodingParams
 
 from core.models import get_llm, get_tokenizer
 
@@ -204,11 +205,23 @@ def generate_code_node(state: AgentState) -> AgentState:
             "print",
             "pd.read_csv",
             "pandas.read_csv",
+            "pd.DataFrame",
+            "pd.DataFrame(",
+            "DataFrame(",
+            "df =",
+            "df=",
+            "df = pd.DataFrame",
+            "df=pd.DataFrame",
+            "pd . DataFrame",     # частый обход
+            "pd  .  DataFrame",   # ещё один
         ],
     )
-    use_bad_words = state.get("forbidden_use_bad_words", True)
+    
+    guided = GuidedDecodingParams(
+        regex=r"^(df\..*(\n|$)|\n)*$"
+    )
 
-    sampling_params = _sampling_with_forbidden(
+    sampling_params = SamplingParams(
         max_tokens=512,
         temperature=0.0,  # 0.7
         top_p=0.95,
@@ -216,11 +229,11 @@ def generate_code_node(state: AgentState) -> AgentState:
         repetition_penalty=1.05,
         presence_penalty=0.5,
         seed=42,
-        forbidden_strings=forbidden_strings,
-        use_bad_words=use_bad_words,
+        bad_words=forbidden_strings,
+        # guided_decoding = guided,
     )
 
-    outputs = llm.generate([code_prompt], sampling_params)
+    outputs = llm.generate([code_prompt], sampling_params, use_tqdm=False)
     generated_text = outputs[0].outputs[0].text
 
     # Extract code block (heuristic: inside triple backticks or entire text)

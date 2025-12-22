@@ -380,6 +380,7 @@ def build_report_data(
         enriched_cases.append(
             {
                 **row,
+                "user_input": meta.get("user_input"),
                 "tags": meta_info.get("tags", []),
                 "difficulty": meta_info.get("difficulty", "unspecified"),
                 "language": meta_info.get("language", row.get("language", "unknown")),
