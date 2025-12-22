@@ -3,13 +3,13 @@ code_001_describe_en,code_generation,en,True,,0.25,Write code that outputs stati
 code_002_pairplot_en,code_generation,en,True,,0.35,Create a pairplot of all features.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
 fig.show()",core/evaluation/report_3_code_forbidden_functions/plots/code_002_pairplot_en_expected.png,module 'plotly.express' has no attribute 'pairplot',0.7,False
-code_003_train_model_en,code_generation,en,True,,0.383,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+code_003_train_model_en,code_generation,en,True,,0.317,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)",,,0.767,False
+model.fit(X, y)",,,0.633,False
 code_001_describe,code_generation,ru,True,,0.45,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,0.9,False
 code_002_pairplot,code_generation,ru,True,,0.35,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")

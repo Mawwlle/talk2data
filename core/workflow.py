@@ -205,15 +205,10 @@ def generate_code_node(state: AgentState) -> AgentState:
             "print",
             "pd.read_csv",
             "pandas.read_csv",
-            "pd.DataFrame",
-            "pd.DataFrame(",
-            "DataFrame(",
             "df =",
             "df=",
             "df = pd.DataFrame",
             "df=pd.DataFrame",
-            "pd . DataFrame",     # частый обход
-            "pd  .  DataFrame",   # ещё один
         ],
     )
     

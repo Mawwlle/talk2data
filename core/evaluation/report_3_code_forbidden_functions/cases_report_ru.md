@@ -64,13 +64,13 @@ import pandas as pd
 # Пример данных для визуализации
 data = {
     'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
-    'sepal_width': [3.6, 3.8, 3.7, 4.2, 4.4],
+    'sepal_width': [3.6, 3.8, 4.2, 3.7, 4.1],
     'petal_length': [1.4, 1.5, 1.6, 1.7, 1.8],
-    'petal_width': [0.4, 0.4, 0.4, 0.4, 0.4],
+    'petal_width': [0.4, 0.5, 0.6, 0.7, 0.8],
     'species': ['setosa', 'versicolor', 'virginica', 'setosa', 'versicolor']
 }
 
-df_data = pd.Series(data)
+df_data = pd.DataFrame(data)
 
 # Вычисление статистики по датасету
 statistics = df_data.describe()
@@ -92,7 +92,7 @@ None
   - heuristic_score: 0.9
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected:  | model: pandas | matched: 
-    - calls_score: 0.4 | expected: describe | model: Series, describe | matched: describe
+    - calls_score: 0.4 | expected: describe | model: DataFrame, describe | matched: describe
   - result_match: False
 
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
@@ -175,7 +175,7 @@ LogisticRegression(max_iter=200)
 ```python
 import pandas as pd
 
-# Пример данных для обучения
+# Пример данных для обучения классификатора
 data = {
     'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
     'sepal_width': [3.6, 3.8, 3.7, 4.2, 4.4],
@@ -184,8 +184,8 @@ data = {
     'species': ['setosa', 'setosa', 'virginica', 'virginica', 'versicolor']
 }
 
-# Создание DataFrame
-df_data = pd.Dataframe(data)
+# Создание DataFrame с данными
+df_data = pd.DataFrame(data)
 
 # Обучение классификатора
 from sklearn.model_selection import train_test_split
@@ -207,7 +207,7 @@ result = f"Accuracy: {accuracy:.2f}"
 - model_error:
  
 ```python
-execution_error: module 'pandas' has no attribute 'Dataframe'
+None
 ```
 
 
@@ -217,7 +217,7 @@ execution_error: module 'pandas' has no attribute 'Dataframe'
   - heuristic_score: 0.767
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.model_selection | matched: sklearn.linear_model
-    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: Dataframe, LogisticRegression, fit, score, train_test_split | matched: LogisticRegression, fit
+    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: DataFrame, LogisticRegression, fit, score, train_test_split | matched: LogisticRegression, fit
   - result_match: False
 
 ### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
@@ -275,16 +275,40 @@ execution_error: module 'pandas' has no attribute 'Dataframe'
 import pandas as pd
 
 # Пример данных для визуализации
-iris = pd.read_excel('iris.csv')
+iris_data = {
+    'sepal_length': [5.1, 4.9, 4.7, 5.0, 4.8],
+    'sepal_width': [3.6, 3.0, 3.2, 3.4, 3.1],
+    'petal_length': [1.4, 1.5, 1.6, 1.7, 1.8],
+    'petal_width': [0.4, 0.5, 0.6, 0.7, 0.8],
+    'species': ['setosa', 'versicolor', 'virginica']
+}
 
-# Выберите признаки, которые лучше всего разделяют виды ирисов
-species_counts = iris['species'].value_counts()
+# Создание DataFrame
+df_iris = pd.DataFrame(iris_data)
 
-# Отсортируйте по количеству уникальных видов ирисов
-sorted_species_counts = species_counts.sort_values(ascending=False)
+# Выбор признаков для разделяения видов ирисов
+features_to_split = ['sepal_length', 'sepal_width']
 
-# Выведите результат
-result = sorted_species_counts.head(10)
+# Разделение данных на признаки и классы
+X = df_iris[features_to_split]
+y = df_iris['species']
+
+# Определение метода разбиения данных
+from sklearn.model_selection import train_test_split
+
+# Разделение данных на тренировочную и тестовую выборки
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Вывод результатов
+def plot_sepal_length_vs_petal_length():
+    plt.figure(figsize=(10, 6))
+    plt.scatter(X_train['sepal_length'], X_train['sepal_width'], c=y_train, cmap='viridis')
+    plt.xlabel('Sepal Length')
+    plt.ylabel('Sepal Width')
+    plt.title('Sepal Length vs Sepal Width by Species')
+    plt.show()
+
+plot_sepal_length_vs_petal_length()
 ```
 - model_result: None
 - model_error:

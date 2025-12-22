@@ -201,46 +201,87 @@ LogisticRegression(max_iter=200)
 ```python
 import pandas as pd
 
-# Assuming df is your DataFrame with the specified columns
-# Let's assume you have a column named 'species' which contains the target variable
-# For demonstration, let's assume we want to train a simple classifier using a linear model
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+# Assuming df is already defined and contains the required columns
+# Let's assume we have a simple classification problem where we want to predict the species of each flower based on its features
 
-# Split the data into training and testing sets
+# Split the data into features and target
 X = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]
 y = df['species']
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Train a simple linear regression model
+from sklearn.linear_model import LinearRegression
 
-# Initialize the logistic regression model
-model = LogisticRegression()
+model = LinearRegression()
+model.fit(X, y)
 
-# Train the model
-model.fit(X_train, y_train)
+# Print the coefficients of the model
+coefficients = model.coef_
+for i, coeff in enumerate(coefficients):
+    if i == 0:
+        continue  # Skip intercept term
+    coefficient = round(coeff, 2)
+    feature_name = X.columns[i]
+    if feature_name == 'species':
+        continue  # Skip species column
+    result = f"{feature_name}: {coefficient}"
+    if i < len(coefficients) - 1:
+        result += ", "
+    else:
+        result += "."
+    # Print the result
+    if i == 0:
+        result = "Predicted: "
+    else:
+        result += "Predictions: "
+    # Print the result
+    if i == len(coefficients) - 1:
+        result += "\n"
+    else:
+        result += "\n"
 
-# Make predictions on the test set
-predictions = model.predict(X_test)
+# Print the final result
+if len(coefficients) > 0:
+    result += "Model coefficients:\n"
+    for i, coeff in enumerate(coefficients):
+        if i == 0:
+            continue  # Skip intercept term
+        coefficient = round(coeff, 2)
+        feature_name = X.columns[i]
+        if feature_name == 'species':
+            continue  # Skip species column
+        result += f"{feature_name}: {coefficient}\n"
+else:
+    result += "No coefficients found."
 
-# Print the accuracy of the model
-accuracy = model.score(X_test, y_test)
+# Print the final result
+if len(coefficients) > 0:
+    result += "\nFinal prediction:\n"
+    for i, coeff in enumerate(coefficients):
+        if i == 0:
+            continue  # Skip intercept term
+        coefficient = round(coeff, 2)
+        feature_name = X.columns[i]
+        if feature_name == 'species':
+            continue  # Skip species column
+        result += f"{feature_name}: {coefficient}\n"
+else:
+    result += "No predictions found."
 ```
 - model_result: None
 - model_error:
  
 ```python
-None
+execution_error: could not convert string to float: 'setosa'
 ```
 
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.383
-  - heuristic_score: 0.767
+- code_score: 0.317
+  - heuristic_score: 0.633
     - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.model_selection | matched: sklearn.linear_model
-    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: LogisticRegression, fit, predict, score, train_test_split | matched: LogisticRegression, fit
+    - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model | matched: sklearn.linear_model
+    - calls_score: 0.133 | expected: LogisticRegression, drop, fit | model: LinearRegression, enumerate, fit, len, round | matched: fit
   - result_match: False
 
 ### chat_001_what_is_iris_en (chat_response, language: en, difficulty: easy)
