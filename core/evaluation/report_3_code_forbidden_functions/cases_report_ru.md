@@ -70,7 +70,7 @@ data = {
     'species': ['setosa', 'versicolor', 'virginica', 'setosa', 'versicolor']
 }
 
-df = pd.Dataframe(data)
+df = pd.DataFrame(data)
 
 # Вычисление статистики по датасету
 statistics = df.describe()
@@ -82,7 +82,7 @@ result = f"Статистика по датасету:\n{statistics}"
 - model_error:
  
 ```python
-execution_error: module 'pandas' has no attribute 'Dataframe'
+None
 ```
 
 
@@ -92,7 +92,7 @@ execution_error: module 'pandas' has no attribute 'Dataframe'
   - heuristic_score: 0.9
     - syntax_check: 0.3 (ok=True)
     - imports_score: 0.2 | expected:  | model: pandas | matched: 
-    - calls_score: 0.4 | expected: describe | model: Dataframe, describe | matched: describe
+    - calls_score: 0.4 | expected: describe | model: DataFrame, describe | matched: describe
   - result_match: False
 
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
@@ -163,9 +163,8 @@ model.fit(X, y)
 - expected_result:
  
 ```python
-None
+LogisticRegression(max_iter=200)
 ```
-- expected_output: Графический вывод
 - expected_error: None
 
 
@@ -184,7 +183,7 @@ data = {
 }
 
 # Создание DataFrame
-df = pd.Dataframe(data)
+df = pd.DataFrame(data)
 
 # Обучение классификатора
 from sklearn.model_selection import train_test_split
@@ -202,23 +201,27 @@ model.fit(X_train, y_train)
 
 # Проверка точности модели
 accuracy = model.score(X_test, y_test)
- print(f"Accuracy: {accuracy:.2f}")
+prediction = model.predict(X_test)
+correct_predictions = sum(prediction == y_test)
+
+# Вывод результатов
+result = f"Accuracy: {accuracy:.2f}, Correct predictions: {correct_predictions}"
 ```
 - model_result: None
 - model_error:
  
 ```python
-syntax_error
+None
 ```
 
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.0
-  - heuristic_score: 0.0
-    - syntax_check: 0.0 (ok=False)
-    - imports_score: 0.0 | expected:  | model:  | matched: 
-    - calls_score: 0.0 | expected:  | model:  | matched: 
+- code_score: 0.383
+  - heuristic_score: 0.767
+    - syntax_check: 0.3 (ok=True)
+    - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.model_selection | matched: sklearn.linear_model
+    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: DataFrame, LogisticRegression, fit, predict, score, sum, train_test_split | matched: LogisticRegression, fit
   - result_match: False
 
 ### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
@@ -285,7 +288,7 @@ iris_data = {
 }
 
 # Создание DataFrame
-df = pd.DataFrames(iris_data)
+df = pd.DataFrame(iris_data)
 
 # Выбор признаков для разделяения видов ирисов
 feature_to_split = ['sepal_length', 'sepal_width']

@@ -45,13 +45,18 @@ def _build_logit_bias(forbidden_strings: list[str] | None = None) -> dict[int, f
 
 
 def _sampling_with_forbidden(**kwargs) -> SamplingParams:
-    """Helper to include logit_bias for forbidden strings when building SamplingParams."""
+    """Helper to include forbidden strings via bad_words (preferred) or logit_bias."""
 
     forbidden_strings = kwargs.pop("forbidden_strings", None)
-    logit_bias = _build_logit_bias(forbidden_strings)
+    use_bad_words = kwargs.pop("use_bad_words", True)
 
-    if logit_bias:
-        kwargs["logit_bias"] = logit_bias
+    if forbidden_strings:
+        if use_bad_words:
+            kwargs["bad_words"] = list(dict.fromkeys(forbidden_strings))
+
+        logit_bias = _build_logit_bias(forbidden_strings)
+        if logit_bias:
+            kwargs.setdefault("logit_bias", logit_bias)
 
     return SamplingParams(**kwargs)
 
@@ -201,6 +206,7 @@ def generate_code_node(state: AgentState) -> AgentState:
             "pandas.read_csv",
         ],
     )
+    use_bad_words = state.get("forbidden_use_bad_words", True)
 
     sampling_params = _sampling_with_forbidden(
         max_tokens=512,
@@ -211,6 +217,7 @@ def generate_code_node(state: AgentState) -> AgentState:
         presence_penalty=0.5,
         seed=42,
         forbidden_strings=forbidden_strings,
+        use_bad_words=use_bad_words,
     )
 
     outputs = llm.generate([code_prompt], sampling_params)

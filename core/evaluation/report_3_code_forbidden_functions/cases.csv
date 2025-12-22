@@ -3,24 +3,24 @@ code_001_describe,code_generation,en,True,,0.45,"['code', 'describe']",easy,,,df
 code_002_pairplot,code_generation,en,True,,0.15,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
 fig.show()",core/evaluation/report_3_code_forbidden_functions/plots/code_002_pairplot_expected.png,0.3,False
-code_003_train_model,code_generation,en,True,,0.0,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+code_003_train_model,code_generation,en,True,,0.383,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)",,0.0,False
+model.fit(X, y)",,0.767,False
 code_001_describe,code_generation,ru,True,,0.45,"['code', 'describe']",easy,,,df.describe(),,0.9,False
 code_002_pairplot,code_generation,ru,True,,0.15,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
 fig.show()",core/evaluation/report_3_code_forbidden_functions/plots/code_002_pairplot_expected.png,0.3,False
-code_003_train_model,code_generation,ru,True,,0.0,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+code_003_train_model,code_generation,ru,True,,0.383,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)",,0.0,False
+model.fit(X, y)",,0.767,False
 chat_001_what_is_iris,chat_response,en,True,0.079,,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,
 chat_002_how_many_classes,chat_response,en,True,0.067,,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,
 chat_003_best_features,chat_response,en,False,0.063,,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,
