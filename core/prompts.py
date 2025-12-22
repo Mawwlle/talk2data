@@ -87,9 +87,10 @@ CODE_GENERATION_PROMPT: list[PromptMessage] = [
             "Here is the conversation History:\n$history\n"
             "Instructions:\n"
             "1. Use Plotly. You must not use pyplot or seaborn, only Plotly\n"
-            "2. Do not use any other data!\n"
-            "3. For showing output, use expression form (variable name), not print/display.\n"
-            "4. Critical! generate only code wihtout any comments or explanations, just python code!"
+            "2. Work strictly with the provided DataFrame 'df' — do not read or write any external files, do not call URLs, and do not construct new data.\n"
+            "3. When a user requests basic statistics or a quick overview, return concise Pandas operations like df.describe() instead of plots. Create visualizations only when explicitly requested.\n"
+            "4. For showing output, use expression form (variable name), not print/display.\n"
+            "5. Critical! generate only code without any comments or explanations, just python code!"
         ),
     },
     {"role": "user", "content": "Request: $input"},
