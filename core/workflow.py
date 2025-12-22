@@ -199,8 +199,6 @@ def generate_code_node(state: AgentState) -> AgentState:
             "print",
             "pd.read_csv",
             "pandas.read_csv",
-            "pd.DataFrame",
-            "pandas.DataFrame",
         ],
     )
 
