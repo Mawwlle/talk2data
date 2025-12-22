@@ -30,7 +30,7 @@ code_score = clip(code_score, 0, 1)
 - result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.
 
 ## Кейсы
-### code_001_describe (code_generation, language: en, difficulty: easy)
+### code_001_describe_en (code_generation, language: en, difficulty: easy)
 
 **User input:** None
 
@@ -95,7 +95,7 @@ None
     - calls_score: 0.4 | expected: describe | model: DataFrame, describe | matched: describe
   - result_match: False
 
-### code_002_pairplot (code_generation, language: en, difficulty: medium)
+### code_002_pairplot_en (code_generation, language: en, difficulty: medium)
 
 **User input:** None
 
@@ -116,7 +116,7 @@ None
 - expected_error: execution_timeout: sandbox_timeout
 - expected_plot:
 
- ![expected plot](plots/code_002_pairplot_expected.png)
+ ![expected plot](plots/code_002_pairplot_en_expected.png)
 
 
 **Model output:**
@@ -144,7 +144,7 @@ execution_error: pairplot is not a valid plot kind Valid plot kinds: ('line', 'b
     - calls_score: 0.0 | expected: scatter_matrix, show | model: plot | matched: 
   - result_match: False
 
-### code_003_train_model (code_generation, language: en, difficulty: medium)
+### code_003_train_model_en (code_generation, language: en, difficulty: medium)
 
 **User input:** None
 

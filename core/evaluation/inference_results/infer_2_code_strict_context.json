@@ -3,7 +3,7 @@
   "timestamp": "2025-12-22T15:46:28.221199",
   "results": [
     {
-      "benchmark_id": "code_001_describe",
+      "benchmark_id": "code_001_describe_en",
       "expected_decision": "code_generation",
       "model_decision": {
         "action": "code_generation"
@@ -38,7 +38,7 @@
       "benchmark_file": "iris_code_benchmark_en.json"
     },
     {
-      "benchmark_id": "code_002_pairplot",
+      "benchmark_id": "code_002_pairplot_en",
       "expected_decision": "code_generation",
       "model_decision": {
         "action": "code_generation"
@@ -73,7 +73,7 @@
       "benchmark_file": "iris_code_benchmark_en.json"
     },
     {
-      "benchmark_id": "code_003_train_model",
+      "benchmark_id": "code_003_train_model_en",
       "expected_decision": "code_generation",
       "model_decision": {
         "action": "code_generation"

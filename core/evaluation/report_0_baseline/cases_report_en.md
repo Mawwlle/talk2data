@@ -30,7 +30,7 @@ code_score = clip(code_score, 0, 1)
 - result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.
 
 ## Кейсы
-### code_001_describe (code_generation, language: en, difficulty: easy)
+### code_001_describe_en (code_generation, language: en, difficulty: easy)
 
 **User input:** Write code that outputs statistics for the dataset.
 
@@ -73,7 +73,7 @@ execution_timeout: sandbox_timeout
 ```
 - model_plot:
 
- ![model plot](plots/code_001_describe_model.png)
+ ![model plot](plots/code_001_describe_en_model.png)
 
 
 **Метрики:**
@@ -85,7 +85,7 @@ execution_timeout: sandbox_timeout
     - calls_score: 0.0 | expected: describe | model: scatter, show | matched: 
   - result_match: False
 
-### code_002_pairplot (code_generation, language: en, difficulty: medium)
+### code_002_pairplot_en (code_generation, language: en, difficulty: medium)
 
 **User input:** Create a pairplot of all features.
 
@@ -106,7 +106,7 @@ None
 - expected_error: execution_timeout: sandbox_timeout
 - expected_plot:
 
- ![expected plot](plots/code_002_pairplot_expected.png)
+ ![expected plot](plots/code_002_pairplot_en_expected.png)
 
 
 **Model output:**
@@ -138,7 +138,7 @@ execution_error: module 'plotly.express' has no attribute 'pairplot'
     - calls_score: 0.2 | expected: scatter_matrix, show | model: pairplot, show | matched: show
   - result_match: False
 
-### code_003_train_model (code_generation, language: en, difficulty: medium)
+### code_003_train_model_en (code_generation, language: en, difficulty: medium)
 
 **User input:** Write code that trains a simple classifier on this data.
 
