@@ -1,11 +1,9 @@
 import whisper
 
-from core.config import settings
-
 
 class Voice2Text:
-    def __init__(self):
-        self._model = whisper.load_model(settings.STT_MODEL, device="cuda")
+    def __init__(self, model_name: str, device: str = "cuda"):
+        self._model = whisper.load_model(model_name, device=device)
 
     @property
     def model(self):

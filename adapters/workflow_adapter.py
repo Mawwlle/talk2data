@@ -3,12 +3,9 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict
 
 from domain.entities import ConversationRequest, ConversationResult
 from domain.interfaces import ConversationWorkflow
-
-from core.workflow import create_workflow, llm_init
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +13,10 @@ logger = logging.getLogger(__name__)
 class LangGraphConversationWorkflow(ConversationWorkflow):
     """Adapter that wraps the existing LangGraph workflow for domain use."""
 
-    def __init__(self):
-        llm_init()
-        self._workflow = create_workflow()
+    def __init__(self, workflow):
+        self._workflow = workflow
 
-    def _persist_result(self, result: Dict, filename: str = "result.json") -> None:
+    def _persist_result(self, result: dict, filename: str = "result.json") -> None:
         try:
             file_path = Path(__file__).resolve().parent.parent / "core" / filename
             with open(file_path, "w", encoding="utf-8") as file:

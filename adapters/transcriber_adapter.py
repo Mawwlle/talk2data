@@ -1,6 +1,5 @@
 import logging
 import tempfile
-from typing import Optional
 
 from domain.entities import TranscriptionRequest, TranscriptionResult
 from domain.interfaces import Transcriber
@@ -10,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class WhisperTranscriber(Transcriber):
-    def __init__(self, model: Optional[Voice2Text] = None):
-        self._model = model or Voice2Text()
+    def __init__(self, model: Voice2Text):
+        self._model = model
 
     def transcribe(self, request: TranscriptionRequest) -> TranscriptionResult:
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:

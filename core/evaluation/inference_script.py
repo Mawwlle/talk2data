@@ -3,7 +3,8 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from core.workflow import create_workflow, llm_init
+from core.models import ModelLoader
+from core.workflow import WorkflowEngine
 
 BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
@@ -49,8 +50,9 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 
 def main():
     run_id = f"eval_{datetime.utcnow().isoformat()}_{uuid.uuid4().hex[:8]}"
-    llm_init()
-    workflow = create_workflow()
+    loader = ModelLoader()
+    workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
+    workflow = workflow_engine.create_workflow()
 
     all_results = {
         "run_id": run_id,

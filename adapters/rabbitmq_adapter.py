@@ -5,7 +5,6 @@ from typing import Callable
 import pika
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
-from core.config import settings
 from domain.entities import TaskResponse
 from domain.interfaces import TaskQueue
 
@@ -14,20 +13,30 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 
 
 class RabbitMQAdapter(TaskQueue):
-    def __init__(self):
-        credentials = pika.PlainCredentials(settings.RABBITMQ_USER, settings.RABBITMQ_PASS)
+    def __init__(
+        self,
+        *,
+        host: str,
+        user: str,
+        password: str,
+        task_queue: str,
+        response_queue: str,
+        exchange: str,
+        routing_key: str,
+    ):
+        credentials = pika.PlainCredentials(user, password)
         try:
             self.connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
-                    host=settings.RABBITMQ_HOST, credentials=credentials, heartbeat=60
+                    host=host, credentials=credentials, heartbeat=60
                 )
             )
             if not self.connection.is_open:
                 raise ConnectionError("RabbitMQ connection failed silently")
 
             self.channel = self.connection.channel()
-            self.channel.queue_declare(queue=settings.TASK_QUEUE, durable=True)
-            self.channel.queue_declare(queue=settings.RESPONSE_QUEUE, durable=True)
+            self.channel.queue_declare(queue=task_queue, durable=True)
+            self.channel.queue_declare(queue=response_queue, durable=True)
             logger.info("Successfully connected to RabbitMQ")
         except AMQPConnectionError as conn_err:
             logger.error("RabbitMQ connection failed: %s", conn_err)
@@ -39,6 +48,11 @@ class RabbitMQAdapter(TaskQueue):
             logger.error("Unexpected error: %s", exc)
             raise
 
+        self._task_queue = task_queue
+        self._response_queue = response_queue
+        self._exchange = exchange
+        self._routing_key = routing_key
+
     def _publish(self, response: TaskResponse) -> None:
         payload = {
             "status": response.status,
@@ -48,8 +62,8 @@ class RabbitMQAdapter(TaskQueue):
             "project_id": response.project_id,
         }
         self.channel.basic_publish(
-            exchange=settings.EXCHANGE,
-            routing_key=settings.ROUTING_KEY,
+            exchange=self._exchange,
+            routing_key=self._routing_key,
             body=json.dumps(payload),
             mandatory=True,
         )
@@ -75,7 +89,7 @@ class RabbitMQAdapter(TaskQueue):
                 ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
         self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(queue=settings.TASK_QUEUE, on_message_callback=_callback)
+        self.channel.basic_consume(queue=self._task_queue, on_message_callback=_callback)
         logger.info("Worker started. Waiting for tasks...")
-        logger.info("Listening to queue: %s", settings.TASK_QUEUE)
+        logger.info("Listening to queue: %s", self._task_queue)
         self.channel.start_consuming()

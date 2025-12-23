@@ -1,6 +1,7 @@
 # models.py
 import logging
 from pathlib import Path
+from typing import Any
 
 import environ
 from transformers import AutoTokenizer
@@ -10,59 +11,57 @@ from core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# === Загрузка .env ===
-env = environ.Env()
-env.read_env(Path(__file__).resolve().parent.parent / ".env")
 
-if env.bool("LOCAL_RUN", False):
-    # Для локального облегчённоего запуска
-    VLLM_CONFIG = dict(
-        # max_model_len=4096,            # ↓ уменьшаем контекст, если оставить по умолчанию, то init engine займёт около 145 секунд
-        gpu_memory_utilization=0.95,  # ↑ разрешаем использовать больше GPU-памяти
-        enforce_eager=False,
-        dtype="float16",
-        tensor_parallel_size=1,  # for evaluation
-    )
-else:
-    LOCAL_CONFIG = {}
+class ModelLoader:
+    def __init__(self, *, env_file: Path | None = None) -> None:
+        env = environ.Env()
+        env.read_env(env_file or Path(__file__).resolve().parent.parent / ".env")
+        self._settings = settings
+        self._vllm_config = self._build_vllm_config(env)
+        self._tokenizer = None
+        self._llm = None
 
-_tokenizer = None
-_llm = None
-
-
-def get_tokenizer():
-    global _tokenizer
-    if not _tokenizer:
-        logger.info("Загружаю токенайзер...")
-        try:
-            _tokenizer = AutoTokenizer.from_pretrained(
-                settings.LLM_LOCAL_PATH,
-                use_fast=True,
-                padding_side="left",
-                local_files_only=True,
+    @staticmethod
+    def _build_vllm_config(env: environ.Env) -> dict[str, Any]:
+        if env.bool("LOCAL_RUN", False):
+            return dict(
+                gpu_memory_utilization=0.95,
+                enforce_eager=False,
+                dtype="float16",
+                tensor_parallel_size=1,
             )
-        except OSError:
-            logger.warning("Local weights not found, trying to download from HF...")
-            _tokenizer = AutoTokenizer.from_pretrained(settings.LLM_MODEL_NAME)
-            _tokenizer.save_pretrained(settings.LLM_LOCAL_PATH)
-        if _tokenizer.pad_token is None:
-            _tokenizer.add_special_tokens({"pad_token": "[PAD]"})
-        logger.info("Токенайзер загружен")
-    return _tokenizer
+        return {}
 
+    def get_tokenizer(self):
+        if self._tokenizer is None:
+            logger.info("Загружаю токенайзер...")
+            try:
+                self._tokenizer = AutoTokenizer.from_pretrained(
+                    self._settings.LLM_LOCAL_PATH,
+                    use_fast=True,
+                    padding_side="left",
+                    local_files_only=True,
+                )
+            except OSError:
+                logger.warning("Local weights not found, trying to download from HF...")
+                self._tokenizer = AutoTokenizer.from_pretrained(self._settings.LLM_MODEL_NAME)
+                self._tokenizer.save_pretrained(self._settings.LLM_LOCAL_PATH)
+            if self._tokenizer.pad_token is None:
+                self._tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+            logger.info("Токенайзер загружен")
+        return self._tokenizer
 
-def get_llm():
-    global _llm
-    if not _llm:
-        logger.info("Загружаю модель...")
-        _llm = LLM(
-            model=settings.LLM_LOCAL_PATH,
-            load_format=(
-                settings.LLM_LOAD_FORMAT
-                if hasattr(settings, "LLM_LOAD_FORMAT")
-                else "auto"
-            ),
-            **VLLM_CONFIG,
-        )
-        logger.info("Модель загружена")
-    return _llm
+    def get_llm(self):
+        if self._llm is None:
+            logger.info("Загружаю модель...")
+            self._llm = LLM(
+                model=self._settings.LLM_LOCAL_PATH,
+                load_format=(
+                    self._settings.LLM_LOAD_FORMAT
+                    if hasattr(self._settings, "LLM_LOAD_FORMAT")
+                    else "auto"
+                ),
+                **self._vllm_config,
+            )
+            logger.info("Модель загружена")
+        return self._llm

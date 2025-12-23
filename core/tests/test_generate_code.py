@@ -4,27 +4,43 @@ import time
 import unittest
 
 from core.tests.tools import TEST_INITIAL_STATES
-from core.workflow import generate_code_node, llm_init
+from core.workflow import WorkflowEngine
 
 logger = logging.getLogger(__name__)
 
 
-class TestGenerateCode(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        """Инициализируем LLM один раз для всех тестов."""
-        logger.info("Initializing LLM...")
-        llm_init()
-        logger.info("LLM initialized")
+class _StubLLM:
+    def __init__(self, response_text: str = """```python
+print('hello world')
+```"""):
+        self._response_text = response_text
 
+    class _Output:
+        def __init__(self, text: str):
+            self.outputs = [self._Result(text)]
+
+        class _Result:
+            def __init__(self, text: str):
+                self.text = text
+
+    def generate(self, prompts, sampling_params):
+        return [self._Output(self._response_text)]
+
+
+class _StubTokenizer:
+    def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True):
+        return " ".join([message["content"] for message in messages])
+
+
+class TestGenerateCode(unittest.TestCase):
     def setUp(self):
-        """Создаём базовое состояние перед каждым тестом."""
         self.sample_state = TEST_INITIAL_STATES[0].copy()
+        self.engine = WorkflowEngine(_StubLLM(), _StubTokenizer())
 
     # ------------------------------------------------------------------
     def test_extracts_code_from_python_block(self):
         """Проверяет, что из ответа LLM извлекается код."""
-        result = generate_code_node(self.sample_state)
+        result = self.engine._generate_code_node(self.sample_state)
 
         generated = result.get("generated_code", "")
         self.assertIsInstance(generated, str)
@@ -55,7 +71,7 @@ class TestGenerateCode(unittest.TestCase):
             "user_message": "Напиши простой код без блока ```python```"
         }
 
-        result = generate_code_node(state)
+        result = self.engine._generate_code_node(state)
         generated = result.get("generated_code", "").strip()
 
         self.assertTrue(generated, "generated_code не должен быть пустым")
@@ -69,7 +85,7 @@ class TestGenerateCode(unittest.TestCase):
         state = self.sample_state.copy()
         state["timing_info"] = {"prev_step_sec": 1.23}
 
-        result = generate_code_node(state)
+        result = self.engine._generate_code_node(state)
         timing = result.get("timing_info", {})
 
         self.assertIn("prev_step_sec", timing)
@@ -80,7 +96,7 @@ class TestGenerateCode(unittest.TestCase):
     def test_timing_value_is_reasonable(self):
         """Проверяем, что generate_code_sec реалистичен по времени."""
         start = time.perf_counter()
-        result = generate_code_node(self.sample_state)
+        result = self.engine._generate_code_node(self.sample_state)
         elapsed = result["timing_info"]["generate_code_sec"]
         total_elapsed = time.perf_counter() - start
 
@@ -99,7 +115,7 @@ class TestGenerateCode(unittest.TestCase):
             with self.subTest(case=idx, user_input=state.get("user_input", "")):
                 state_copy = copy.deepcopy(state)
                 start = time.perf_counter()
-                result = generate_code_node(state_copy)
+                result = self.engine._generate_code_node(state_copy)
                 elapsed = result["timing_info"]["generate_code_sec"]
                 total_elapsed = time.perf_counter() - start
 
