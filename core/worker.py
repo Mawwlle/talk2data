@@ -14,9 +14,13 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 
 
 class TaskRouter:
-    def __init__(self) -> None:
-        self._conversation_service = ConversationService(LangGraphConversationWorkflow())
-        self._transcription_service = TranscriptionService(WhisperTranscriber())
+    def __init__(
+        self,
+        conversation_service: ConversationService,
+        transcription_service: TranscriptionService,
+    ) -> None:
+        self._conversation_service = conversation_service
+        self._transcription_service = transcription_service
         self._handlers: Dict[str, Callable[[dict], TaskResponse]] = {
             "converse": self._conversation_service.handle,
             "transcribe": self._transcription_service.handle,
@@ -40,8 +44,14 @@ class TaskRouter:
 
 
 def main() -> None:
+    workflow = LangGraphConversationWorkflow()
+    conversation_service = ConversationService(workflow)
+
+    transcriber = WhisperTranscriber()
+    transcription_service = TranscriptionService(transcriber)
+
+    router = TaskRouter(conversation_service, transcription_service)
     queue = RabbitMQAdapter()
-    router = TaskRouter()
     queue.start(router.route)
 
 
