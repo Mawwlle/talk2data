@@ -15,20 +15,27 @@ class ConversationWorkflow(Protocol):
         ...
 
 
+class ResultPersister:
+    """Handles persisting workflow results."""
+
+    def __init__(self, *, base_path: Path | None = None, filename: str = "result.json") -> None:
+        self._file_path = (base_path or Path(__file__).resolve().parents[2] / "core") / filename
+
+    def persist(self, result: dict) -> None:
+        try:
+            with open(self._file_path, "w", encoding="utf-8") as file:
+                json.dump(result, file, ensure_ascii=False, indent=4)
+            logger.info("Result saved to %s", self._file_path)
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.exception("Failed to persist result: %s", exc)
+
+
 class LangGraphConversationWorkflow(ConversationWorkflow):
     """Adapter that wraps the existing LangGraph workflow for the conversation feature."""
 
-    def __init__(self, workflow):
+    def __init__(self, workflow, *, result_persister: ResultPersister | None = None):
         self._workflow = workflow
-
-    def _persist_result(self, result: dict, filename: str = "result.json") -> None:
-        try:
-            file_path = Path(__file__).resolve().parents[2] / "core" / filename
-            with open(file_path, "w", encoding="utf-8") as file:
-                json.dump(result, file, ensure_ascii=False, indent=4)
-            logger.info("Result saved to %s", file_path)
-        except Exception as exc:  # pragma: no cover - defensive
-            logger.exception("Failed to persist result: %s", exc)
+        self._result_persister = result_persister or ResultPersister()
 
     def run(self, request: ConversationRequest) -> ConversationResult:
         start = time.perf_counter()
@@ -48,7 +55,7 @@ class LangGraphConversationWorkflow(ConversationWorkflow):
         result = self._workflow.invoke(workflow_state)
 
         # Persist result for debugging just like the previous worker implementation
-        self._persist_result(result)
+        self._result_persister.persist(result)
 
         total_time = round(time.perf_counter() - start, 3)
         timing = {**result.get("timing_info", {}), "total_time": total_time}
