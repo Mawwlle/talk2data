@@ -1,5 +1,6 @@
 import json
 import logging
+from dataclasses import replace
 from typing import Any, Callable, Mapping, Protocol
 
 import pika
@@ -86,9 +87,13 @@ class RabbitMQAdapter(TaskQueue):
                 message: Mapping[str, Any] = json.loads(body)
                 logger.info("Received task: %s", message.get("task"))
                 response = handler(message)
-                if response.project_id is None:
-                    response.project_id = message.get("data", {}).get("project_id")
-                self._publish(response)
+                resolved_project_id = response.project_id or message.get("data", {}).get("project_id")
+                response_with_project = (
+                    replace(response, project_id=resolved_project_id)
+                    if resolved_project_id != response.project_id
+                    else response
+                )
+                self._publish(response_with_project)
                 ch.basic_ack(delivery_tag=method.delivery_tag)
             except Exception as exc:  # pragma: no cover - defensive
                 logger.exception("Error handling message: %s", exc)

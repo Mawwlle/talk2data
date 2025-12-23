@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class TranscriptionRequest:
     file_bytes: bytes
     project_id: str | None = None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class TranscriptionResult:
     text: str

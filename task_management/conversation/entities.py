@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ConversationRequest:
     user_input: str
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -10,7 +10,7 @@ class ConversationRequest:
     project_id: str | None = None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ConversationResult:
     code: str | None
     message: str | None
