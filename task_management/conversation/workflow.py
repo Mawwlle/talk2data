@@ -15,6 +15,11 @@ class ConversationWorkflow(Protocol):
         ...
 
 
+class InvokableWorkflow(Protocol):
+    def invoke(self, state: dict) -> dict:  # pragma: no cover
+        ...
+
+
 class ResultPersister:
     """Handles persisting workflow results."""
 
@@ -33,7 +38,12 @@ class ResultPersister:
 class LangGraphConversationWorkflow(ConversationWorkflow):
     """Adapter that wraps the existing LangGraph workflow for the conversation feature."""
 
-    def __init__(self, workflow, *, result_persister: ResultPersister | None = None):
+    def __init__(
+        self,
+        workflow: InvokableWorkflow,
+        *,
+        result_persister: ResultPersister | None = None,
+    ) -> None:
         self._workflow = workflow
         self._result_persister = result_persister or ResultPersister()
 

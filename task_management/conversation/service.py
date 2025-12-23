@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from typing import Any, Mapping
 
 from task_management.conversation.entities import ConversationRequest
 from task_management.conversation.workflow import ConversationWorkflow
@@ -12,7 +12,7 @@ class ConversationService:
     def __init__(self, workflow: ConversationWorkflow):
         self._workflow = workflow
 
-    def handle(self, payload: Dict) -> TaskResponse:
+    def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         logger.info("ConversationService handling payload")
         try:
             request = ConversationRequest(

@@ -1,7 +1,7 @@
 """Message worker orchestrating feature modules and infrastructure adapters."""
 
 import logging
-from typing import Callable, Dict
+from typing import Any, Callable, Mapping
 
 from core.config import settings
 from core.models import ModelLoader
@@ -26,12 +26,12 @@ class TaskRouter:
     ) -> None:
         self._conversation_service = conversation_service
         self._transcription_service = transcription_service
-        self._handlers: Dict[str, Callable[[dict], TaskResponse]] = {
+        self._handlers: dict[str, Callable[[Mapping[str, Any]], TaskResponse]] = {
             "converse": self._conversation_service.handle,
             "transcribe": self._transcription_service.handle,
         }
 
-    def route(self, message: dict) -> TaskResponse:
+    def route(self, message: Mapping[str, Any]) -> TaskResponse:
         task_type = message.get("task", "converse")
         data = message.get("data", {})
         handler = self._handlers.get(task_type)

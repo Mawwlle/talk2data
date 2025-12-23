@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import environ
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, PreTrainedTokenizerBase
 from vllm import LLM
 
 from core.config import settings
@@ -32,7 +32,7 @@ class ModelLoader:
             )
         return {}
 
-    def get_tokenizer(self):
+    def get_tokenizer(self) -> PreTrainedTokenizerBase:
         if self._tokenizer is None:
             logger.info("Загружаю токенайзер...")
             try:
@@ -51,7 +51,7 @@ class ModelLoader:
             logger.info("Токенайзер загружен")
         return self._tokenizer
 
-    def get_llm(self):
+    def get_llm(self) -> LLM:
         if self._llm is None:
             logger.info("Загружаю модель...")
             self._llm = LLM(

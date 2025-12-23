@@ -1,6 +1,6 @@
 import base64
 import logging
-from typing import Dict
+from typing import Any, Mapping
 
 from task_management.task_queue.entities import TaskResponse
 from task_management.transcription.entities import TranscriptionRequest
@@ -13,7 +13,7 @@ class TranscriptionService:
     def __init__(self, transcriber: Transcriber):
         self._transcriber = transcriber
 
-    def handle(self, payload: Dict) -> TaskResponse:
+    def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         logger.info("TranscriptionService handling payload")
         try:
             raw_bytes = base64.b64decode(payload.get("file_bytes", b""))

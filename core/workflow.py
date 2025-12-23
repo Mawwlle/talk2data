@@ -10,7 +10,8 @@ from typing import Callable
 import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
-from vllm import SamplingParams
+from transformers import PreTrainedTokenizerBase
+from vllm import LLM, SamplingParams
 
 from core.prompts import (
     CHAT_RESPONSE_PROMPT,
@@ -25,12 +26,15 @@ DECIDE_ACTION_DEFAULT = "chat_response"
 
 
 class WorkflowEngine:
-    def __init__(self, llm, tokenizer) -> None:
+    def __init__(self, llm: LLM, tokenizer: PreTrainedTokenizerBase) -> None:
         self._llm = llm
         self._tokenizer = tokenizer
 
     def _format_prompt(
-        self, messages_template: list, state: AgentState, metadata_fields: dict | None = None
+        self,
+        messages_template: list[dict[str, str]],
+        state: AgentState,
+        metadata_fields: dict[str, str] | None = None,
     ) -> str:
         metadata_fields = metadata_fields or {}
         local_prompt = copy.deepcopy(messages_template)
@@ -185,7 +189,7 @@ class WorkflowEngine:
         return builder.compile()
 
 
-def safe_destroy_process_group():
+def safe_destroy_process_group() -> None:
     """
     Безопасный shutdown моделей. Позволяет избежать утечек на GPU
     """

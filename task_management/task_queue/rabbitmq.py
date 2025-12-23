@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Callable, Protocol
+from typing import Any, Callable, Mapping, Protocol
 
 import pika
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
@@ -12,7 +12,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 
 
 class TaskQueue(Protocol):
-    def start(self, handler: Callable[[dict], TaskResponse]) -> None:  # pragma: no cover
+    def start(
+        self, handler: Callable[[Mapping[str, Any]], TaskResponse]
+    ) -> None:  # pragma: no cover
         ...
 
 
@@ -78,10 +80,10 @@ class RabbitMQAdapter(TaskQueue):
             response.error or "",
         )
 
-    def start(self, handler: Callable[[dict], TaskResponse]) -> None:
+    def start(self, handler: Callable[[Mapping[str, Any]], TaskResponse]) -> None:
         def _callback(ch, method, properties, body):
             try:
-                message = json.loads(body)
+                message: Mapping[str, Any] = json.loads(body)
                 logger.info("Received task: %s", message.get("task"))
                 response = handler(message)
                 if response.project_id is None:
