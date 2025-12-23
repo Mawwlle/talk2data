@@ -16,23 +16,3 @@ class ConversationResult:
     message: str | None
     updated_history: list[dict[str, Any]]
     timing: dict[str, float] = field(default_factory=dict)
-
-
-@dataclass
-class TranscriptionRequest:
-    file_bytes: bytes
-    project_id: str | None = None
-
-
-@dataclass
-class TranscriptionResult:
-    text: str
-
-
-@dataclass
-class TaskResponse:
-    status: str
-    task: str
-    result: dict[str, Any] | None = None
-    error: str | None = None
-    project_id: str | None = None

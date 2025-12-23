@@ -3,26 +3,31 @@ import json
 import logging
 import time
 from pathlib import Path
+from typing import Protocol
 
-from domain.entities import ConversationRequest, ConversationResult
-from domain.interfaces import ConversationWorkflow
+from task_management.conversation.entities import ConversationRequest, ConversationResult
 
 logger = logging.getLogger(__name__)
 
 
+class ConversationWorkflow(Protocol):
+    def run(self, request: ConversationRequest) -> ConversationResult:  # pragma: no cover
+        ...
+
+
 class LangGraphConversationWorkflow(ConversationWorkflow):
-    """Adapter that wraps the existing LangGraph workflow for domain use."""
+    """Adapter that wraps the existing LangGraph workflow for the conversation feature."""
 
     def __init__(self, workflow):
         self._workflow = workflow
 
     def _persist_result(self, result: dict, filename: str = "result.json") -> None:
         try:
-            file_path = Path(__file__).resolve().parent.parent / "core" / filename
+            file_path = Path(__file__).resolve().parents[2] / "core" / filename
             with open(file_path, "w", encoding="utf-8") as file:
                 json.dump(result, file, ensure_ascii=False, indent=4)
             logger.info("Result saved to %s", file_path)
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover - defensive
             logger.exception("Failed to persist result: %s", exc)
 
     def run(self, request: ConversationRequest) -> ConversationResult:

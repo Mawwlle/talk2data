@@ -1,16 +1,17 @@
-"""Message worker orchestrating domain services and infrastructure adapters."""
+"""Message worker orchestrating feature modules and infrastructure adapters."""
 
 import logging
 from typing import Callable, Dict
 
-from adapters.rabbitmq_adapter import RabbitMQAdapter
-from adapters.transcriber_adapter import WhisperTranscriber
-from adapters.workflow_adapter import LangGraphConversationWorkflow
 from core.config import settings
 from core.models import ModelLoader
 from core.workflow import WorkflowEngine
-from domain.entities import TaskResponse
-from domain.services import ConversationService, TranscriptionService
+from task_management.conversation.service import ConversationService
+from task_management.conversation.workflow import LangGraphConversationWorkflow
+from task_management.task_queue.entities import TaskResponse
+from task_management.task_queue.rabbitmq import RabbitMQAdapter
+from task_management.transcription.service import TranscriptionService
+from task_management.transcription.transcriber import WhisperTranscriber
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)

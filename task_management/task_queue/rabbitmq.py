@@ -1,15 +1,19 @@
 import json
 import logging
-from typing import Callable
+from typing import Callable, Protocol
 
 import pika
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
-from domain.entities import TaskResponse
-from domain.interfaces import TaskQueue
+from task_management.task_queue.entities import TaskResponse
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+
+class TaskQueue(Protocol):
+    def start(self, handler: Callable[[dict], TaskResponse]) -> None:  # pragma: no cover
+        ...
 
 
 class RabbitMQAdapter(TaskQueue):
