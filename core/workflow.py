@@ -11,7 +11,6 @@ import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
 
-from core.evaluation.tools.code_evaluation_tools import CodeValidator
 from core.models import get_llm, get_tokenizer
 
 # Import prompt templates and schemas

@@ -216,7 +216,7 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.5
+- code_score: 0.7
   - heuristic_score: 1.0
   - plot_match: 0.0%
     - syntax_check: 0.333 (ok=True)
@@ -230,6 +230,7 @@ None
 
 
 **Ground truth:**
+- possible_code_objects: RandomForestClassifier, DecisionTreeClassifier, SVC, KNeighborsClassifier, GaussianNB
 - expected_code:
 ```python
 from sklearn.linear_model import LogisticRegression
@@ -279,7 +280,7 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.241
+- code_score: 0.441
   - heuristic_score: 0.481
     - syntax_check: 0.333 (ok=True)
     - imports_score: 0.0 | expected: sklearn.linear_model | model: sklearn.ensemble, sklearn.model_selection | matched: 

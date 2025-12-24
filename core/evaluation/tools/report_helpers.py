@@ -416,6 +416,11 @@ def render_case_markdown(
             lines.append("```python")
             lines.append(case.get("expected_code"))  # type: ignore
             lines.append("```")
+            possible_code_objects = case.get("possible_code_objects") or []
+            if possible_code_objects:
+                lines.append(
+                    "- possible_code_objects: " + ", ".join(possible_code_objects)
+                )
             details = case.get("code_details") or {}
             lines.append("- expected_result:\n ")
             lines.append("```python")
@@ -493,45 +498,62 @@ def render_case_markdown(
         if case.get("expected_decision") == "code_generation":
             details = case.get("code_details") or {}
             lines.append(f"- code_score: {case.get('code_score')}")
-            lines.append("  - heuristic_score: " + str(details.get("heuristic_score")))
+            if "heuristic_score" in details:
+                lines.append(
+                    "  - heuristic_score: " + str(details.get("heuristic_score"))
+                )
             if details.get("plot_match_percent") is not None:
                 lines.append(
                     "  - plot_match: "
                     + str(details.get("plot_match_percent"))
                     + "%"
                 )
-            breakdown = details.get("heuristic_breakdown", {})
-            syntax_part = breakdown.get("syntax", {})
-            import_part = breakdown.get("imports", {})
-            calls_part = breakdown.get("calls", {})
-            lines.append(
-                "    - syntax_check: "
-                + str(syntax_part.get("score"))
-                + " (ok="
-                + str(syntax_part.get("ok"))
-                + ")"
-            )
-            lines.append(
-                "    - imports_score: "
-                + str(import_part.get("score"))
-                + " | expected: "
-                + ", ".join(import_part.get("expected", []))
-                + " | model: "
-                + ", ".join(import_part.get("model", []))
-                + " | matched: "
-                + ", ".join(import_part.get("matched", []))
-            )
-            lines.append(
-                "    - calls_score: "
-                + str(calls_part.get("score"))
-                + " | expected: "
-                + ", ".join(calls_part.get("expected", []))
-                + " | model: "
-                + ", ".join(calls_part.get("model", []))
-                + " | matched: "
-                + ", ".join(calls_part.get("matched", []))
-            )
-            lines.append("  - result_match: " + str(details.get("result_match")))
+            if details.get("heuristic_breakdown"):
+                breakdown = details.get("heuristic_breakdown", {})
+                syntax_part = breakdown.get("syntax", {})
+                import_part = breakdown.get("imports", {})
+                calls_part = breakdown.get("calls", {})
+                lines.append(
+                    "    - syntax_check: "
+                    + str(syntax_part.get("score"))
+                    + " (ok="
+                    + str(syntax_part.get("ok"))
+                    + ")"
+                )
+                lines.append(
+                    "    - imports_score: "
+                    + str(import_part.get("score"))
+                    + " | expected: "
+                    + ", ".join(import_part.get("expected", []))
+                    + " | model: "
+                    + ", ".join(import_part.get("model", []))
+                    + " | matched: "
+                    + ", ".join(import_part.get("matched", []))
+                )
+                lines.append(
+                    "    - calls_score: "
+                    + str(calls_part.get("score"))
+                    + " | expected: "
+                    + ", ".join(calls_part.get("expected", []))
+                    + " | model: "
+                    + ", ".join(calls_part.get("model", []))
+                    + " | matched: "
+                    + ", ".join(calls_part.get("matched", []))
+                )
+            if "result_match" in details:
+                lines.append("  - result_match: " + str(details.get("result_match")))
+            if details.get("requirements"):
+                lines.append(
+                    "  - requirements_match: "
+                    + str(details.get("requirements_match"))
+                )
+                for requirement in details.get("requirements", []):
+                    lines.append(
+                        "    - "
+                        + str(requirement.get("description") or requirement.get("id"))
+                        + ": "
+                        + str(requirement.get("ok"))
+                    )
 
         lines.append("")
 

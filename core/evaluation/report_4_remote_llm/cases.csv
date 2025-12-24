@@ -1,39 +1,39 @@
-id,expected_decision,language,decision_score,semantic_similarity,code_score,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,expected_plot_path,model_plot_path,heuristic_score,result_match
-code_001_describe_en,code_generation,en,True,,1.0,Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,1.0,True
-code_002_pairplot_en,code_generation,en,True,,0.5,Create a pairplot of all features.,"['code', 'plot']",medium,,,"import plotly.express as px
+id,expected_decision,language,decision_score,semantic_similarity,code_score,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,possible_code_objects,expected_plot_path,model_plot_path,heuristic_score,result_match
+code_001_describe_en,code_generation,en,True,,1.0,Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,,1.0,True
+code_002_pairplot_en,code_generation,en,True,,0.7,Create a pairplot for all features.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_expected.png,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_model.png,1.0,False
-code_003_train_model_en,code_generation,en,True,,0.241,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+fig.show()",,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_expected.png,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_model.png,1.0,False
+code_003_train_model_en,code_generation,en,True,,0.441,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)",,,0.481,False
-code_001_describe,code_generation,ru,True,,1.0,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,1.0,True
-code_002_pairplot,code_generation,ru,True,,0.5,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
+model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,0.481,False
+code_001_describe,code_generation,ru,True,,1.0,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,,1.0,True
+code_002_pairplot,code_generation,ru,True,,0.7,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_expected.png,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_model.png,1.0,False
-code_003_train_model,code_generation,ru,True,,0.241,"Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+fig.show()",,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_expected.png,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_model.png,1.0,False
+code_003_train_model,code_generation,ru,True,,0.441,"Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)",,,0.481,False
-chat_001_what_is_iris_en,chat_response,en,True,0.881,,Explain what this dataset represents.,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,,
-chat_002_how_many_classes_en,chat_response,en,False,0.073,,How many classes are in this dataset?,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,,
-chat_003_best_features_en,chat_response,en,0,0.194,,Which features best separate the iris species?,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,,
-chat_004_easiest_class_en,chat_response,en,0,0.252,,Which iris species is the easiest to separate from the others?,"['chat', 'analysis']",medium,"['setosa', 'shorter petals', 'wider petals']",[],,,,,
-theory_001_overfitting_en,chat_response,en,True,0.0,,What is overfitting in machine learning?,"['theory', 'ml']",easy,"['model fits training data too well', 'poor generalization to new data']",['overfitting improves performance on unseen data'],,,,,
-theory_002_train_test_split_en,chat_response,en,True,0.126,,Why is a train-test split used?,"['theory', 'ml']",easy,"['evaluate model on unseen data', 'prevent data leakage']",['to increase training accuracy'],,,,,
-theory_003_regularization_en,chat_response,en,True,0.0,,What is regularization and why is it used?,"['theory', 'ml']",medium,"['adds penalty to model complexity', 'reduces overfitting']",['regularization increases model variance'],,,,,
-theory_004_bias_variance_en,chat_response,en,True,0.574,,Explain the bias-variance tradeoff.,"['theory', 'ml']",medium,"['bias refers to error from simplifying assumptions', 'variance refers to sensitivity to training data', 'tradeoff between bias and variance']",['bias and variance can both be minimized independently'],,,,,
-chat_001_what_is_iris,chat_response,ru,True,0.189,,"Поясни, что представляет собой датасет.","['chat', 'описание ириса']",easy,"['датасет содержит измерения лепестков и чашелистиков', 'три вида ириса']",['животные'],,,,,
-chat_002_how_many_classes,chat_response,ru,False,0.05,,Сколько классов в этом датасете?,"['chat', 'классы']",easy,['три класса'],[],,,,,
-chat_003_best_features,chat_response,ru,0,0.745,,Какие признаки лучше всего разделяют виды ирисов?,"['chat', 'анализ']",medium,"['длина лепестка', 'ширина лепестка']",[],,,,,
-chat_004_easiest_class,chat_response,ru,0,0.177,,Какой вид ириса лучше всего отделяется от остальных?,"['chat', 'анализ']",medium,"['setosa', 'короче лепестки', 'шире лепестки']",[],,,,,
-theory_001_overfitting,chat_response,ru,True,0.355,,Что такое переобучение в машинном обучении?,"['theory', 'ml']",easy,"['модель слишком хорошо подстраивается под обучающую выборку', 'плохо обобщает на новые данные']",['переобучение улучшает качество на новых данных'],,,,,
-theory_002_train_test_split,chat_response,ru,True,0.044,,Зачем используется разделение на обучающую и тестовую выборки?,"['theory', 'ml']",easy,"['оценка качества модели на невидимых данных', 'предотвращение утечки данных']",['для увеличения точности на обучающей выборке'],,,,,
-theory_003_regularization,chat_response,ru,True,0.136,,Что такое регуляризация и зачем она нужна?,"['theory', 'ml']",medium,"['добавляет штраф за сложность модели', 'уменьшает переобучение']",['регуляризация увеличивает разброс модели'],,,,,
-theory_004_bias_variance,chat_response,ru,True,0.317,,Объясни компромисс между смещением и разбросом.,"['theory', 'ml']",medium,"['смещение связано с упрощающими предположениями модели', 'разброс связан с чувствительностью к обучающим данным', 'существует компромисс между смещением и разбросом']",['смещение и разброс можно минимизировать независимо'],,,,,
+model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,0.481,False
+chat_001_what_is_iris_en,chat_response,en,True,0.881,,Explain what this dataset represents.,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,,,
+chat_002_how_many_classes_en,chat_response,en,False,0.073,,How many classes are in this dataset?,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,,,
+chat_003_best_features_en,chat_response,en,0,0.194,,Which features best separate the iris species?,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,,,
+chat_004_easiest_class_en,chat_response,en,0,0.252,,Which iris species is the easiest to separate from the others?,"['chat', 'analysis']",medium,"['setosa', 'shorter petals', 'wider petals']",[],,,,,,
+theory_001_overfitting_en,chat_response,en,True,0.0,,What is overfitting in machine learning?,"['theory', 'ml']",easy,"['model fits training data too well', 'poor generalization to new data']",['overfitting improves performance on unseen data'],,,,,,
+theory_002_train_test_split_en,chat_response,en,True,0.126,,Why is a train-test split used?,"['theory', 'ml']",easy,"['evaluate model on unseen data', 'prevent data leakage']",['to increase training accuracy'],,,,,,
+theory_003_regularization_en,chat_response,en,True,0.0,,What is regularization and why is it used?,"['theory', 'ml']",medium,"['adds penalty to model complexity', 'reduces overfitting']",['regularization increases model variance'],,,,,,
+theory_004_bias_variance_en,chat_response,en,True,0.574,,Explain the bias-variance tradeoff.,"['theory', 'ml']",medium,"['bias refers to error from simplifying assumptions', 'variance refers to sensitivity to training data', 'tradeoff between bias and variance']",['bias and variance can both be minimized independently'],,,,,,
+chat_001_what_is_iris,chat_response,ru,True,0.189,,"Поясни, что представляет собой датасет.","['chat', 'описание ириса']",easy,"['датасет содержит измерения лепестков и чашелистиков', 'три вида ириса']",['животные'],,,,,,
+chat_002_how_many_classes,chat_response,ru,False,0.05,,Сколько классов в этом датасете?,"['chat', 'классы']",easy,['три класса'],[],,,,,,
+chat_003_best_features,chat_response,ru,0,0.745,,Какие признаки лучше всего разделяют виды ирисов?,"['chat', 'анализ']",medium,"['длина лепестка', 'ширина лепестка']",[],,,,,,
+chat_004_easiest_class,chat_response,ru,0,0.177,,Какой вид ириса лучше всего отделяется от остальных?,"['chat', 'анализ']",medium,"['setosa', 'короче лепестки', 'шире лепестки']",[],,,,,,
+theory_001_overfitting,chat_response,ru,True,0.355,,Что такое переобучение в машинном обучении?,"['theory', 'ml']",easy,"['модель слишком хорошо подстраивается под обучающую выборку', 'плохо обобщает на новые данные']",['переобучение улучшает качество на новых данных'],,,,,,
+theory_002_train_test_split,chat_response,ru,True,0.044,,Зачем используется разделение на обучающую и тестовую выборки?,"['theory', 'ml']",easy,"['оценка качества модели на невидимых данных', 'предотвращение утечки данных']",['для увеличения точности на обучающей выборке'],,,,,,
+theory_003_regularization,chat_response,ru,True,0.136,,Что такое регуляризация и зачем она нужна?,"['theory', 'ml']",medium,"['добавляет штраф за сложность модели', 'уменьшает переобучение']",['регуляризация увеличивает разброс модели'],,,,,,
+theory_004_bias_variance,chat_response,ru,True,0.317,,Объясни компромисс между смещением и разбросом.,"['theory', 'ml']",medium,"['смещение связано с упрощающими предположениями модели', 'разброс связан с чувствительностью к обучающим данным', 'существует компромисс между смещением и разбросом']",['смещение и разброс можно минимизировать независимо'],,,,,,

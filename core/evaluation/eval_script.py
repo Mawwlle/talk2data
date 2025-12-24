@@ -73,6 +73,48 @@ def _has_plotly_calls(code: str) -> bool:
     lowered = code.lower()
     return "plotly" in lowered or "px." in lowered or "go." in lowered
 
+def _has_possible_code_object(
+    tree: ast.AST, possible_code_objects: list[str] | None
+) -> bool:
+    if not possible_code_objects:
+        return False
+    allowed = set(possible_code_objects)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name) and func.id in allowed:
+                return True
+            if isinstance(func, ast.Attribute) and func.attr in allowed:
+                return True
+        if isinstance(node, ast.Name) and node.id in allowed:
+            return True
+        if isinstance(node, ast.Attribute) and node.attr in allowed:
+            return True
+    return False
+
+
+def evaluate_object_match(
+    model_code: str,
+    possible_code_objects: list[str] | None = None,
+) -> dict[str, Any]:
+    """Evaluate code against AST-based requirements."""
+
+    try:
+        tree = ast.parse(model_code)
+    except SyntaxError:
+        return {
+            "score": 0.0,
+            "code_objects_match": False,
+            "errors": {"model": "syntax_error"},
+        }
+
+    object_match = _has_possible_code_object(tree, possible_code_objects)
+
+    return {
+        "score": 0.4,
+        "code_objects_match": object_match,
+    }
+
 
 def _load_all_benchmarks() -> list[dict[str, Any]]:
     """Load all benchmark cases from the configured directory with language tags."""
@@ -197,17 +239,27 @@ def evaluate_chat_semantics(
 # ---------------------------------------------------------------------------
 # Main evaluation logic
 # ---------------------------------------------------------------------------
-def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
+def evaluate_code(
+    model_code: str,
+    benchmark: str | None,
+    possible_code_objects: list[str] | None = None,
+) -> dict[str, Any]:
     """Score generated code using syntax, heuristic, and execution signals."""
 
     heuristic_score = 0.0
     syntax_score = 0.0
     import_score = 0.0
     call_score = 0.0
+    object_score = 0.0
     heuristic_breakdown: dict[str, Any] = {
         "syntax": {"score": 0.0, "ok": False},
         "imports": {"score": 0.0, "expected": [], "model": [], "matched": []},
         "calls": {"score": 0.0, "expected": [], "model": [], "matched": []},
+        "objects": {
+            "score": 0.0,
+            "possible": possible_code_objects or [],
+            "matched": False,
+        },
     }
 
     # 1️⃣ Syntax check: fail fast on invalid Python
@@ -227,7 +279,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
             },
         }
 
-    expected_code = benchmark
+    expected_code = benchmark or ""
 
     # 2️⃣ Imports: ensure required modules are present
     expected_imports = extract_imports(expected_code)
@@ -273,6 +325,10 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
         "model": sorted(adjusted_model_calls),
         "matched": sorted(matched),
     }
+
+    # 4️⃣ Optional object match bonus
+    object_match_details = evaluate_object_match(model_code, possible_code_objects)
+    object_score = object_match_details.get("score", 0.0)
 
     # ---------- execution-based scoring ----------
     expected_result, expected_error = _run_code_in_sandbox(expected_code)
@@ -322,8 +378,11 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
         import_score * normalization_factor, 3
     )
     heuristic_breakdown["calls"]["score"] = round(call_score * normalization_factor, 3)
+    heuristic_breakdown["objects"]["score"] = round(
+        object_score * normalization_factor, 3
+    )
     combined_score = round(
-        min((normalized_heuristic * 0.5) + (0.5 if result_match else 0.0), 1.0), 3
+        min((normalized_heuristic * 0.5) + (0.5 if result_match else 0.5 * object_score), 1.0), 3
     )
 
     return {
@@ -395,11 +454,12 @@ def run_eval(
         # б - проверяем сгенерённый код
         code_score_details = None
         code_score = None
-        if case.get("expected_decision") == "code_generation" and case.get(
-            "expected_code"
-        ):
+        if case.get("expected_decision") == "code_generation":
+            possible_code_objects = case.get("possible_code_objects")
             code_score_details = evaluate_code(
-                model_output.get("generated_code", ""), case["expected_code"]
+                model_output.get("generated_code", ""),
+                case.get("expected_code"),
+                possible_code_objects=possible_code_objects,
             )
             code_score = code_score_details.get("score")
 
@@ -444,6 +504,7 @@ def build_report_data(
                 "expected_facts": meta.get("expected_facts"),
                 "forbidden_facts": meta.get("forbidden_facts"),
                 "expected_code": meta.get("expected_code"),
+                "possible_code_objects": meta.get("possible_code_objects"),
             }
         )
 
