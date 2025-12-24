@@ -2,6 +2,7 @@
 import ast
 import builtins
 import contextlib
+import importlib.util
 import io
 import math
 import os
@@ -60,22 +61,99 @@ def extract_calls(code: str) -> set[str]:
     return calls
 
 
-def compare_execution_results(expected: Any, actual: Any) -> bool:
+def _is_plotly_figure(value: Any) -> bool:
+    """Check whether a value looks like a Plotly Figure without importing Plotly."""
+
+    if value is None:
+        return False
+    value_type = type(value)
+    return (
+        value_type.__name__ == "Figure"
+        and isinstance(value_type.__module__, str)
+        and value_type.__module__.startswith("plotly")
+    )
+
+
+def _plotly_signature(fig: Any) -> list[tuple[str, tuple[str, ...]]]:
+    """Build a lightweight signature list for Plotly traces."""
+
+    if fig is None or not hasattr(fig, "to_plotly_json"):
+        return []
+    payload = fig.to_plotly_json()
+    traces = payload.get("data", []) if isinstance(payload, dict) else []
+    signatures: list[tuple[str, tuple[str, ...]]] = []
+    for trace in traces:
+        if not isinstance(trace, dict):
+            continue
+        trace_type = str(trace.get("type", "unknown"))
+        dims = trace.get("dimensions")
+        if isinstance(dims, list):
+            labels = tuple(
+                str(item.get("label"))
+                for item in dims
+                if isinstance(item, dict) and item.get("label") is not None
+            )
+            signatures.append((trace_type, labels))
+            continue
+        x_values = trace.get("x")
+        y_values = trace.get("y")
+        signature_details = []
+        if x_values is not None:
+            signature_details.append(f"x:{len(x_values)}")
+        if y_values is not None:
+            signature_details.append(f"y:{len(y_values)}")
+        signatures.append((trace_type, tuple(signature_details)))
+    return signatures
+
+
+def _compare_plotly_figures(expected: Any, actual: Any) -> float | None:
+    """Return percentage of matching Plotly trace signatures."""
+
+    expected_sigs = _plotly_signature(expected)
+    actual_sigs = _plotly_signature(actual)
+    total = max(len(expected_sigs), len(actual_sigs))
+    if total == 0:
+        return None
+    expected_counts: dict[tuple[str, tuple[str, ...]], int] = {}
+    for sig in expected_sigs:
+        expected_counts[sig] = expected_counts.get(sig, 0) + 1
+    matched = 0
+    for sig in actual_sigs:
+        if expected_counts.get(sig, 0) > 0:
+            expected_counts[sig] -= 1
+            matched += 1
+    return round((matched / total), 3)
+
+
+def compare_execution_results(expected: Any, actual: Any) -> tuple[bool, float | None]:
     """Compare execution results with tolerance for numerics and arrays."""
 
+    if _is_plotly_figure(expected) or _is_plotly_figure(actual):
+        match_percent = _compare_plotly_figures(expected, actual)
+        if match_percent is not None:
+            return match_percent > 0, match_percent
+        return (
+            (_is_plotly_figure(expected) and actual is None)
+            or (_is_plotly_figure(actual) and expected is None),
+            0.0,
+        )
+
     if isinstance(expected, (float, int)) and isinstance(actual, (float, int)):
-        return math.isclose(float(expected), float(actual), rel_tol=1e-6, abs_tol=1e-6)
+        return (
+            math.isclose(float(expected), float(actual), rel_tol=1e-6, abs_tol=1e-6),
+            None,
+        )
 
     if isinstance(expected, str) and isinstance(actual, str):
-        return expected.strip() == actual.strip()
+        return expected.strip() == actual.strip(), None
 
     if isinstance(expected, pd.DataFrame) and isinstance(actual, pd.DataFrame):
-        return expected.equals(actual)
+        return expected.equals(actual), None
 
     if isinstance(expected, np.ndarray) and isinstance(actual, np.ndarray):
-        return np.allclose(expected, actual)
+        return np.allclose(expected, actual), None
 
-    return expected == actual
+    return expected == actual, None
 
 
 # --- code execution ---
@@ -109,6 +187,47 @@ def _sandbox_globals() -> dict[str, Any]:
         "Path": Path,
         "df": df,
     }
+
+
+def _extract_plotly_figure(code: str) -> Any | None:
+    """Execute code and return a Plotly figure if one is created."""
+
+    if importlib.util.find_spec("plotly") is None:
+        return None
+    import plotly  # noqa: WPS433
+    import plotly.express as px  # noqa: WPS433
+    import plotly.graph_objects as go  # noqa: WPS433
+    import plotly.io as pio  # noqa: WPS433
+
+    env = _sandbox_globals()
+
+    def _no_show(*_: Any, **__: Any) -> None:  # noqa: ANN002,ANN003
+        return None
+
+    pio.show = _no_show  # type: ignore[assignment]
+    env.update({"px": px, "go": go, "pio": pio, "plotly": plotly})
+
+    try:
+        parsed = ast.parse(code)
+        if parsed.body and isinstance(parsed.body[-1], ast.Expr):
+            parsed.body[-1] = ast.Assign(
+                targets=[ast.Name(id="_plotly_last_expr", ctx=ast.Store())],
+                value=parsed.body[-1].value,
+            )
+            ast.fix_missing_locations(parsed)
+        exec(compile(parsed, SANDBOX_FILENAME, "exec"), env, env)
+    except Exception:  # noqa: BLE001
+        return None
+
+    fig = env.get("fig")
+    if not isinstance(fig, go.Figure):
+        fig = env.get("_plotly_last_expr")
+    if not isinstance(fig, go.Figure):
+        fig = next(
+            (value for value in env.values() if isinstance(value, go.Figure)),
+            None,
+        )
+    return fig
 
 
 @contextlib.contextmanager
@@ -185,137 +304,3 @@ def _run_code_in_sandbox(code: str) -> SandboxResult:
         exec_error = f"execution_error: {exc}"
 
     return result_value, exec_error
-
-class _DFMethodStub:
-    """
-    Callable stub returned for any valid DataFrame method.
-    Calling it returns a DummyDataFrame again (chainable).
-    """
-    def __call__(self, *args, **kwargs):
-        return _DummyDataFrame()
-
-    def __getattr__(self, name: str):
-        # allow chaining: df.groupby(...).mean().reset_index()
-        return _DFMethodStub()
-
-
-class _DummyDataFrame:
-    """
-    Fast, safe proxy that behaves like a *non-empty* pd.DataFrame
-    for attribute/method existence checks.
-    """
-
-    __slots__ = ()
-
-    def __getattr__(self, name: str) -> Any:
-        import pandas as pd  # local import, negligible cost
-
-        # Attribute exists on real DataFrame → allow
-        if hasattr(pd.DataFrame, name):
-            return _DFMethodStub()
-
-        # pandas exposes properties like .loc, .iloc, .columns, etc.
-        # They are also attributes on DataFrame
-        raise AttributeError(name)
-
-    def __getitem__(self, key):
-        # df["col"] → Series → allow chaining
-        return _DFMethodStub()
-
-    def __bool__(self):
-        # DataFrame truthiness is forbidden in pandas, but
-        # returning True avoids accidental crashes in conditions
-        return True
-
-    def __len__(self):
-        # Non-empty
-        return 1
-
-
-_NAME_ERROR_RE = re.compile(r"name '([^']+)' is not defined")
-_ATTR_ERROR_RE = re.compile(r"object has no attribute '([^']+)'")
-_MODULE_ATTR_ERROR_RE = re.compile(
-    r"module\s+'[^']+'\s+has\s+no\s+attribute\s+'([^']+)'"
-)
-_IMPORT_ERROR_RE = re.compile(r"No module named '([^']+)'")
-
-
-class CodeValidator:
-    def __init__(self, code: str | None):
-        self.code: str = code or ""
-        self.errors: list[str] = []
-        self._bad_words: list[str] = []
-        self._checked: bool = False
-
-    def fast_check_runs(self) -> None:
-        """
-        Fast runtime executability check.
-
-        - compiles code
-        - executes it in empty namespace
-        - collects *symbol names* that caused failure
-        """
-        if self._checked:
-            return
-
-        self._checked = True
-        error = None
-
-        try:
-            compiled = compile(
-                self.code,
-                "<generated>",
-                "exec",
-                dont_inherit=True,
-                optimize=2,
-            )
-
-            globals_ns = {
-                "df": _DummyDataFrame(),
-            }
-            locals_ns = {}
-
-            exec(compiled, globals_ns, locals_ns)
-
-        except NameError as e:
-            error = type(e).__name__
-            name = self._extract_name(_NAME_ERROR_RE, str(e))
-            self._bad_words += self.to_bad_words(name or "UNKNOWN_NAME")
-
-        except AttributeError as e:
-            error = type(e).__name__
-            name = self._extract_name(_ATTR_ERROR_RE, str(e))
-            if not name:
-                name = self._extract_name(_MODULE_ATTR_ERROR_RE, str(e))
-            
-            self._bad_words += self.to_bad_words(name or "UNKNOWN_ATTRIBUTE")
-
-        except ImportError as e:
-            error = type(e).__name__
-            name = self._extract_name(_IMPORT_ERROR_RE, str(e))
-            self._bad_words += self.to_bad_words(name or "UNKNOWN_IMPORT")
-
-        except Exception as e:
-            error = type(e).__name__
-            return
-            # fallback: keep exception class only if we cannot extract a name
-        
-        if error:
-            self.errors.append(error)
-
-    @staticmethod
-    def _extract_name(regex: re.Pattern, message: str) -> str | None:
-        m = regex.search(message)
-        return m.group(1) if m else None
-    
-    def to_bad_words(self, symbol: str) -> list[str]:
-        return [
-            symbol,
-            f"{symbol}(",
-            f".{symbol.split('.')[-1]}",
-        ]
-
-    @property
-    def bad_words(self) -> list[str]:
-        self.fast_check_runs()
-        return self._bad_words

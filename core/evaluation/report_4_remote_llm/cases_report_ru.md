@@ -5,6 +5,7 @@
 Формула:
 ```text
 semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty
+semantic_similarity = clip(semantic_similarity, 0, 1)
 ```
 Где доли:
  - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;
@@ -22,11 +23,11 @@ semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidd
 Формула:
 ```text
 code_score = 0.5 * heuristic_score + 0.5 * result_match
+code_score = clip(code_score, 0, 1)
 ```
 Разложение долей:
 - heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).
 - result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.
-- все метрики в отчёте будут представлены нормализованными
 
 ## Кейсы
 ### code_001_describe (code_generation, language: ru, difficulty: easy)
@@ -114,7 +115,7 @@ None
 - expected_error:
  
 ```python
-execution_timeout: sandbox_timeout
+None
 ```
 - expected_plot:
 
@@ -208,16 +209,19 @@ Figure({
 ```python
 None
 ```
-- model_plot_error: no figure named 'fig' was created
+- model_plot:
+
+ ![model plot](plots/code_002_pairplot_model.png)
 
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.389
-  - heuristic_score: 0.778
+- code_score: 0.5
+  - heuristic_score: 1.0
+  - plot_match: 0.0%
     - syntax_check: 0.333 (ok=True)
     - imports_score: 0.222 | expected: plotly.express | model: plotly.express | matched: plotly.express
-    - calls_score: 0.222 | expected: scatter_matrix, show | model: scatter_matrix | matched: scatter_matrix
+    - calls_score: 0.444 | expected: scatter_matrix, show | model: scatter_matrix, show | matched: scatter_matrix, show
   - result_match: False
 
 ### code_003_train_model (code_generation, language: ru, difficulty: medium)

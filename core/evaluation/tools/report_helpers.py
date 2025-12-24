@@ -1,3 +1,4 @@
+import ast
 from pathlib import Path
 from typing import Any
 
@@ -313,11 +314,25 @@ def _render_plotly_image(
 
         pio.show = _no_show  # type: ignore[assignment]
         env.update({"px": px, "go": go, "pio": pio, "plotly": plotly})
-        exec(compile(code_text, SANDBOX_FILENAME, "exec"), env, env)
+        parsed = ast.parse(code_text)
+        if parsed.body and isinstance(parsed.body[-1], ast.Expr):
+            parsed.body[-1] = ast.Assign(
+                targets=[ast.Name(id="_plotly_last_expr", ctx=ast.Store())],
+                value=parsed.body[-1].value,
+            )
+            ast.fix_missing_locations(parsed)
+        exec(compile(parsed, SANDBOX_FILENAME, "exec"), env, env)
 
         fig = env.get("fig")
+        if not isinstance(fig, go.Figure):
+            fig = env.get("_plotly_last_expr")
+        if not isinstance(fig, go.Figure):
+            fig = next(
+                (value for value in env.values() if isinstance(value, go.Figure)),
+                None,
+            )
         if fig is None:
-            return None, "no figure named 'fig' was created"
+            return None, "no Plotly figure was created"
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         fig.write_image(str(output_path))
@@ -479,6 +494,12 @@ def render_case_markdown(
             details = case.get("code_details") or {}
             lines.append(f"- code_score: {case.get('code_score')}")
             lines.append("  - heuristic_score: " + str(details.get("heuristic_score")))
+            if details.get("plot_match_percent") is not None:
+                lines.append(
+                    "  - plot_match: "
+                    + str(details.get("plot_match_percent"))
+                    + "%"
+                )
             breakdown = details.get("heuristic_breakdown", {})
             syntax_part = breakdown.get("syntax", {})
             import_part = breakdown.get("imports", {})

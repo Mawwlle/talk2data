@@ -1,8 +1,8 @@
-id,expected_decision,language,decision_score,semantic_similarity,code_score,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,expected_plot_path,model_plot_error,heuristic_score,result_match
+id,expected_decision,language,decision_score,semantic_similarity,code_score,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,expected_plot_path,model_plot_path,heuristic_score,result_match
 code_001_describe_en,code_generation,en,True,,1.0,Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,1.0,True
-code_002_pairplot_en,code_generation,en,True,,0.389,Create a pairplot of all features.,"['code', 'plot']",medium,,,"import plotly.express as px
+code_002_pairplot_en,code_generation,en,True,,0.5,Create a pairplot of all features.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_expected.png,no figure named 'fig' was created,0.778,False
+fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_expected.png,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_model.png,1.0,False
 code_003_train_model_en,code_generation,en,True,,0.241,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
@@ -11,9 +11,9 @@ y = df[""species""]
 model = LogisticRegression(max_iter=200)
 model.fit(X, y)",,,0.481,False
 code_001_describe,code_generation,ru,True,,1.0,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,1.0,True
-code_002_pairplot,code_generation,ru,True,,0.389,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
+code_002_pairplot,code_generation,ru,True,,0.5,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_expected.png,no figure named 'fig' was created,0.778,False
+fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_expected.png,core/evaluation/report_4_remote_llm/plots/code_002_pairplot_model.png,1.0,False
 code_003_train_model,code_generation,ru,True,,0.241,"Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])

@@ -210,16 +210,19 @@ Figure({
 ```python
 None
 ```
-- model_plot_error: no figure named 'fig' was created
+- model_plot:
+
+ ![model plot](plots/code_002_pairplot_en_model.png)
 
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.389
-  - heuristic_score: 0.778
+- code_score: 0.5
+  - heuristic_score: 1.0
+  - plot_match: 0.0%
     - syntax_check: 0.333 (ok=True)
     - imports_score: 0.222 | expected: plotly.express | model: plotly.express | matched: plotly.express
-    - calls_score: 0.222 | expected: scatter_matrix, show | model: scatter_matrix | matched: scatter_matrix
+    - calls_score: 0.444 | expected: scatter_matrix, show | model: scatter_matrix, show | matched: scatter_matrix, show
   - result_match: False
 
 ### code_003_train_model_en (code_generation, language: en, difficulty: medium)

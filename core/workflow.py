@@ -265,41 +265,16 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     state["response_message"] = response
     return state
 
-def validate_code_node(state: AgentState) -> AgentState:
-    code = state.get("generated_code", "")
-    validator = CodeValidator(code) 
-    state["bad_words"] = state.get("bad_words", []) + validator.bad_words
-    state["val_errors"] = validator.errors
-    return state
-
-def route_after_validate(state: AgentState) -> str:
-    if not state.get("val_errors"):
-        return "end"
-    if state.get("attempts", 0) >= state.get("max_attempts", 10):
-        return "end"
-    
-    logger.info("Failed validation. Current state:\n\n {state}")
-    state["attempts"] = state.get("attempts", 0) + 1
-    return "generate_code"
-
-
 def create_workflow():
     builder = StateGraph(AgentState)
     builder.add_node("decide_action", decide_action)
     builder.add_node("generate_code", generate_code_node)
-    # builder.add_node("validate_code", validate_code_node)
     builder.add_node("generate_chat_response", generate_chat_response_node)
     builder.add_conditional_edges(
         "decide_action",
         route_action,
         {"code_generation": "generate_code", "chat_response": "generate_chat_response"},
     )
-#     builder.add_edge("generate_code", "validate_code")
-#     builder.add_conditional_edges(
-#     "validate_code",
-#     route_after_validate,
-#     {"generate_code": "generate_code", "end": END},
-# )
     builder.add_edge("generate_code", END)
     
     builder.add_edge("generate_chat_response", END)

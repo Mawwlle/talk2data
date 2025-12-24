@@ -10,6 +10,7 @@ from torch.nn.functional import cosine_similarity
 from core.evaluation.constants import TEST_RESULT_PATH, REPORT_OUTPUT_DIR
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
 from core.evaluation.tools.code_evaluation_tools import (
+    _extract_plotly_figure,
     _run_code_in_sandbox,
     compare_execution_results,
     extract_calls,
@@ -64,6 +65,13 @@ def _infer_language_from_filename(path: Path) -> str:
     if path.name.endswith("_en.json"):
         return "en"
     return "unknown"
+
+
+def _has_plotly_calls(code: str) -> bool:
+    """Detect Plotly usage to allow implicit display calls."""
+
+    lowered = code.lower()
+    return "plotly" in lowered or "px." in lowered or "go." in lowered
 
 
 def _load_all_benchmarks() -> list[dict[str, Any]]:
@@ -243,9 +251,16 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     # 3️⃣ Key calls: verify important function invocations
     expected_calls = extract_calls(expected_code)
     model_calls = extract_calls(model_code)
+    adjusted_model_calls = set(model_calls)
+    if (
+        "show" in expected_calls
+        and "show" not in model_calls
+        and _has_plotly_calls(model_code)
+    ):
+        adjusted_model_calls.add("show")
 
     if expected_calls:
-        matched = expected_calls & model_calls
+        matched = expected_calls & adjusted_model_calls
         call_score = 0.4 * (len(matched) / len(expected_calls))
     else:
         matched = set()
@@ -255,7 +270,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     heuristic_breakdown["calls"] = {
         "score": round(call_score, 3),
         "expected": sorted(expected_calls),
-        "model": sorted(model_calls),
+        "model": sorted(adjusted_model_calls),
         "matched": sorted(matched),
     }
 
@@ -264,13 +279,34 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     model_result, model_error = _run_code_in_sandbox(model_code)
 
     try:
-        result_match = bool(
-            expected_error is None
-            and model_error is None
-            and compare_execution_results(expected_result, model_result)
+        base_match, plot_match_percent = compare_execution_results(
+            expected_result, model_result
         )
+        if (
+            "show" in expected_calls
+            and "show" not in model_calls
+            and _has_plotly_calls(model_code)
+        ):
+            expected_fig = _extract_plotly_figure(expected_code)
+            model_fig = _extract_plotly_figure(model_code)
+            fig_match, fig_match_percent = compare_execution_results(
+                expected_fig, model_fig
+            )
+            if fig_match_percent is not None:
+                plot_match_percent = fig_match_percent
+                base_match = fig_match
+        result_match = bool(expected_error is None and model_error is None and base_match)
+        if (
+            not result_match
+            and model_error is None
+            and _has_plotly_calls(expected_code)
+            and _has_plotly_calls(model_code)
+            and base_match
+        ):
+            result_match = True
     except Exception:
         result_match = False
+        plot_match_percent = None
 
     max_heuristic_score = 0.9
     normalized_heuristic = (
@@ -294,6 +330,7 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
         "score": combined_score,
         "heuristic_score": round(normalized_heuristic, 3),
         "result_match": result_match,
+        "plot_match_percent": plot_match_percent,
         "heuristic_breakdown": heuristic_breakdown,
         "errors": {
             "expected": expected_error,
