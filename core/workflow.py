@@ -305,19 +305,20 @@ def create_workflow():
     builder = StateGraph(AgentState)
     builder.add_node("decide_action", decide_action)
     builder.add_node("generate_code", generate_code_node)
-    builder.add_node("validate_code", validate_code_node)
+    # builder.add_node("validate_code", validate_code_node)
     builder.add_node("generate_chat_response", generate_chat_response_node)
     builder.add_conditional_edges(
         "decide_action",
         route_action,
         {"code_generation": "generate_code", "chat_response": "generate_chat_response"},
     )
-    builder.add_edge("generate_code", "validate_code")
-    builder.add_conditional_edges(
-    "validate_code",
-    route_after_validate,
-    {"generate_code": "generate_code", "end": END},
-)
+#     builder.add_edge("generate_code", "validate_code")
+#     builder.add_conditional_edges(
+#     "validate_code",
+#     route_after_validate,
+#     {"generate_code": "generate_code", "end": END},
+# )
+    builder.add_edge("generate_code", END)
     
     builder.add_edge("generate_chat_response", END)
     builder.set_entry_point("decide_action")
