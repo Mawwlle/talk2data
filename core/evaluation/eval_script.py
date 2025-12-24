@@ -319,11 +319,13 @@ def run_eval(
                 }
             )
             continue
-
-        decision_score = evaluate_decision(
-            model_output.get("model_decision", {}).get("action"),
-            case["expected_decision"],
-        )
+        
+        decision_score = 0
+        if model_output.get("model_decision", {}):
+            decision_score = evaluate_decision(
+                model_output.get("model_decision", {}).get("action"),
+                case["expected_decision"],
+            )
 
         # a - проверяем сгенерённый текст
         semantic_similarity = None

@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 from core.evaluation.constants import RESULT_ID
-from core.workflow import create_workflow, llm_init
+from core.workflow import create_workflow, llm_init, init_tokenizer_only
 
 BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
@@ -48,7 +48,9 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 
 
 def main():
-    llm_init()
+    
+    init_tokenizer_only()
+    # llm_init()
     workflow = create_workflow()
     infer_result_path = f"infer_{RESULT_ID}"
 

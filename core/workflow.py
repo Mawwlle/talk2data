@@ -6,10 +6,10 @@ import logging
 import time
 from string import Template
 
+import openai
 import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
-from vllm import SamplingParams
 
 from core.evaluation.tools.code_evaluation_tools import CodeValidator
 from core.models import get_llm, get_tokenizer
@@ -27,42 +27,10 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-
-def _build_logit_bias(forbidden_strings: list[str] | None = None) -> dict[int, float]:
-    """Map forbidden strings to strong negative logit bias for vLLM sampling."""
-
-    if not forbidden_strings:
-        return {}
-
-    local_tokenizer = globals().get("tokenizer") or get_tokenizer()
-    bias: dict[int, float] = {}
-
-    for text in forbidden_strings:
-        try:
-            token_ids = local_tokenizer.encode(text, add_special_tokens=False)
-            for token_id in token_ids:
-                bias[token_id] = -100.0
-        except Exception as exc:
-            logger.warning("[logit_bias] Failed to encode '%s': %s", text, exc)
-
-    return bias
-
-
-def _sampling_with_forbidden(**kwargs) -> SamplingParams:
-    """Helper to include forbidden strings via bad_words (preferred) or logit_bias."""
-
-    forbidden_strings = kwargs.pop("forbidden_strings", None)
-    use_bad_words = kwargs.pop("use_bad_words", True)
-
-    if forbidden_strings:
-        if use_bad_words:
-            kwargs["bad_words"] = list(dict.fromkeys(forbidden_strings))
-
-        logit_bias = _build_logit_bias(forbidden_strings)
-        if logit_bias:
-            kwargs.setdefault("logit_bias", logit_bias)
-
-    return SamplingParams(**kwargs)
+client = openai.OpenAI(
+    api_key="sk-vVlZM0J1ViEnD5SFtFWW1g",
+    base_url="http://10.32.15.88:4000",
+)
 
 
 def init_tokenizer_only():
@@ -110,7 +78,7 @@ def format_prompt(
     metadata_fields = metadata_fields or {}
     local_prompt = copy.deepcopy(messages_template)
 
-    logger.info(f"state: {state}")
+    # logger.info(f"state: {state}")
 
     mapping = {
         "input": str(state.get("user_input", "")),
@@ -137,32 +105,42 @@ def format_prompt(
     )
 
 
+def _remote_chat_completion(prompt: str) -> str:
+    completion = client.chat.completions.create(
+        model="qwen-coder-32b",
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return completion.choices[0].message.content or ""
+
+
 def decide_action(state: AgentState) -> AgentState:
     """Decision node with enhanced logging using print and timing."""
     start = time.perf_counter()
-    logger.info(f"[decide_action] Starting with state: {state}")
+    # logger.info(f"[decide_action] Starting with state: {state}")
 
     parser = JsonOutputParser(pydantic_object=Decision)
 
     try:
         # Формируем prompt
         prompt = format_prompt(DECIDE_ACTION_PROMPT, state)
-        logger.info(f"[decide_action] Formatted prompt: {prompt}")
+        # logger.info(f"[decide_action] Formatted prompt: {prompt}")
+     # Настраиваем параметры сэмплирования
+        # sampling_params = SamplingParams(
+        #     max_tokens=100,
+        #     temperature=0.0,  # полная детерминированность
+        #     top_p=1.0,  # отключает сэмплирование по вероятностям
+        #     stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
+        #     repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
+        # )
 
-        # Настраиваем параметры сэмплирования
-        sampling_params = SamplingParams(
-            max_tokens=100,
-            temperature=0.0,  # полная детерминированность
-            top_p=1.0,  # отключает сэмплирование по вероятностям
-            stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
-            repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
-        )
+        # logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
 
-        logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
+        # # Генерация ответа от LLM
+        # outputs = llm.generate([prompt], sampling_params)
+        # raw_response = outputs[0].outputs[0].text.strip()
 
         # Генерация ответа от LLM
-        outputs = llm.generate([prompt], sampling_params)
-        raw_response = outputs[0].outputs[0].text.strip()
+        raw_response = _remote_chat_completion(prompt).strip()
         logger.info(f"[decide_action] Raw LLM response: {raw_response}")
 
         # Парсим результат
@@ -201,32 +179,35 @@ def generate_code_node(state: AgentState) -> AgentState:
     start = time.perf_counter()
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
 
-    logger.info(f"[code_prompt] Prompt for code generation: {code_prompt}")
-    bad_words = ([
-            "print",
-            "pd.read_csv",
-            "pandas.read_csv",
-            "df =",
-            "df=",
-            "df = pd.DataFrame",
-            "df=pd.DataFrame",
-        ] 
-        + state.get("bad_words", [])
-    )
+    # logger.info(f"[code_prompt] Prompt for code generation: {code_prompt}")
+    #     bad_words = ([
+    #         "print",
+    #         "pd.read_csv",
+    #         "pandas.read_csv",
+    #         "df =",
+    #         "df=",
+    #         "df = pd.DataFrame",
+    #         "df=pd.DataFrame",
+    #     ] 
+    #     + state.get("bad_words", [])
+    # )
     
-    sampling_params = SamplingParams(
-        max_tokens=512,
-        temperature=0.0,  # 0.7
-        top_p=0.95,
-        stop=["<|", "</s>"],
-        repetition_penalty=1.05,
-        presence_penalty=0.5,
-        seed=42,
-        bad_words=bad_words,
-    )
+    # sampling_params = SamplingParams(
+    #     max_tokens=512,
+    #     temperature=0.0,  # 0.7
+    #     top_p=0.95,
+    #     stop=["<|", "</s>"],
+    #     repetition_penalty=1.05,
+    #     presence_penalty=0.5,
+    #     seed=42,
+    #     bad_words=bad_words,
+    # )
 
-    outputs = llm.generate([code_prompt], sampling_params, use_tqdm=False)
-    generated_text = outputs[0].outputs[0].text
+    # outputs = llm.generate([code_prompt], sampling_params, use_tqdm=False)
+    # generated_text = outputs[0].outputs[0].text
+    
+    
+    generated_text = _remote_chat_completion(code_prompt)
 
     # Extract code block (heuristic: inside triple backticks or entire text)
     code_block = generated_text.split("```python")[-1].split("```")[0].strip()
@@ -251,17 +232,18 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     """Chat response generation with TTS integration, measure time."""
     start = time.perf_counter()
     chat_prompt = format_prompt(CHAT_RESPONSE_PROMPT, state)
-    logger.info(f"[chat_prompt] Prompt for text generation: {chat_prompt}")
-    sampling_params = SamplingParams(
-        max_tokens=200,
-        temperature=0.0,  # 0.7
-        top_p=0.9,
-        stop=["</s>"],
-        seed=42,
-    )
+    # logger.info(f"[chat_prompt] Prompt for text generation: {chat_prompt}")
+    # sampling_params = SamplingParams(
+    #     max_tokens=200,
+    #     temperature=0.0,  # 0.7
+    #     top_p=0.9,
+    #     stop=["</s>"],
+    #     seed=42,
+    # )
 
-    outputs = llm.generate([chat_prompt], sampling_params)
-    response = outputs[0].outputs[0].text.strip()
+    # outputs = llm.generate([chat_prompt], sampling_params)
+    # response = outputs[0].outputs[0].text.strip()
+    response = _remote_chat_completion(chat_prompt).strip()
     elapsed_llm = time.perf_counter() - start
     logger.info(f"[test_response] Generated text response: {response}")
     # Attempt TTS
