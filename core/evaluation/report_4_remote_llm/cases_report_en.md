@@ -231,7 +231,6 @@ None
 
 
 **Ground truth:**
-- possible_code_objects: RandomForestClassifier, DecisionTreeClassifier, SVC, KNeighborsClassifier, GaussianNB
 - expected_code:
 ```python
 from sklearn.linear_model import LogisticRegression
@@ -242,6 +241,7 @@ y = df["species"]
 model = LogisticRegression(max_iter=200)
 model.fit(X, y)
 ```
+- possible_code_objects: RandomForestClassifier, DecisionTreeClassifier, SVC, KNeighborsClassifier, GaussianNB
 - expected_result:
  
 ```python

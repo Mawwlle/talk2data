@@ -46,7 +46,7 @@ def summarize_by_group(
                 bucket["count"] += 1
                 bucket["decision"].append(case.get("decision_score"))
                 bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-                bucket["code"].append(case.get("code_score"))
+                bucket["code"].append(case.get("heuristic_score"))
 
     for value, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -497,7 +497,7 @@ def render_case_markdown(
 
         if case.get("expected_decision") == "code_generation":
             details = case.get("code_details") or {}
-            lines.append(f"- code_score: {case.get('code_score')}")
+            # lines.append(f"- code_score: {case.get('code_score')}")
             if "heuristic_score" in details:
                 lines.append(
                     "  - heuristic_score: " + str(details.get("heuristic_score"))

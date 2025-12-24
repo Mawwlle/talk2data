@@ -6,7 +6,6 @@ import importlib.util
 import io
 import math
 import os
-import re
 import signal
 import threading
 from pathlib import Path
