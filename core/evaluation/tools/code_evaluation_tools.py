@@ -5,6 +5,7 @@ import contextlib
 import io
 import math
 import os
+import re
 import signal
 import threading
 from pathlib import Path
@@ -184,3 +185,137 @@ def _run_code_in_sandbox(code: str) -> SandboxResult:
         exec_error = f"execution_error: {exc}"
 
     return result_value, exec_error
+
+class _DFMethodStub:
+    """
+    Callable stub returned for any valid DataFrame method.
+    Calling it returns a DummyDataFrame again (chainable).
+    """
+    def __call__(self, *args, **kwargs):
+        return _DummyDataFrame()
+
+    def __getattr__(self, name: str):
+        # allow chaining: df.groupby(...).mean().reset_index()
+        return _DFMethodStub()
+
+
+class _DummyDataFrame:
+    """
+    Fast, safe proxy that behaves like a *non-empty* pd.DataFrame
+    for attribute/method existence checks.
+    """
+
+    __slots__ = ()
+
+    def __getattr__(self, name: str) -> Any:
+        import pandas as pd  # local import, negligible cost
+
+        # Attribute exists on real DataFrame → allow
+        if hasattr(pd.DataFrame, name):
+            return _DFMethodStub()
+
+        # pandas exposes properties like .loc, .iloc, .columns, etc.
+        # They are also attributes on DataFrame
+        raise AttributeError(name)
+
+    def __getitem__(self, key):
+        # df["col"] → Series → allow chaining
+        return _DFMethodStub()
+
+    def __bool__(self):
+        # DataFrame truthiness is forbidden in pandas, but
+        # returning True avoids accidental crashes in conditions
+        return True
+
+    def __len__(self):
+        # Non-empty
+        return 1
+
+
+_NAME_ERROR_RE = re.compile(r"name '([^']+)' is not defined")
+_ATTR_ERROR_RE = re.compile(r"object has no attribute '([^']+)'")
+_MODULE_ATTR_ERROR_RE = re.compile(
+    r"module\s+'[^']+'\s+has\s+no\s+attribute\s+'([^']+)'"
+)
+_IMPORT_ERROR_RE = re.compile(r"No module named '([^']+)'")
+
+
+class CodeValidator:
+    def __init__(self, code: str | None):
+        self.code: str = code or ""
+        self.errors: list[str] = []
+        self._bad_words: list[str] = []
+        self._checked: bool = False
+
+    def fast_check_runs(self) -> None:
+        """
+        Fast runtime executability check.
+
+        - compiles code
+        - executes it in empty namespace
+        - collects *symbol names* that caused failure
+        """
+        if self._checked:
+            return
+
+        self._checked = True
+        error = None
+
+        try:
+            compiled = compile(
+                self.code,
+                "<generated>",
+                "exec",
+                dont_inherit=True,
+                optimize=2,
+            )
+
+            globals_ns = {
+                "df": _DummyDataFrame(),
+            }
+            locals_ns = {}
+
+            exec(compiled, globals_ns, locals_ns)
+
+        except NameError as e:
+            error = type(e).__name__
+            name = self._extract_name(_NAME_ERROR_RE, str(e))
+            self._bad_words += self.to_bad_words(name or "UNKNOWN_NAME")
+
+        except AttributeError as e:
+            error = type(e).__name__
+            name = self._extract_name(_ATTR_ERROR_RE, str(e))
+            if not name:
+                name = self._extract_name(_MODULE_ATTR_ERROR_RE, str(e))
+            
+            self._bad_words += self.to_bad_words(name or "UNKNOWN_ATTRIBUTE")
+
+        except ImportError as e:
+            error = type(e).__name__
+            name = self._extract_name(_IMPORT_ERROR_RE, str(e))
+            self._bad_words += self.to_bad_words(name or "UNKNOWN_IMPORT")
+
+        except Exception as e:
+            error = type(e).__name__
+            return
+            # fallback: keep exception class only if we cannot extract a name
+        
+        if error:
+            self.errors.append(error)
+
+    @staticmethod
+    def _extract_name(regex: re.Pattern, message: str) -> str | None:
+        m = regex.search(message)
+        return m.group(1) if m else None
+    
+    def to_bad_words(self, symbol: str) -> list[str]:
+        return [
+            symbol,
+            f"{symbol}(",
+            f".{symbol.split('.')[-1]}",
+        ]
+
+    @property
+    def bad_words(self) -> list[str]:
+        self.fast_check_runs()
+        return self._bad_words

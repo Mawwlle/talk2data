@@ -1,6 +1,6 @@
 # schemas.py
 
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, TypedDict
 
 from pydantic import BaseModel, Field
 
@@ -8,14 +8,18 @@ from pydantic import BaseModel, Field
 # TypedDict for internal agent state
 class AgentState(TypedDict):
     user_input: str
-    conversation_history: List[dict]
-    metadata: Dict[str, Any]
-    generated_code: Optional[str]
-    response_message: Optional[str]
-    response_audio: Optional[str]
+    conversation_history: list[dict]
+    metadata: dict[str, Any]
+    generated_code: str | None
+    response_message: str | None
+    response_audio: str | None
     decision: dict[str, Any]
 
     timing_info: dict[str, float] = Field(default_factory=dict)  # type: ignore
+    bad_words: list[str]               # слова, запрещённые к генерации
+    val_errors: list[str]                 # ошибки исполнения generated_code
+    attempts: int                   # число попыток
+    max_attempts: int               # лимит
 
     class Config:
         extra = "allow"  # type: ignore
@@ -30,4 +34,4 @@ class Decision(TypedDict):
 class ConversationRequest(BaseModel):
     user_input: str
     metadata: dict[str, Any] = {}
-    chat_history: List[dict] = []
+    chat_history: list[dict] = []

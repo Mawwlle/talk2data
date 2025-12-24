@@ -10,8 +10,8 @@ import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
 from vllm import SamplingParams
-from vllm.sampling_params import GuidedDecodingParams
 
+from core.evaluation.tools.code_evaluation_tools import CodeValidator
 from core.models import get_llm, get_tokenizer
 
 # Import prompt templates and schemas
@@ -23,6 +23,9 @@ from core.prompts import (
 from core.schemas import AgentState, Decision
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
 def _build_logit_bias(forbidden_strings: list[str] | None = None) -> dict[int, float]:
@@ -199,9 +202,7 @@ def generate_code_node(state: AgentState) -> AgentState:
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
 
     logger.info(f"[code_prompt] Prompt for code generation: {code_prompt}")
-    forbidden_strings = state.get(
-        "forbidden_functions",
-        [
+    bad_words = ([
             "print",
             "pd.read_csv",
             "pandas.read_csv",
@@ -209,13 +210,10 @@ def generate_code_node(state: AgentState) -> AgentState:
             "df=",
             "df = pd.DataFrame",
             "df=pd.DataFrame",
-        ],
+        ] 
+        + state.get("bad_words", [])
     )
     
-    guided = GuidedDecodingParams(
-        regex=r"^(df\..*(\n|$)|\n)*$"
-    )
-
     sampling_params = SamplingParams(
         max_tokens=512,
         temperature=0.0,  # 0.7
@@ -224,8 +222,7 @@ def generate_code_node(state: AgentState) -> AgentState:
         repetition_penalty=1.05,
         presence_penalty=0.5,
         seed=42,
-        bad_words=forbidden_strings,
-        # guided_decoding = guided,
+        bad_words=bad_words,
     )
 
     outputs = llm.generate([code_prompt], sampling_params, use_tqdm=False)
@@ -286,18 +283,42 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     state["response_message"] = response
     return state
 
+def validate_code_node(state: AgentState) -> AgentState:
+    code = state.get("generated_code", "")
+    validator = CodeValidator(code) 
+    state["bad_words"] = state.get("bad_words", []) + validator.bad_words
+    state["val_errors"] = validator.errors
+    return state
+
+def route_after_validate(state: AgentState) -> str:
+    if not state.get("val_errors"):
+        return "end"
+    if state.get("attempts", 0) >= state.get("max_attempts", 10):
+        return "end"
+    
+    logger.info("Failed validation. Current state:\n\n {state}")
+    state["attempts"] = state.get("attempts", 0) + 1
+    return "generate_code"
+
 
 def create_workflow():
     builder = StateGraph(AgentState)
     builder.add_node("decide_action", decide_action)
     builder.add_node("generate_code", generate_code_node)
+    builder.add_node("validate_code", validate_code_node)
     builder.add_node("generate_chat_response", generate_chat_response_node)
     builder.add_conditional_edges(
         "decide_action",
         route_action,
         {"code_generation": "generate_code", "chat_response": "generate_chat_response"},
     )
-    builder.add_edge("generate_code", END)
+    builder.add_edge("generate_code", "validate_code")
+    builder.add_conditional_edges(
+    "validate_code",
+    route_after_validate,
+    {"generate_code": "generate_code", "end": END},
+)
+    
     builder.add_edge("generate_chat_response", END)
     builder.set_entry_point("decide_action")
     return builder.compile()
