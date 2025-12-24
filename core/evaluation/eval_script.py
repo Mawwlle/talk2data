@@ -193,6 +193,9 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     """Score generated code using syntax, heuristic, and execution signals."""
 
     heuristic_score = 0.0
+    syntax_score = 0.0
+    import_score = 0.0
+    call_score = 0.0
     heuristic_breakdown: dict[str, Any] = {
         "syntax": {"score": 0.0, "ok": False},
         "imports": {"score": 0.0, "expected": [], "model": [], "matched": []},
@@ -202,8 +205,8 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     # 1️⃣ Syntax check: fail fast on invalid Python
     try:
         ast.parse(model_code)
-        heuristic_score += 0.3
-        heuristic_breakdown["syntax"] = {"score": 0.3, "ok": True}
+        syntax_score = 0.3
+        heuristic_score += syntax_score
     except SyntaxError:
         return {
             "score": 0.0,
@@ -269,13 +272,27 @@ def evaluate_code(model_code: str, benchmark: str) -> dict[str, Any]:
     except Exception:
         result_match = False
 
+    max_heuristic_score = 0.9
+    normalized_heuristic = (
+        heuristic_score / max_heuristic_score if max_heuristic_score else 0.0
+    )
+    normalized_heuristic = min(max(normalized_heuristic, 0.0), 1.0)
+    normalization_factor = 1.0 / max_heuristic_score if max_heuristic_score else 0.0
+    heuristic_breakdown["syntax"] = {
+        "score": round(syntax_score * normalization_factor, 3),
+        "ok": True,
+    }
+    heuristic_breakdown["imports"]["score"] = round(
+        import_score * normalization_factor, 3
+    )
+    heuristic_breakdown["calls"]["score"] = round(call_score * normalization_factor, 3)
     combined_score = round(
-        min((heuristic_score * 0.5) + (0.5 if result_match else 0.0), 1.0), 3
+        min((normalized_heuristic * 0.5) + (0.5 if result_match else 0.0), 1.0), 3
     )
 
     return {
         "score": combined_score,
-        "heuristic_score": round(min(heuristic_score, 1.0), 3),
+        "heuristic_score": round(normalized_heuristic, 3),
         "result_match": result_match,
         "heuristic_breakdown": heuristic_breakdown,
         "errors": {

@@ -412,9 +412,11 @@ def render_case_markdown(
                     "- expected_output: "
                     + _describe_visual_output(case.get("expected_code", ""))
                 )
-            lines.append(
-                "- expected_error: " + str(details.get("errors", {}).get("expected"))
-            )
+            lines.append("- expected_error:\n ")
+            lines.append("```python")
+            expected_error = details.get("errors", {}).get("expected")
+            lines.append(str(expected_error))
+            lines.append("```")
             if case.get("expected_plot_path"):
                 lines.append(
                     f"- expected_plot:\n\n ![expected plot]({_rel_image_path(case.get('expected_plot_path'), report_path)})"
@@ -432,9 +434,11 @@ def render_case_markdown(
             lines.append(case.get("model_generated_code"))  # type: ignore
             lines.append("```")
             details = case.get("code_details") or {}
-            lines.append(
-                "- model_result: " + str(details.get("results", {}).get("model"))
-            )
+            lines.append("- model_result:\n ")
+            lines.append("```python")
+            model_result = details.get("results", {}).get("model")
+            lines.append(str(model_result))
+            lines.append("```")
             lines.append("- model_error:\n ")
             lines.append("```python")
             model_error = details.get("errors", {}).get("model")

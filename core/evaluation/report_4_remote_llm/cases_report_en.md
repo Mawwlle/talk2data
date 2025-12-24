@@ -53,7 +53,11 @@ min        4.300000     2.000000      1.000000     0.100000
 75%        6.400000     3.300000      5.100000     1.800000
 max        7.900000     4.400000      6.900000     2.500000
 ```
-- expected_error: None
+- expected_error:
+ 
+```python
+None
+```
 
 
 **Model output:**
@@ -61,7 +65,10 @@ max        7.900000     4.400000      6.900000     2.500000
 ```python
 df.describe()
 ```
-- model_result:        sepal_length  sepal_width  petal_length  petal_width
+- model_result:
+ 
+```python
+       sepal_length  sepal_width  petal_length  petal_width
 count    150.000000   150.000000    150.000000   150.000000
 mean       5.843333     3.057333      3.758000     1.199333
 std        0.828066     0.435866      1.765298     0.762238
@@ -70,6 +77,7 @@ min        4.300000     2.000000      1.000000     0.100000
 50%        5.800000     3.000000      4.350000     1.300000
 75%        6.400000     3.300000      5.100000     1.800000
 max        7.900000     4.400000      6.900000     2.500000
+```
 - model_error:
  
 ```python
@@ -79,11 +87,11 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.95
-  - heuristic_score: 0.9
-    - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.2 | expected:  | model:  | matched: 
-    - calls_score: 0.4 | expected: describe | model: describe | matched: describe
+- code_score: 1.0
+  - heuristic_score: 1.0
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.222 | expected:  | model:  | matched: 
+    - calls_score: 0.444 | expected: describe | model: describe | matched: describe
   - result_match: True
 
 ### code_002_pairplot_en (code_generation, language: en, difficulty: medium)
@@ -104,7 +112,11 @@ fig.show()
 None
 ```
 - expected_output: Интерактивный график (Plotly)
-- expected_error: execution_timeout: sandbox_timeout
+- expected_error:
+ 
+```python
+execution_timeout: sandbox_timeout
+```
 - expected_plot:
 
  ![expected plot](plots/code_002_pairplot_en_expected.png)
@@ -117,7 +129,10 @@ import plotly.express as px
 
 px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')
 ```
-- model_result: Figure({
+- model_result:
+ 
+```python
+Figure({
     'data': [{'dimensions': [{'axis': {'matches': True},
                               'label': 'sepal_length',
                               'values': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'ZmZhJAMzMzMzMzFUAAAAAAAAAUQA=='),
@@ -189,6 +204,7 @@ px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length',
                'margin': {'t': 60},
                'template': '...'}
 })
+```
 - model_error:
  
 ```python
@@ -199,11 +215,11 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.35
-  - heuristic_score: 0.7
-    - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.2 | expected: plotly.express | model: plotly.express | matched: plotly.express
-    - calls_score: 0.2 | expected: scatter_matrix, show | model: scatter_matrix | matched: scatter_matrix
+- code_score: 0.389
+  - heuristic_score: 0.778
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.222 | expected: plotly.express | model: plotly.express | matched: plotly.express
+    - calls_score: 0.222 | expected: scatter_matrix, show | model: scatter_matrix | matched: scatter_matrix
   - result_match: False
 
 ### code_003_train_model_en (code_generation, language: en, difficulty: medium)
@@ -227,7 +243,11 @@ model.fit(X, y)
 ```python
 LogisticRegression(max_iter=200)
 ```
-- expected_error: None
+- expected_error:
+ 
+```python
+None
+```
 
 
 **Model output:**
@@ -243,7 +263,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 classifier = RandomForestClassifier(n_estimators=100, random_state=42)
 classifier.fit(X_train, y_train)
 ```
-- model_result: RandomForestClassifier(random_state=42)
+- model_result:
+ 
+```python
+RandomForestClassifier(random_state=42)
+```
 - model_error:
  
 ```python
@@ -253,11 +277,11 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.217
-  - heuristic_score: 0.433
-    - syntax_check: 0.3 (ok=True)
+- code_score: 0.241
+  - heuristic_score: 0.481
+    - syntax_check: 0.333 (ok=True)
     - imports_score: 0.0 | expected: sklearn.linear_model | model: sklearn.ensemble, sklearn.model_selection | matched: 
-    - calls_score: 0.133 | expected: LogisticRegression, drop, fit | model: RandomForestClassifier, fit, train_test_split | matched: fit
+    - calls_score: 0.148 | expected: LogisticRegression, drop, fit | model: RandomForestClassifier, fit, train_test_split | matched: fit
   - result_match: False
 
 ### chat_001_what_is_iris_en (chat_response, language: en, difficulty: easy)
@@ -293,7 +317,11 @@ None
 ```python
 df['species'].nunique()
 ```
-- model_result: None
+- model_result:
+ 
+```python
+None
+```
 - model_error:
  
 ```python

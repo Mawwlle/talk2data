@@ -1,26 +1,26 @@
 id,expected_decision,language,decision_score,semantic_similarity,code_score,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,expected_plot_path,model_plot_error,heuristic_score,result_match
-code_001_describe_en,code_generation,en,True,,0.95,Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,0.9,True
-code_002_pairplot_en,code_generation,en,True,,0.35,Create a pairplot of all features.,"['code', 'plot']",medium,,,"import plotly.express as px
+code_001_describe_en,code_generation,en,True,,1.0,Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,1.0,True
+code_002_pairplot_en,code_generation,en,True,,0.389,Create a pairplot of all features.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_expected.png,no figure named 'fig' was created,0.7,False
-code_003_train_model_en,code_generation,en,True,,0.217,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_en_expected.png,no figure named 'fig' was created,0.778,False
+code_003_train_model_en,code_generation,en,True,,0.241,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)",,,0.433,False
-code_001_describe,code_generation,ru,True,,0.95,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,0.9,True
-code_002_pairplot,code_generation,ru,True,,0.35,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
+model.fit(X, y)",,,0.481,False
+code_001_describe,code_generation,ru,True,,1.0,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,1.0,True
+code_002_pairplot,code_generation,ru,True,,0.389,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_expected.png,no figure named 'fig' was created,0.7,False
-code_003_train_model,code_generation,ru,True,,0.217,"Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+fig.show()",core/evaluation/report_4_remote_llm/plots/code_002_pairplot_expected.png,no figure named 'fig' was created,0.778,False
+code_003_train_model,code_generation,ru,True,,0.241,"Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)",,,0.433,False
+model.fit(X, y)",,,0.481,False
 chat_001_what_is_iris_en,chat_response,en,True,0.881,,Explain what this dataset represents.,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,,
 chat_002_how_many_classes_en,chat_response,en,False,0.073,,How many classes are in this dataset?,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,,
 chat_003_best_features_en,chat_response,en,0,0.194,,Which features best separate the iris species?,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,,
