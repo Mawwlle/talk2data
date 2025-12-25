@@ -29,7 +29,7 @@ INITIAL_STATE = {
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # это /core
-commands_path = BASE_DIR / "benchmarks" / "iris_dataset_benchmark.txt"
+commands_path = BASE_DIR / "benchmarks" / "iris_dataset_benchmark_en.txt"
 
 with open(commands_path, encoding="utf-8") as lines:
     TEST_COMMANDS = [line.strip() for line in lines if line.strip()]

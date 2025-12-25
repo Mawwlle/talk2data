@@ -96,7 +96,7 @@ def summarize_by_language(
         bucket = summary.setdefault(lang, _init_metric_bucket())
         _append_case_metrics(bucket, case, _extract_case_code_score(case))
 
-    for lang, bucket in summary.items():
+    for _lang, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
         bucket["semantic_similarity_avg"] = _mean(bucket.pop("semantic_similarity"))
         bucket["code_avg"] = _mean(bucket.pop("code"))
