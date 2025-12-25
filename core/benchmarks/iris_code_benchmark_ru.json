@@ -35,5 +35,105 @@
       "tags": ["code", "model"],
       "difficulty": "medium"
     }
+  },
+  {
+    "id": "code_004_missing_check",
+    "user_input": "Проверь, есть ли в датасете пропущенные значения.",
+    "expected_decision": "code_generation",
+    "expected_code": "df.isnull().sum()",
+    "metadata": {
+      "tags": ["code", "null", "count"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "code_005_fill_missing",
+    "user_input": "Заполни пропущенные значения средним значением по столбцам.",
+    "expected_decision": "code_generation",
+    "expected_code": "df.fillna(df.mean(numeric_only=True), inplace=True)",
+    "metadata": {
+      "tags": ["code", "null", "processing"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "code_006_boxplot",
+    "user_input": "Построй boxplot для всех числовых признаков.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\nfig = px.box(df, y=df.select_dtypes(include=\"number\").columns)\nfig.show()",
+    "metadata": {
+      "tags": ["code", "plot", "boxplot"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_007_standardize",
+    "user_input": "Стандартизируй все признаки датасета.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.preprocessing import StandardScaler\n\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "scaling", "standard"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_008_normalize",
+    "user_input": "Нормализуй признаки в диапазон от 0 до 1.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.preprocessing import MinMaxScaler\n\nscaler = MinMaxScaler()\nX_normalized = scaler.fit_transform(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "scaling"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_009_pca",
+    "user_input": "Снизь размерность датасета до двух компонент с помощью PCA.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.decomposition import PCA\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "pca", "dimensions"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_010_pca_plot",
+    "user_input": "Построй scatter plot первых двух PCA-компонент с раскраской по видам.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\nfrom sklearn.decomposition import PCA\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(df.drop(columns=[\"species\"]))\n\ndf_pca = pd.DataFrame(X_pca, columns=[\"PC1\", \"PC2\"])\ndf_pca[\"species\"] = df[\"species\"]\n\nfig = px.scatter(df_pca, x=\"PC1\", y=\"PC2\", color=\"species\")\nfig.show()",
+    "metadata": {
+      "tags": ["code", "pca", "plot"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "code_011_kmeans",
+    "user_input": "Выполни кластеризацию KMeans на три кластера.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.cluster import KMeans\n\nkmeans = KMeans(n_clusters=3, random_state=42)\nclusters = kmeans.fit_predict(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "clustering"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_012_cluster_plot",
+    "user_input": "Построй scatter plot кластеров KMeans по первым двум признакам.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\nX = df.drop(columns=[\"species\"])\n\nfig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))\nfig.show()",
+    "metadata": {
+      "tags": ["code", "clustering", "plot"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_013_train_test_split",
+    "user_input": "Раздели датасет на обучающую и тестовую выборки.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.model_selection import train_test_split\n\nX = df.drop(columns=[\"species\"])\ny = df[\"species\"]\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",
+    "metadata": {
+      "tags": ["code", "split", "train", "test"],
+      "difficulty": "easy"
+    }
   }
 ]

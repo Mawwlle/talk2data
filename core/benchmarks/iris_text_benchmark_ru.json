@@ -111,5 +111,211 @@
       "tags": ["theory", "ml"],
       "difficulty": "medium"
     }
+  },
+  {
+    "id": "chat_005_feature_count",
+    "user_input": "Сколько признаков содержит этот датасет?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["четыре признака", "длина чашелистика", "ширина чашелистика", "длина лепестка", "ширина лепестка"],
+    "forbidden_facts": ["пять признаков", "только признаки лепестков"],
+    "metadata": {
+      "tags": ["chat", "признаки"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_006_samples_count",
+    "user_input": "Сколько объектов содержится в этом датасете?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["150 объектов", "50 объектов на класс"],
+    "forbidden_facts": ["100 объектов", "несбалансированные классы"],
+    "metadata": {
+      "tags": ["chat", "размер датасета"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_007_numeric_only",
+    "user_input": "Все ли признаки в этом датасете являются числовыми?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["все признаки числовые", "непрерывные измерения"],
+    "forbidden_facts": ["категориальные признаки", "текстовые признаки"],
+    "metadata": {
+      "tags": ["chat", "типы данных"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_008_need_scaling",
+    "user_input": "Важно ли масштабирование признаков для этого датасета?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["важно для моделей, основанных на расстоянии", "помогает алгоритмам вроде kNN или SVM"],
+    "forbidden_facts": ["масштабирование никогда не нужно", "масштабирование меняет метки классов"],
+    "metadata": {
+      "tags": ["chat", "предобработка"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_009_linear_separable",
+    "user_input": "Является ли этот датасет линейно разделимым?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["класс setosa линейно разделим", "остальные классы перекрываются"],
+    "forbidden_facts": ["все классы идеально разделимы", "ни один класс не разделим"],
+    "metadata": {
+      "tags": ["chat", "анализ"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_011_unsupervised_possible",
+    "user_input": "Можно ли использовать этот датасет для обучения без учителя?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["можно использовать для кластеризации", "метки классов можно игнорировать"],
+    "forbidden_facts": ["обучение без учителя требует меток"],
+    "metadata": {
+      "tags": ["chat", "обучение без учителя"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_012_pca_purpose",
+    "user_input": "Применим ли метод PCA к этому датасету?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["снижение размерности", "возможность визуализации", "сохранение большей части дисперсии"],
+    "forbidden_facts": ["PCA улучшает метки классов"],
+    "metadata": {
+      "tags": ["chat", "pca"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_013_outliers",
+    "user_input": "Являются ли выбросы серьёзной проблемой в этом датасете?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["датасет относительно чистый", "мало или нет выраженных выбросов"],
+    "forbidden_facts": ["датасет сильно искажён выбросами"],
+    "metadata": {
+      "tags": ["chat", "качество данных"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_014_real_world_limitations",
+    "user_input": "Какие ограничения есть у этого датасета?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["небольшой размер", "не отражает сложные реальные данные"],
+    "forbidden_facts": ["подходит для масштабного глубокого обучения"],
+    "metadata": {
+      "tags": ["chat", "ограничения"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "theory_006_classification_vs_regression",
+    "user_input": "В чём разница между классификацией и регрессией?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "классификация предсказывает дискретные классы",
+      "регрессия предсказывает непрерывные значения"
+    ],
+    "forbidden_facts": [
+      "классификация предсказывает только числа",
+      "регрессия предсказывает категории"
+    ],
+    "max_tokens": 70,
+    "metadata": {
+      "tags": ["theory", "основы ml"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "theory_007_cross_validation",
+    "user_input": "Что такое кросс-валидация?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "разбиение данных на несколько фолдов",
+      "более надёжная оценка качества модели",
+      "уменьшает зависимость от одного train-test разбиения"
+    ],
+    "forbidden_facts": [
+      "кросс-валидация гарантирует идеальное качество"
+    ],
+    "max_tokens": 90,
+    "metadata": {
+      "tags": ["theory", "оценка моделей"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_008_feature_engineering",
+    "user_input": "Что такое feature engineering?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "процесс создания или преобразования признаков",
+      "может улучшить качество модели",
+      "требует знания предметной области"
+    ],
+    "forbidden_facts": [
+      "feature engineering — это только очистка данных"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "признаки"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_009_data_leakage",
+    "user_input": "Что такое утечка данных?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "информация из тестовой выборки попадает в обучение",
+      "приводит к завышенной оценке качества",
+      "ухудшает обобщающую способность"
+    ],
+    "forbidden_facts": [
+      "утечка данных улучшает качество в реальных условиях"
+    ],
+    "max_tokens": 90,
+    "metadata": {
+      "tags": ["theory", "проблемы данных"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_010_precision_recall",
+    "user_input": "Поясни, что такое precision и recall.",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "precision показывает точность положительных предсказаний",
+      "recall показывает полноту выявления положительных объектов",
+      "существует компромисс между precision и recall"
+    ],
+    "forbidden_facts": [
+      "precision и recall всегда равны"
+    ],
+    "max_tokens": 90,
+    "metadata": {
+      "tags": ["theory", "метрики"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_011_accuracy_limitations",
+    "user_input": "Является ли accuracy универсальной метрикой?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "проблематична при несбалансированных данных",
+      "не отражает качество по отдельным классам"
+    ],
+    "forbidden_facts": [
+      "accuracy всегда лучшая метрика"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "метрики"],
+      "difficulty": "medium"
+    }
   }
 ]

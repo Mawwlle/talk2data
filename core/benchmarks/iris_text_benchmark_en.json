@@ -111,5 +111,211 @@
       "tags": ["theory", "ml"],
       "difficulty": "medium"
     }
+  },
+  {
+    "id": "chat_005_feature_count_en",
+    "user_input": "How many features does this dataset have?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["four features", "sepal length", "sepal width", "petal length", "petal width"],
+    "forbidden_facts": ["five features", "only petal features"],
+    "metadata": {
+      "tags": ["chat", "features"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_006_samples_count_en",
+    "user_input": "How many samples are in this dataset?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["150 samples", "50 samples per class"],
+    "forbidden_facts": ["100 samples", "imbalanced classes"],
+    "metadata": {
+      "tags": ["chat", "dataset size"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_007_numeric_only_en",
+    "user_input": "Are all features in this dataset numeric?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["all features are numeric", "continuous measurements"],
+    "forbidden_facts": ["categorical features", "text features"],
+    "metadata": {
+      "tags": ["chat", "data types"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "chat_008_need_scaling_en",
+    "user_input": "Is feature scaling important for this dataset?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["important for distance-based models", "helps algorithms like kNN or SVM"],
+    "forbidden_facts": ["scaling is never useful", "scaling changes class labels"],
+    "metadata": {
+      "tags": ["chat", "preprocessing"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_009_linear_separable_en",
+    "user_input": "Is this dataset linearly separable?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["setosa is linearly separable", "other classes overlap"],
+    "forbidden_facts": ["all classes are perfectly separable", "no class is separable"],
+    "metadata": {
+      "tags": ["chat", "analysis"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_011_unsupervised_possible_en",
+    "user_input": "Can this dataset be used for unsupervised learning?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["can be used for clustering", "labels can be ignored"],
+    "forbidden_facts": ["unsupervised learning requires labels"],
+    "metadata": {
+      "tags": ["chat", "unsupervised"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_012_pca_purpose_en",
+    "user_input": "Is PCA applicable to this dataset?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["reduce dimensionality", "enable visualization", "capture most variance"],
+    "forbidden_facts": ["PCA improves class labels"],
+    "metadata": {
+      "tags": ["chat", "pca"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_013_outliers_en",
+    "user_input": "Are outliers a major concern in this dataset?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["dataset is relatively clean", "few or no strong outliers"],
+    "forbidden_facts": ["dataset is heavily corrupted by outliers"],
+    "metadata": {
+      "tags": ["chat", "data quality"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "chat_014_real_world_limitations_en",
+    "user_input": "What are the limitations of this dataset?",
+    "expected_decision": "chat_response",
+    "expected_facts": ["small size", "not representative of complex real-world data"],
+    "forbidden_facts": ["suitable for deep learning at scale"],
+    "metadata": {
+      "tags": ["chat", "limitations"],
+      "difficulty": "hard"
+    }
+  },
+    {
+    "id": "theory_006_classification_vs_regression_en",
+    "user_input": "What is the difference between classification and regression?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "classification predicts discrete labels",
+      "regression predicts continuous values"
+    ],
+    "forbidden_facts": [
+      "classification predicts numbers only",
+      "regression predicts categories"
+    ],
+    "max_tokens": 70,
+    "metadata": {
+      "tags": ["theory", "ml basics"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "theory_007_cross_validation_en",
+    "user_input": "What is cross-validation?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "splits data into multiple folds",
+      "provides more reliable performance estimates",
+      "reduces dependence on a single train-test split"
+    ],
+    "forbidden_facts": [
+      "cross-validation guarantees perfect performance"
+    ],
+    "max_tokens": 90,
+    "metadata": {
+      "tags": ["theory", "model evaluation"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_008_feature_engineering_en",
+    "user_input": "What is feature engineering?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "process of creating or transforming features",
+      "can improve model performance",
+      "requires domain knowledge"
+    ],
+    "forbidden_facts": [
+      "feature engineering is only data cleaning"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "features"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_009_data_leakage_en",
+    "user_input": "What is data leakage?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "information from test data leaks into training",
+      "leads to overly optimistic evaluation",
+      "harms generalization"
+    ],
+    "forbidden_facts": [
+      "data leakage improves real-world performance"
+    ],
+    "max_tokens": 90,
+    "metadata": {
+      "tags": ["theory", "data issues"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_010_precision_recall_en",
+    "user_input": "Explain precision and recall.",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "precision measures correctness of positive predictions",
+      "recall measures coverage of actual positives",
+      "tradeoff between precision and recall"
+    ],
+    "forbidden_facts": [
+      "precision and recall are always equal"
+    ],
+    "max_tokens": 90,
+    "metadata": {
+      "tags": ["theory", "metrics"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "theory_011_accuracy_limitations_en",
+    "user_input": "Is accuracy a universal metric?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "problematic with imbalanced datasets",
+      "does not reflect class-wise performance"
+    ],
+    "forbidden_facts": [
+      "accuracy is always the best metric"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["theory", "metrics"],
+      "difficulty": "medium"
+    }
   }
 ]
