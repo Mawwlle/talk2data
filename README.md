@@ -36,6 +36,7 @@ sudo apt-get update && apt-get install -y ffmpeg
 ## 🗂 Repository layout
 
 ```
+├── .github/                         # GitHub workflows и шаблоны
 ├── core/                            # LLM логика, конфиги, тесты и вспомогательные скрипты
 │   ├── benchmarks/                  # Наборы данных и скрипты для бенчмарков
 │   ├── evaluation/                  # Отчёты и инструменты оценки качества
@@ -61,10 +62,12 @@ sudo apt-get update && apt-get install -y ffmpeg
 │       └── rabbitmq.py              # Протокол и адаптер RabbitMQ
 ├── voice2text/                      # Голосовой ввод и распознавание речи
 │   └── whisper_model.py             # Обёртка над Whisper
-├── Dockerfile.worker      # Образ worker-сервиса
-├── docker-compose.yml     # Композиция сервисов
-├── pyproject.toml         # Настройки poetry и зависимостей
-├── poetry.lock            # Зафиксированные версии зависимостей
-├── LICENSE                # Лицензия
-└── README.md              # You are here
+├── Dockerfile.worker                # Образ worker-сервиса
+├── docker-compose.yml               # Композиция сервисов
+├── Makefile                         # Команды для локальной разработки
+├── pyproject.toml                   # Настройки poetry и зависимостей
+├── poetry.lock                      # Зафиксированные версии зависимостей
+├── pytest.ini                       # Конфигурация тестов
+├── LICENSE                          # Лицензия
+└── README.md                        # You are here
 ```

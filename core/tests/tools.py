@@ -1,8 +1,9 @@
 import copy
 from pathlib import Path
+from typing import Any
 
 # iris dataset
-metadata_default = {
+metadata_default_table: dict[str, list[list[str]]] = {
     "data": [
         ["", "sepal_length", "sepal_width", "petal_length", "petal_width", "species"],
         ["unique", "35", "23", "43", "22", "3"],
@@ -10,15 +11,15 @@ metadata_default = {
     ]
 }
 
-metadata_default = (
+metadata_default_text = (
     "Columns: sepal_length (float), sepal_width (float), "
     "petal_length (float), petal_width (float), "
     "species (categorical)"
 )
 
-INITIAL_STATE = {
+INITIAL_STATE: dict[str, Any] = {
     # "user_input": prompt,
-    "metadata": metadata_default,
+    "metadata": metadata_default_table,
     "conversation_history": [],
     "generated_code": "",
     "response_message": "",

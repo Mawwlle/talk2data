@@ -1,5 +1,5 @@
-from hypothesis import given
-from hypothesis import strategies as st
+from hypothesis import given  # type: ignore[import-not-found]
+from hypothesis import strategies as st  # type: ignore[import-not-found]
 
 from core.workflow import extract_code_block
 

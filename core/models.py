@@ -20,8 +20,8 @@ class ModelLoader:
         env.read_env(env_file or Path(__file__).resolve().parent.parent / ".env")
         self._settings = settings
         self._vllm_config = self._build_vllm_config(env)
-        self._tokenizer = None
-        self._llm = None
+        self._tokenizer: PreTrainedTokenizerBase | None = None
+        self._llm: LLM | openai.OpenAI | None = None
 
     @staticmethod
     def _build_vllm_config(env: environ.Env) -> dict[str, Any]:
@@ -38,7 +38,7 @@ class ModelLoader:
         if self._tokenizer is None:
             logger.info("Загружаю токенайзер...")
             try:
-                self._tokenizer = AutoTokenizer.from_pretrained(
+                tokenizer = AutoTokenizer.from_pretrained(
                     self._settings.LLM_LOCAL_PATH,
                     use_fast=True,
                     padding_side="left",
@@ -46,13 +46,15 @@ class ModelLoader:
                 )
             except OSError:
                 logger.warning("Local weights not found, trying to download from HF...")
-                self._tokenizer = AutoTokenizer.from_pretrained(
+                tokenizer = AutoTokenizer.from_pretrained(
                     self._settings.LLM_MODEL_NAME
                 )
-                self._tokenizer.save_pretrained(self._settings.LLM_LOCAL_PATH)
-            if self._tokenizer.pad_token is None:
-                self._tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+                tokenizer.save_pretrained(self._settings.LLM_LOCAL_PATH)
+            if tokenizer.pad_token is None:
+                tokenizer.add_special_tokens({"pad_token": "[PAD]"})
             logger.info("Токенайзер загружен")
+            self._tokenizer = tokenizer
+        assert self._tokenizer is not None
         return self._tokenizer
 
     def get_llm(self) -> LLM | openai.OpenAI:
@@ -62,6 +64,7 @@ class ModelLoader:
                     api_key=os.getenv("OPEN_AI_API_KEY"),
                     base_url=settings.REMOTE_URL,
                 )
+            assert self._llm is not None
             return self._llm
 
         if self._llm is None:
@@ -76,4 +79,5 @@ class ModelLoader:
                 **self._vllm_config,
             )
             logger.info("Модель загружена")
+        assert self._llm is not None
         return self._llm

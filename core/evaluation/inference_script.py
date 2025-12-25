@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from core.evaluation.constants import RESULT_ID
 from core.evaluation.io_utils import BENCHMARKS_DIR, load_json
@@ -18,6 +18,12 @@ METADATA = {
     "petal_width": "float",
     "species": "category",
 }
+
+
+class InferenceResults(TypedDict):
+    run_id: str
+    timestamp: str
+    results: list[dict[str, Any]]
 
 
 def run_single_case(
@@ -54,7 +60,7 @@ def main() -> None:
 
     infer_result_path = f"infer_{RESULT_ID}"
 
-    all_results = {
+    all_results: InferenceResults = {
         "run_id": infer_result_path,
         "timestamp": datetime.utcnow().isoformat(),
         "results": [],

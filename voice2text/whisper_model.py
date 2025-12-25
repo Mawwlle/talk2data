@@ -1,6 +1,6 @@
 from typing import Any, Mapping
 
-import whisper
+import whisper  # type: ignore[import-untyped]
 
 
 class Voice2Text:

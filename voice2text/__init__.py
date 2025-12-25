@@ -1,1 +1,1 @@
-"""Voice-to-text package."""
+"""Voice-to-text module package."""

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore[import-not-found]
 
 from core.evaluation.constants import SANDBOX_FILENAME
 from core.evaluation.tools.code_evaluation_tools import _sandbox_globals
@@ -287,10 +287,10 @@ def _render_plotly_image(
     env = _sandbox_globals()
 
     try:
-        import plotly  # type: ignore[import-untyped]
-        import plotly.express as px  # type: ignore[import-untyped]
-        import plotly.graph_objects as go  # type: ignore[import-untyped]
-        import plotly.io as pio  # type: ignore[import-untyped]
+        import plotly  # type: ignore[import-not-found]
+        import plotly.express as px  # type: ignore[import-not-found]
+        import plotly.graph_objects as go  # type: ignore[import-not-found]
+        import plotly.io as pio  # type: ignore[import-not-found]
 
         def _no_show(*_: Any, **__: Any) -> None:  # noqa: ANN002,ANN003
             return None

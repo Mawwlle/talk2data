@@ -1,11 +1,10 @@
 # workflow.py
 
-import atexit
 import copy
 import logging
 import time
 from string import Template
-from typing import Callable
+from typing import cast
 
 import torch
 from langchain_core.output_parsers import JsonOutputParser
@@ -19,8 +18,10 @@ from core.prompts import (
     CHAT_RESPONSE_PROMPT,
     CODE_GENERATION_PROMPT,
     DECIDE_ACTION_PROMPT,
+    PromptMessage,
 )
 from core.schemas import AgentState, Decision
+from task_management.domain.conversation.ports import WorkflowInvokerPort
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -61,9 +62,15 @@ class WorkflowEngine:
             "You are trying to implement the local llm which is not initialized"
         )
 
+    def _local_llm(self) -> LLM:
+        llm = self.llm
+        if isinstance(llm, OpenAI):
+            raise ValueError("Local generation requires a vLLM instance")
+        return llm
+
     def _format_prompt(
         self,
-        messages_template: list[dict[str, str]],
+        messages_template: list[PromptMessage],
         state: AgentState,
         metadata_fields: dict[str, str] | None = None,
     ) -> str:
@@ -86,12 +93,18 @@ class WorkflowEngine:
             content = tmpl.safe_substitute(mapping)
             formatted_messages.append({"role": msg["role"], "content": content})
 
-        return self._tokenizer.apply_chat_template(
-            formatted_messages, tokenize=False, add_generation_prompt=True
+        return cast(
+            str,
+            self._tokenizer.apply_chat_template(
+                formatted_messages, tokenize=False, add_generation_prompt=True
+            ),
         )
 
     def _remote_chat_completion(self, prompt: str) -> str:
-        completion = self.llm.chat.completions.create(
+        llm = self.llm
+        if not isinstance(llm, OpenAI):
+            raise ValueError("Remote chat completion requires an OpenAI client")
+        completion = llm.chat.completions.create(
             model=settings.REMOTE_MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
         )
@@ -126,7 +139,8 @@ class WorkflowEngine:
 
                 logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
 
-                outputs = self._llm.generate([prompt], sampling_params)
+                llm = self._local_llm()
+                outputs = llm.generate([prompt], sampling_params)
                 raw_response = outputs[0].outputs[0].text.strip()
                 logger.info("[decide_action] Raw LLM response: %s", raw_response)
 
@@ -180,7 +194,8 @@ class WorkflowEngine:
                 bad_words=bad_words,
             )
 
-            outputs = self._llm.generate([code_prompt], sampling_params)
+            llm = self._local_llm()
+            outputs = llm.generate([code_prompt], sampling_params)
             generated_text = outputs[0].outputs[0].text
 
         code_block = extract_code_block(generated_text)
@@ -216,7 +231,8 @@ class WorkflowEngine:
                 seed=42,
             )
 
-            outputs = self._llm.generate([chat_prompt], sampling_params)
+            llm = self._local_llm()
+            outputs = llm.generate([chat_prompt], sampling_params)
             response = outputs[0].outputs[0].text.strip()
         elapsed_llm = time.perf_counter() - start
         logger.info("[test_response] Generated text response: %s", response)
@@ -228,7 +244,7 @@ class WorkflowEngine:
         state["response_message"] = response
         return state
 
-    def create_workflow(self) -> Callable[[AgentState], AgentState]:
+    def create_workflow(self) -> WorkflowInvokerPort:
         builder = StateGraph(AgentState)
         builder.add_node("decide_action", self._decide_action)
         builder.add_node("generate_code", self._generate_code_node)
@@ -257,6 +273,3 @@ def safe_destroy_process_group() -> None:
         except Exception as e:
             logger.exception("Error during destroy_process_group: %s", e)
             raise
-
-
-atexit.register(safe_destroy_process_group)

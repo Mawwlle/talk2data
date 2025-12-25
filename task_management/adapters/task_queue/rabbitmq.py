@@ -3,8 +3,11 @@ import logging
 from dataclasses import replace
 from typing import Any, Callable, Mapping
 
-import pika
-from pika.exceptions import AMQPChannelError, AMQPConnectionError
+import pika  # type: ignore[import-untyped]
+from pika.exceptions import (  # type: ignore[import-untyped]
+    AMQPChannelError,
+    AMQPConnectionError,
+)
 
 from task_management.domain.task_queue.models import TaskResponse
 
