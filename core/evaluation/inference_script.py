@@ -1,10 +1,11 @@
 import json
-import uuid
 from datetime import datetime
 from pathlib import Path
 
 from core.models import ModelLoader
-from core.workflow import WorkflowEngine
+from core.evaluation.constants import RESULT_ID
+from core.workflow import WorkflowEngine, init_tokenizer_only
+from core.config import settings
 
 BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
@@ -49,13 +50,19 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 
 
 def main():
-    run_id = f"eval_{datetime.utcnow().isoformat()}_{uuid.uuid4().hex[:8]}"
     loader = ModelLoader()
     workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
-    workflow = workflow_engine.create_workflow()
+    if not settings.REMOTE_LLM:
+        workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
+        workflow = workflow_engine.create_workflow()
+    else: 
+        # TODO: дописать
+        
+    
+    infer_result_path = f"infer_{RESULT_ID}"
 
     all_results = {
-        "run_id": run_id,
+        "run_id": infer_result_path,
         "timestamp": datetime.utcnow().isoformat(),
         "results": [],
     }
@@ -82,7 +89,7 @@ def main():
                     }
                 )
 
-    output_path = RESULTS_DIR / f"{run_id}.json"
+    output_path = RESULTS_DIR / f"{infer_result_path}.json"
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=2)
 

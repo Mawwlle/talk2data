@@ -51,7 +51,9 @@ class TaskRouter:
 def main() -> None:
     model_loader = ModelLoader()
     tokenizer = model_loader.get_tokenizer()
-    llm = model_loader.get_llm()
+    
+    if not settings.REMOTE_LLM:
+        llm = model_loader.get_llm()
 
     workflow_engine = WorkflowEngine(llm, tokenizer)
     workflow = workflow_engine.create_workflow()

@@ -1,6 +1,6 @@
 [
   {
-    "id": "code_001_describe",
+    "id": "code_001_describe_en",
     "user_input": "Write code that outputs statistics for the dataset.",
     "expected_decision": "code_generation",
     "expected_code": "df.describe()",
@@ -10,8 +10,8 @@
     }
   },
   {
-    "id": "code_002_pairplot",
-    "user_input": "Create a pairplot of all features.",
+    "id": "code_002_pairplot_en",
+    "user_input": "Create a pairplot for all features.",
     "expected_decision": "code_generation",
     "expected_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=df.columns, color=\"species\")\nfig.show()",
     "metadata": {
@@ -20,10 +20,17 @@
     }
   },
   {
-    "id": "code_003_train_model",
+    "id": "code_003_train_model_en",
     "user_input": "Write code that trains a simple classifier on this data.",
     "expected_decision": "code_generation",
     "expected_code": "from sklearn.linear_model import LogisticRegression\n\nX = df.drop(columns=[\"species\"])\ny = df[\"species\"]\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X, y)",
+    "possible_code_objects": [
+      "RandomForestClassifier",
+      "DecisionTreeClassifier",
+      "SVC",
+      "KNeighborsClassifier",
+      "GaussianNB"
+    ],
     "metadata": {
       "tags": ["code", "model"],
       "difficulty": "medium"

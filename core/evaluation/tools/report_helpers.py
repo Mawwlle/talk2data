@@ -1,4 +1,5 @@
 from functools import lru_cache
+import ast
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -51,7 +52,7 @@ def summarize_by_group(
                 bucket["count"] += 1
                 bucket["decision"].append(case.get("decision_score"))
                 bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-                bucket["code"].append(case.get("code_score"))
+                bucket["code"].append(case.get("heuristic_score"))
 
     for value, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -77,7 +78,9 @@ def summarize_by_language(
             bucket["count"] += 1
             bucket["decision"].append(case.get("decision_score"))
             bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-            bucket["code"].append(case.get("code_score"))
+            
+            code_score = case.get('code_details', {}).get('heuristic_score') if case.get('code_details', {}) else None
+            bucket["code"].append(code_score)
 
     for lang, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -253,20 +256,6 @@ def generate_visualizations_data(
             chart_dir / "semantic_similarity_by_difficulty.png",
         )
 
-    if report.get("cases"):
-        code_metrics = _aggregate_code_metrics(report["cases"])
-        if code_metrics:
-            charts["code_metrics"] = _save_plot(
-                {
-                    "code_score": code_metrics.get("code_score", 0.0),
-                    "heuristic": code_metrics.get("heuristic_score", 0.0),
-                    "result_match": code_metrics.get("result_match_rate", 0.0),
-                },
-                "Средние кодовые метрики",
-                "Score",
-                chart_dir / "code_metrics.png",
-            )
-
     language_summary = report.get("by_language", {})
     if language_summary:
         charts["language_comparison"] = _save_language_comparison(
@@ -327,11 +316,25 @@ def _render_plotly_image(
 
         pio.show = _no_show  # type: ignore[assignment]
         env.update({"px": px, "go": go, "pio": pio, "plotly": plotly})
-        exec(compile(code_text, SANDBOX_FILENAME, "exec"), env, env)
+        parsed = ast.parse(code_text)
+        if parsed.body and isinstance(parsed.body[-1], ast.Expr):
+            parsed.body[-1] = ast.Assign(
+                targets=[ast.Name(id="_plotly_last_expr", ctx=ast.Store())],
+                value=parsed.body[-1].value,
+            )
+            ast.fix_missing_locations(parsed)
+        exec(compile(parsed, SANDBOX_FILENAME, "exec"), env, env)
 
         fig = env.get("fig")
+        if not isinstance(fig, go.Figure):
+            fig = env.get("_plotly_last_expr")
+        if not isinstance(fig, go.Figure):
+            fig = next(
+                (value for value in env.values() if isinstance(value, go.Figure)),
+                None,
+            )
         if fig is None:
-            return None, "no figure named 'fig' was created"
+            return None, "no Plotly figure was created"
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         fig.write_image(str(output_path))
@@ -360,7 +363,6 @@ def render_case_markdown(
     lines.append(
         "semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty"
     )
-    lines.append("semantic_similarity = clip(semantic_similarity, 0, 1)")
     lines.append("```")
     lines.append(
         "Где доли:\n - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;\n - forbidden_penalty — доля запрещённых фактов,"
@@ -380,12 +382,6 @@ def render_case_markdown(
     )
     lines.append("")
     lines.append("### Code score (только для code_generation)")
-    lines.append("Формула:")
-    lines.append("```text")
-    lines.append("code_score = 0.5 * heuristic_score + 0.5 * result_match")
-    lines.append("code_score = clip(code_score, 0, 1)")
-    lines.append("```")
-    lines.append("Разложение долей:")
     lines.append(
         "- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов)."
     )
@@ -415,6 +411,11 @@ def render_case_markdown(
             lines.append("```python")
             lines.append(case.get("expected_code"))  # type: ignore
             lines.append("```")
+            possible_code_objects = case.get("possible_code_objects") or []
+            if possible_code_objects:
+                lines.append(
+                    "- possible_code_objects: " + ", ".join(possible_code_objects)
+                )
             details = case.get("code_details") or {}
             lines.append("- expected_result:\n ")
             lines.append("```python")
@@ -426,9 +427,11 @@ def render_case_markdown(
                     "- expected_output: "
                     + _describe_visual_output(case.get("expected_code", ""))
                 )
-            lines.append(
-                "- expected_error: " + str(details.get("errors", {}).get("expected"))
-            )
+            lines.append("- expected_error:\n ")
+            lines.append("```python")
+            expected_error = details.get("errors", {}).get("expected")
+            lines.append(str(expected_error))
+            lines.append("```")
             if case.get("expected_plot_path"):
                 lines.append(
                     f"- expected_plot:\n\n ![expected plot]({_rel_image_path(case.get('expected_plot_path'), report_path)})"
@@ -446,9 +449,11 @@ def render_case_markdown(
             lines.append(case.get("model_generated_code"))  # type: ignore
             lines.append("```")
             details = case.get("code_details") or {}
-            lines.append(
-                "- model_result: " + str(details.get("results", {}).get("model"))
-            )
+            lines.append("- model_result:\n ")
+            lines.append("```python")
+            model_result = details.get("results", {}).get("model")
+            lines.append(str(model_result))
+            lines.append("```")
             lines.append("- model_error:\n ")
             lines.append("```python")
             model_error = details.get("errors", {}).get("model")
@@ -489,40 +494,56 @@ def render_case_markdown(
 
         if case.get("expected_decision") == "code_generation":
             details = case.get("code_details") or {}
-            lines.append(f"- code_score: {case.get('code_score')}")
-            lines.append("  - heuristic_score: " + str(details.get("heuristic_score")))
-            breakdown = details.get("heuristic_breakdown", {})
-            syntax_part = breakdown.get("syntax", {})
-            import_part = breakdown.get("imports", {})
-            calls_part = breakdown.get("calls", {})
-            lines.append(
-                "    - syntax_check: "
-                + str(syntax_part.get("score"))
-                + " (ok="
-                + str(syntax_part.get("ok"))
-                + ")"
-            )
-            lines.append(
-                "    - imports_score: "
-                + str(import_part.get("score"))
-                + " | expected: "
-                + ", ".join(import_part.get("expected", []))
-                + " | model: "
-                + ", ".join(import_part.get("model", []))
-                + " | matched: "
-                + ", ".join(import_part.get("matched", []))
-            )
-            lines.append(
-                "    - calls_score: "
-                + str(calls_part.get("score"))
-                + " | expected: "
-                + ", ".join(calls_part.get("expected", []))
-                + " | model: "
-                + ", ".join(calls_part.get("model", []))
-                + " | matched: "
-                + ", ".join(calls_part.get("matched", []))
-            )
-            lines.append("  - result_match: " + str(details.get("result_match")))
+            if "heuristic_score" in details:
+                lines.append(
+                    "  - heuristic_score: " + str(details.get("heuristic_score"))
+                )
+            if details.get("heuristic_breakdown"):
+                breakdown = details.get("heuristic_breakdown", {})
+                syntax_part = breakdown.get("syntax", {})
+                import_part = breakdown.get("imports", {})
+                calls_part = breakdown.get("calls", {})
+                lines.append(
+                    "    - syntax_check: "
+                    + str(syntax_part.get("score"))
+                    + " (ok="
+                    + str(syntax_part.get("ok"))
+                    + ")"
+                )
+                lines.append(
+                    "    - imports_score: "
+                    + str(import_part.get("score"))
+                    + " | expected: "
+                    + ", ".join(import_part.get("expected", []))
+                    + " | model: "
+                    + ", ".join(import_part.get("model", []))
+                    + " | matched: "
+                    + ", ".join(import_part.get("matched", []))
+                )
+                lines.append(
+                    "    - calls_score: "
+                    + str(calls_part.get("score"))
+                    + " | expected: "
+                    + ", ".join(calls_part.get("expected", []))
+                    + " | model: "
+                    + ", ".join(calls_part.get("model", []))
+                    + " | matched: "
+                    + ", ".join(calls_part.get("matched", []))
+                )
+            if "result_match" in details:
+                lines.append("  - result_match: " + str(details.get("result_match")))
+            if details.get("requirements"):
+                lines.append(
+                    "  - requirements_match: "
+                    + str(details.get("requirements_match"))
+                )
+                for requirement in details.get("requirements", []):
+                    lines.append(
+                        "    - "
+                        + str(requirement.get("description") or requirement.get("id"))
+                        + ": "
+                        + str(requirement.get("ok"))
+                    )
 
         lines.append("")
 
