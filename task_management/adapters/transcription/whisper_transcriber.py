@@ -2,14 +2,13 @@ import logging
 import tempfile
 
 from task_management.domain.transcription.models import TranscriptionRequest, TranscriptionResult
-from task_management.domain.transcription.ports import TranscriberPort
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
 
 
-class WhisperTranscriber(TranscriberPort):
-    def __init__(self, model: Voice2Text):
+class WhisperTranscriber:
+    def __init__(self, model: Voice2Text) -> None:
         self._model = model
 
     def transcribe(self, request: TranscriptionRequest) -> TranscriptionResult:

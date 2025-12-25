@@ -9,7 +9,7 @@ from task_management.domain.conversation.ports import ResultPersisterPort, Workf
 logger = logging.getLogger(__name__)
 
 
-class NoopResultPersister(ResultPersisterPort):
+class NoopResultPersister:
     """No-op persister used when persistence is not required."""
 
     def persist(self, result: dict) -> None:

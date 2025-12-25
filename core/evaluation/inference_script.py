@@ -1,9 +1,11 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
-from core.models import ModelLoader
 from core.evaluation.constants import RESULT_ID
+from core.evaluation.ports import WorkflowRunner
+from core.models import ModelLoader
 from core.workflow import WorkflowEngine
 
 BENCHMARKS_DIR = Path("core/benchmarks")
@@ -17,13 +19,12 @@ METADATA = {
     "species": "category",
 }
 
-
-def load_json(path: Path) -> list[dict]:
+def load_json(path: Path) -> list[dict[str, Any]]:
     text = path.read_text(encoding="utf-8").strip()
     return json.loads(text)
 
 
-def run_single_case(workflow, benchmark: dict) -> dict:
+def run_single_case(workflow: WorkflowRunner, benchmark: dict[str, Any]) -> dict[str, Any]:
     initial_state = {
         "user_input": benchmark["user_input"],
         "metadata": METADATA,
@@ -48,7 +49,7 @@ def run_single_case(workflow, benchmark: dict) -> dict:
     }
 
 
-def main():
+def main() -> None:
     loader = ModelLoader()
     workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
     workflow = workflow_engine.create_workflow()

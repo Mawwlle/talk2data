@@ -7,13 +7,12 @@ import pika
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
 from task_management.domain.task_queue.models import TaskResponse
-from task_management.domain.task_queue.ports import TaskQueuePort
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
-class RabbitMQAdapter(TaskQueuePort):
+class RabbitMQAdapter:
     def __init__(
         self,
         *,
@@ -24,7 +23,7 @@ class RabbitMQAdapter(TaskQueuePort):
         response_queue: str,
         exchange: str,
         routing_key: str,
-    ):
+    ) -> None:
         credentials = pika.PlainCredentials(user, password)
         try:
             self.connection = pika.BlockingConnection(

@@ -13,6 +13,7 @@ from langgraph.graph import END, StateGraph
 from transformers import PreTrainedTokenizerBase
 from vllm import LLM, SamplingParams
 from core.config import settings
+from openai import OpenAI
 
 from core.prompts import (
     CHAT_RESPONSE_PROMPT,
@@ -31,12 +32,12 @@ DECIDE_ACTION_DEFAULT = "chat_response"
 
 
 class WorkflowEngine:
-    def __init__(self, llm: LLM | None, tokenizer: PreTrainedTokenizerBase) -> None:
+    def __init__(self, llm: LLM | OpenAI | None, tokenizer: PreTrainedTokenizerBase) -> None:
         self._llm = llm
         self._tokenizer = tokenizer
         
     @property
-    def llm(self) -> LLM:
+    def llm(self) -> LLM | OpenAI:
         if self._llm is not None:
             return self._llm
         

@@ -3,12 +3,11 @@ import logging
 from pathlib import Path
 
 from task_management.common.exceptions import ResultPersistenceError
-from task_management.domain.conversation.ports import ResultPersisterPort
 
 logger = logging.getLogger(__name__)
 
 
-class FileResultPersister(ResultPersisterPort):
+class FileResultPersister:
     """Persists workflow results to a JSON file."""
 
     def __init__(self, *, base_path: Path | None = None, filename: str = "result.json") -> None:

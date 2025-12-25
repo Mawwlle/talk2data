@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConversationService:
-    def __init__(self, workflow: ConversationWorkflow):
+    def __init__(self, workflow: ConversationWorkflow) -> None:
         self._workflow = workflow
 
     def run(self, request: ConversationRequest) -> ConversationResult:
