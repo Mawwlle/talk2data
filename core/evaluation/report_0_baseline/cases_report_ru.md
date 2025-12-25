@@ -34,7 +34,7 @@ semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidd
 df.describe()
 ```
 - expected_result:
- 
+
 ```python
        sepal_length  sepal_width  petal_length  petal_width
 count    150.000000   150.000000    150.000000   150.000000
@@ -47,7 +47,7 @@ min        4.300000     2.000000      1.000000     0.100000
 max        7.900000     4.400000      6.900000     2.500000
 ```
 - expected_error:
- 
+
 ```python
 None
 ```
@@ -63,12 +63,12 @@ fig = px.scatter(df, x='sepal_length', y='sepal_width', color='species')
 fig.show()
 ```
 - model_result:
- 
+
 ```python
 None
 ```
 - model_error:
- 
+
 ```python
 execution_timeout: sandbox_timeout
 ```
@@ -81,8 +81,8 @@ execution_timeout: sandbox_timeout
 - decision_score: True
   - heuristic_score: 0.556
     - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected:  | model: plotly.express | matched: 
-    - calls_score: 0.0 | expected: describe | model: scatter, show | matched: 
+    - imports_score: 0.222 | expected:  | model: plotly.express | matched:
+    - calls_score: 0.0 | expected: describe | model: scatter, show | matched:
 
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
 
@@ -97,13 +97,13 @@ fig = px.scatter_matrix(df, dimensions=df.columns, color="species")
 fig.show()
 ```
 - expected_result:
- 
+
 ```python
 None
 ```
 - expected_output: Интерактивный график (Plotly)
 - expected_error:
- 
+
 ```python
 execution_timeout: sandbox_timeout
 ```
@@ -124,12 +124,12 @@ fig = px.pairplot(df, diag_kind='histogram')
 fig.show()
 ```
 - model_result:
- 
+
 ```python
 None
 ```
 - model_error:
- 
+
 ```python
 execution_error: module 'plotly.express' has no attribute 'pairplot'
 ```
@@ -161,12 +161,12 @@ model.fit(X, y)
 ```
 - possible_code_objects: RandomForestClassifier, DecisionTreeClassifier, SVC, KNeighborsClassifier, GaussianNB
 - expected_result:
- 
+
 ```python
 LogisticRegression(max_iter=200)
 ```
 - expected_error:
- 
+
 ```python
 None
 ```
@@ -199,12 +199,12 @@ accuracy = model.score(X_test, y_test)
 print(f"Accuracy: {accuracy:.2f}")
 ```
 - model_result:
- 
+
 ```python
 None
 ```
 - model_error:
- 
+
 ```python
 execution_error: [Errno 2] No such file or directory: 'your_data.csv'
 ```
@@ -287,12 +287,12 @@ fig = px.scatter(data, x='sepal_length', y='sepal_width', color='species')
 fig.show()
 ```
 - model_result:
- 
+
 ```python
 None
 ```
 - model_error:
- 
+
 ```python
 None
 ```

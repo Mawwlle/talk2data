@@ -1,0 +1,1 @@
+"""Task management package organized by feature, domain, and adapters."""

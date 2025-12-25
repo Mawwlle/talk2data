@@ -9,9 +9,12 @@ from transformers import AutoModel, AutoTokenizer
 
 from core.evaluation.constants import DEFAULT_EMBEDDING_MODEL
 
+_EMBEDDING_AVAILABLE: bool | None = None
+
 # --- text preprocessers and embeddings ---
 
 
+@lru_cache(maxsize=4096)
 def tokenize(text: str) -> list[str]:
     """Return simple whitespace-tokenization with punctuation handling."""
     text = re.sub(r"[^\w\s]", " ", text.lower())
@@ -24,13 +27,31 @@ def _load_embedding_components(
 ) -> tuple[Any, Any]:
     """Load tokenizer and model for embedding computation."""
 
-    model_path = str(Path(model_path).expanduser())
-    tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
-    model = AutoModel.from_pretrained(model_path, local_files_only=True)
-    model.eval()
+    global _EMBEDDING_AVAILABLE
+
+    if _EMBEDDING_AVAILABLE is False:
+        raise RuntimeError("Embedding model is unavailable.")
+
+    resolved_path = Path(model_path).expanduser()
+    if not resolved_path.exists():
+        _EMBEDDING_AVAILABLE = False
+        raise FileNotFoundError(f"Embedding model not found at {resolved_path}")
+
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(
+            str(resolved_path), local_files_only=True
+        )
+        model = AutoModel.from_pretrained(str(resolved_path), local_files_only=True)
+        model.eval()
+    except Exception:  # noqa: BLE001
+        _EMBEDDING_AVAILABLE = False
+        raise
+
+    _EMBEDDING_AVAILABLE = True
     return tokenizer, model
 
 
+@lru_cache(maxsize=1024)
 def _compute_embedding(text: str) -> torch.Tensor:
     """Compute a sentence embedding for the given text."""
 
@@ -62,14 +83,11 @@ def _compute_embedding(text: str) -> torch.Tensor:
 
 def counter_cosine_similarity(counter1: Counter[str], counter2: Counter[str]) -> float:
     """Return cosine similarity between two Counters."""
-    terms = set(counter1.keys()).union(counter2.keys())
-    mag1 = sum(counter1.get(k, 0) ** 2 for k in terms) ** 0.5
-    mag2 = sum(counter2.get(k, 0) ** 2 for k in terms) ** 0.5
-    if mag1 == 0 or mag2 == 0:
+    if not counter1 or not counter2:
         return 0.0
 
-    shared_keys = set(counter1.keys()) | set(counter2.keys())
-    dot_product = sum(counter1.get(k, 0) * counter2.get(k, 0) for k in shared_keys)
+    common_keys = counter1.keys() & counter2.keys()
+    dot_product = sum(counter1[k] * counter2[k] for k in common_keys)
     norm_a = sum(v * v for v in counter1.values()) ** 0.5
     norm_b = sum(v * v for v in counter2.values()) ** 0.5
 
