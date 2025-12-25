@@ -1,4 +1,4 @@
 metric,value
 decision_accuracy,0.955
 semantic_similarity_avg,0.23
-code_score_avg,0.35
+code_score_avg,0.778

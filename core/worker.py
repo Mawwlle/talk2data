@@ -13,7 +13,7 @@ from core.config import settings
 from core.schemas import ConversationRequest
 
 # from models import whisper_model
-from core.workflow import create_workflow, llm_init
+from core.workflow import create_workflow, init_tokenizer_only, llm_init
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,10 @@ except Exception as e:
 
 logger.info("Worker connected to RabbitMQ")
 
-llm_init()
+if not settings.REMOTE_LLM:
+    llm_init()
+else:
+    init_tokenizer_only()
 
 whisper_model = Voice2Text()
 

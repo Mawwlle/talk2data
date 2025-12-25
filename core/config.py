@@ -9,7 +9,8 @@ class AppSettings(BaseSettings):
     RESPONSE_QUEUE: str = "smile_queue_gateway"
     EXCHANGE: str = "smile_exchange"
     ROUTING_KEY: str = "talk2data_response"
-    REMOTE_LLM: bool = True
+    REMOTE_LLM: bool = False
+    REMOTE_MODEL_NAME: str = "qwen3-instruct-30b" # доступны: qwen3-instruct-30b, gigachat-20b-a3b или gpt-oss-20b
 
     # LLM
     LLM_MODEL_NAME: str = "Qwen/Qwen2.5-Coder-0.5B-Instruct"

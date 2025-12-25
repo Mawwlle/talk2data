@@ -4,6 +4,7 @@ from pathlib import Path
 
 from core.evaluation.constants import RESULT_ID
 from core.workflow import create_workflow, llm_init, init_tokenizer_only
+from core.config import settings
 
 BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
@@ -49,8 +50,11 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 
 def main():
     
-    init_tokenizer_only()
-    # llm_init()
+    if not settings.REMOTE_LLM:
+        llm_init()
+    else: 
+        init_tokenizer_only()
+        
     workflow = create_workflow()
     infer_result_path = f"infer_{RESULT_ID}"
 

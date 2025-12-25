@@ -109,7 +109,7 @@ def format_prompt(
 
 def _remote_chat_completion(prompt: str) -> str:
     completion = client.chat.completions.create(
-        model="gpt-oss-20b", #qwen3-instruct-30b, gigachat-20b-a3b или gpt-oss-20b
+        model=settings.REMOTE_MODEL_NAME,
         messages=[{"role": "user", "content": prompt}],
     )
     return completion.choices[0].message.content or ""

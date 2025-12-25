@@ -5,7 +5,6 @@
 Формула:
 ```text
 semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty
-semantic_similarity = clip(semantic_similarity, 0, 1)
 ```
 Где доли:
  - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;
@@ -20,12 +19,6 @@ semantic_similarity = clip(semantic_similarity, 0, 1)
 давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1]).
 
 ### Code score (только для code_generation)
-Формула:
-```text
-code_score = 0.5 * heuristic_score + 0.5 * result_match
-code_score = clip(code_score, 0, 1)
-```
-Разложение долей:
 - heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).
 - result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.
 
@@ -53,7 +46,11 @@ min        4.300000     2.000000      1.000000     0.100000
 75%        6.400000     3.300000      5.100000     1.800000
 max        7.900000     4.400000      6.900000     2.500000
 ```
-- expected_error: None
+- expected_error:
+ 
+```python
+None
+```
 
 
 **Model output:**
@@ -78,7 +75,11 @@ statistics = df_data.describe()
 # Вывод статистики
 result = f"Статистика по датасету:\n{statistics}"
 ```
-- model_result: None
+- model_result:
+ 
+```python
+None
+```
 - model_error:
  
 ```python
@@ -88,12 +89,10 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.45
-  - heuristic_score: 0.9
-    - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.2 | expected:  | model: pandas | matched: 
-    - calls_score: 0.4 | expected: describe | model: DataFrame, describe | matched: describe
-  - result_match: False
+  - heuristic_score: 1.0
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.222 | expected:  | model: pandas | matched: 
+    - calls_score: 0.444 | expected: describe | model: DataFrame, describe | matched: describe
 
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
 
@@ -113,7 +112,11 @@ fig.show()
 None
 ```
 - expected_output: Интерактивный график (Plotly)
-- expected_error: execution_timeout: sandbox_timeout
+- expected_error:
+ 
+```python
+execution_timeout: sandbox_timeout
+```
 - expected_plot:
 
  ![expected plot](plots/code_002_pairplot_expected.png)
@@ -128,7 +131,11 @@ import plotly.express as px
 pairplot = px.pairplot(df, diag_kind='kde')
 pairplot.show()
 ```
-- model_result: None
+- model_result:
+ 
+```python
+None
+```
 - model_error:
  
 ```python
@@ -139,12 +146,10 @@ execution_error: module 'plotly.express' has no attribute 'pairplot'
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.35
-  - heuristic_score: 0.7
-    - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.2 | expected: plotly.express | model: plotly.express | matched: plotly.express
-    - calls_score: 0.2 | expected: scatter_matrix, show | model: pairplot, show | matched: show
-  - result_match: False
+  - heuristic_score: 0.778
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.222 | expected: plotly.express | model: plotly.express | matched: plotly.express
+    - calls_score: 0.222 | expected: scatter_matrix, show | model: pairplot, show | matched: show
 
 ### code_003_train_model (code_generation, language: ru, difficulty: medium)
 
@@ -162,12 +167,17 @@ y = df["species"]
 model = LogisticRegression(max_iter=200)
 model.fit(X, y)
 ```
+- possible_code_objects: RandomForestClassifier, DecisionTreeClassifier, SVC, KNeighborsClassifier, GaussianNB
 - expected_result:
  
 ```python
 LogisticRegression(max_iter=200)
 ```
-- expected_error: None
+- expected_error:
+ 
+```python
+None
+```
 
 
 **Model output:**
@@ -203,7 +213,11 @@ accuracy = model.score(X_test, y_test)
 # Вывод результатов
 result = f"Accuracy: {accuracy:.2f}"
 ```
-- model_result: None
+- model_result:
+ 
+```python
+None
+```
 - model_error:
  
 ```python
@@ -213,12 +227,10 @@ None
 
 **Метрики:**
 - decision_score: True
-- code_score: 0.383
-  - heuristic_score: 0.767
-    - syntax_check: 0.3 (ok=True)
-    - imports_score: 0.2 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.model_selection | matched: sklearn.linear_model
-    - calls_score: 0.267 | expected: LogisticRegression, drop, fit | model: DataFrame, LogisticRegression, fit, score, train_test_split | matched: LogisticRegression, fit
-  - result_match: False
+  - heuristic_score: 0.852
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.222 | expected: sklearn.linear_model | model: pandas, sklearn.linear_model, sklearn.model_selection | matched: sklearn.linear_model
+    - calls_score: 0.296 | expected: LogisticRegression, drop, fit | model: DataFrame, LogisticRegression, fit, score, train_test_split | matched: LogisticRegression, fit
 
 ### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
 
@@ -310,7 +322,11 @@ def plot_sepal_length_vs_petal_length():
 
 plot_sepal_length_vs_petal_length()
 ```
-- model_result: None
+- model_result:
+ 
+```python
+None
+```
 - model_error:
  
 ```python
