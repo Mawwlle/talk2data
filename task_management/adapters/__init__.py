@@ -1,0 +1,1 @@
+"""Adapters for external systems (IO at the edges)."""

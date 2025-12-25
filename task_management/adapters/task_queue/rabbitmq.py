@@ -1,25 +1,19 @@
 import json
 import logging
 from dataclasses import replace
-from typing import Any, Callable, Mapping, Protocol
+from typing import Any, Callable, Mapping
 
 import pika
 from pika.exceptions import AMQPChannelError, AMQPConnectionError
 
-from task_management.task_queue.entities import TaskResponse
+from task_management.domain.task_queue.models import TaskResponse
+from task_management.domain.task_queue.ports import TaskQueuePort
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
-class TaskQueue(Protocol):
-    def start(
-        self, handler: Callable[[Mapping[str, Any]], TaskResponse]
-    ) -> None:  # pragma: no cover
-        ...
-
-
-class RabbitMQAdapter(TaskQueue):
+class RabbitMQAdapter(TaskQueuePort):
     def __init__(
         self,
         *,

@@ -6,12 +6,15 @@ from typing import Any, Callable, Mapping
 from core.config import settings
 from core.models import ModelLoader
 from core.workflow import WorkflowEngine
-from task_management.conversation.service import ConversationService
-from task_management.conversation.workflow import LangGraphConversationWorkflow
-from task_management.task_queue.entities import TaskResponse
-from task_management.task_queue.rabbitmq import RabbitMQAdapter
-from task_management.transcription.service import TranscriptionService
-from task_management.transcription.transcriber import WhisperTranscriber
+from task_management.adapters.conversation.result_persister import FileResultPersister
+from task_management.adapters.task_queue.rabbitmq import RabbitMQAdapter
+from task_management.adapters.transcription.whisper_transcriber import WhisperTranscriber
+from task_management.app.conversation.api import ConversationHandler
+from task_management.app.conversation.service import ConversationService
+from task_management.app.transcription.api import TranscriptionHandler
+from task_management.app.transcription.service import TranscriptionService
+from task_management.domain.conversation.workflow import ConversationWorkflow
+from task_management.domain.task_queue.models import TaskResponse
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
@@ -21,14 +24,14 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 class TaskRouter:
     def __init__(
         self,
-        conversation_service: ConversationService,
-        transcription_service: TranscriptionService,
+        conversation_handler: ConversationHandler,
+        transcription_handler: TranscriptionHandler,
     ) -> None:
-        self._conversation_service = conversation_service
-        self._transcription_service = transcription_service
+        self._conversation_handler = conversation_handler
+        self._transcription_handler = transcription_handler
         self._handlers: dict[str, Callable[[Mapping[str, Any]], TaskResponse]] = {
-            "converse": self._conversation_service.handle,
-            "transcribe": self._transcription_service.handle,
+            "converse": self._conversation_handler.handle,
+            "transcribe": self._transcription_handler.handle,
         }
 
     def route(self, message: Mapping[str, Any]) -> TaskResponse:
@@ -51,20 +54,24 @@ class TaskRouter:
 def main() -> None:
     model_loader = ModelLoader()
     tokenizer = model_loader.get_tokenizer()
-    
-    if not settings.REMOTE_LLM:
-        llm = model_loader.get_llm()
+    llm = model_loader.get_llm()
 
     workflow_engine = WorkflowEngine(llm, tokenizer)
     workflow = workflow_engine.create_workflow()
-    conversation_workflow = LangGraphConversationWorkflow(workflow)
+    result_persister = FileResultPersister()
+    conversation_workflow = ConversationWorkflow(
+        workflow,
+        result_persister=result_persister,
+    )
     conversation_service = ConversationService(conversation_workflow)
+    conversation_handler = ConversationHandler(conversation_service)
 
     voice_to_text = Voice2Text(settings.STT_MODEL)
     transcriber = WhisperTranscriber(voice_to_text)
     transcription_service = TranscriptionService(transcriber)
+    transcription_handler = TranscriptionHandler(transcription_service)
 
-    router = TaskRouter(conversation_service, transcription_service)
+    router = TaskRouter(conversation_handler, transcription_handler)
     queue = RabbitMQAdapter(
         host=settings.RABBITMQ_HOST,
         user=settings.RABBITMQ_USER,

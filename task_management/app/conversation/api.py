@@ -1,25 +1,32 @@
 import logging
 from typing import Any, Mapping
 
-from task_management.conversation.entities import ConversationRequest
-from task_management.conversation.workflow import ConversationWorkflow
-from task_management.exceptions import ConversationError, ConversationValidationError
-from task_management.task_queue.entities import TaskResponse
+from task_management.app.conversation.schema import ConversationPayload
+from task_management.app.conversation.service import ConversationService
+from task_management.common.exceptions import ConversationError, ConversationValidationError
+from task_management.domain.conversation.models import ConversationRequest
+from task_management.domain.task_queue.models import TaskResponse
 
 logger = logging.getLogger(__name__)
 
 
-class ConversationService:
-    def __init__(self, workflow: ConversationWorkflow):
-        self._workflow = workflow
+class ConversationHandler:
+    def __init__(self, service: ConversationService) -> None:
+        self._service = service
 
     def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         project_id = payload.get("project_id")
-        logger.info("ConversationService handling payload for project_id=%s", project_id)
+        logger.info("ConversationHandler handling payload for project_id=%s", project_id)
 
         try:
-            request = self._build_request(payload)
-            result = self._workflow.run(request)
+            parsed_payload = self._parse_payload(payload)
+            request = ConversationRequest(
+                user_input=parsed_payload.user_input,
+                metadata=parsed_payload.metadata,
+                chat_history=parsed_payload.chat_history,
+                project_id=parsed_payload.project_id,
+            )
+            result = self._service.run(request)
             return TaskResponse(
                 status="done",
                 task="llm_agent_response",
@@ -33,7 +40,7 @@ class ConversationService:
             )
         except ConversationError as exc:  # pragma: no cover - defensive
             logger.warning(
-                "ConversationService failed for project_id=%s: %s", project_id, exc
+                "ConversationHandler failed for project_id=%s: %s", project_id, exc
             )
             return TaskResponse(
                 status="error",
@@ -42,7 +49,7 @@ class ConversationService:
                 project_id=project_id,
             )
 
-    def _build_request(self, payload: Mapping[str, Any]) -> ConversationRequest:
+    def _parse_payload(self, payload: Mapping[str, Any]) -> ConversationPayload:
         project_id = payload.get("project_id")
         user_input = payload.get("user_input")
         if not user_input:
@@ -65,7 +72,7 @@ class ConversationService:
                 project_id=project_id,
             )
 
-        return ConversationRequest(
+        return ConversationPayload(
             user_input=str(user_input),
             metadata=dict(metadata),
             chat_history=list(chat_history),

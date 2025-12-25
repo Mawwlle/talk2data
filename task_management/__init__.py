@@ -1,1 +1,1 @@
-"""Task-based modules grouped by task names."""
+"""Task management package organized by feature, domain, and adapters."""

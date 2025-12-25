@@ -1,19 +1,14 @@
 import logging
 import tempfile
-from typing import Protocol
 
-from task_management.transcription.entities import TranscriptionRequest, TranscriptionResult
+from task_management.domain.transcription.models import TranscriptionRequest, TranscriptionResult
+from task_management.domain.transcription.ports import TranscriberPort
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
 
 
-class Transcriber(Protocol):
-    def transcribe(self, request: TranscriptionRequest) -> TranscriptionResult:  # pragma: no cover
-        ...
-
-
-class WhisperTranscriber(Transcriber):
+class WhisperTranscriber(TranscriberPort):
     def __init__(self, model: Voice2Text):
         self._model = model
 

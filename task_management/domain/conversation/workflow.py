@@ -1,53 +1,32 @@
 import copy
-import json
 import logging
 import time
-from pathlib import Path
-from typing import Protocol
 
-from task_management.conversation.entities import ConversationRequest, ConversationResult
-from task_management.exceptions import ConversationWorkflowError, ResultPersistenceError
+from task_management.common.exceptions import ConversationWorkflowError
+from task_management.domain.conversation.models import ConversationRequest, ConversationResult
+from task_management.domain.conversation.ports import ResultPersisterPort, WorkflowInvokerPort
 
 logger = logging.getLogger(__name__)
 
 
-class ConversationWorkflow(Protocol):
-    def run(self, request: ConversationRequest) -> ConversationResult:  # pragma: no cover
-        ...
-
-
-class InvokableWorkflow(Protocol):
-    def invoke(self, state: dict) -> dict:  # pragma: no cover
-        ...
-
-
-class ResultPersister:
-    """Handles persisting workflow results."""
-
-    def __init__(self, *, base_path: Path | None = None, filename: str = "result.json") -> None:
-        self._file_path = (base_path or Path(__file__).resolve().parents[2] / "core") / filename
+class NoopResultPersister(ResultPersisterPort):
+    """No-op persister used when persistence is not required."""
 
     def persist(self, result: dict) -> None:
-        try:
-            with open(self._file_path, "w", encoding="utf-8") as file:
-                json.dump(result, file, ensure_ascii=False, indent=4)
-            logger.info("Result saved to %s", self._file_path)
-        except OSError as exc:  # pragma: no cover - defensive
-            logger.exception("Failed to persist result at %s", self._file_path)
-            raise ResultPersistenceError(file_path=str(self._file_path)) from exc
+        return None
 
 
-class LangGraphConversationWorkflow(ConversationWorkflow):
-    """Adapter that wraps the existing LangGraph workflow for the conversation feature."""
+class ConversationWorkflow:
+    """Core conversation workflow that is IO-agnostic."""
 
     def __init__(
         self,
-        workflow: InvokableWorkflow,
+        invoker: WorkflowInvokerPort,
         *,
-        result_persister: ResultPersister | None = None,
+        result_persister: ResultPersisterPort | None = None,
     ) -> None:
-        self._workflow = workflow
-        self._result_persister = result_persister or ResultPersister()
+        self._invoker = invoker
+        self._result_persister = result_persister or NoopResultPersister()
 
     def run(self, request: ConversationRequest) -> ConversationResult:
         start = time.perf_counter()
@@ -65,7 +44,7 @@ class LangGraphConversationWorkflow(ConversationWorkflow):
 
         logger.info("Starting workflow with state: %s", workflow_state)
         try:
-            result = self._workflow.invoke(workflow_state)
+            result = self._invoker.invoke(workflow_state)
         except Exception as exc:
             logger.exception(
                 "Workflow invocation failed for project_id=%s", request.project_id
@@ -74,7 +53,6 @@ class LangGraphConversationWorkflow(ConversationWorkflow):
                 "Conversation workflow invocation failed", project_id=request.project_id
             ) from exc
 
-        # Persist result for debugging just like the previous worker implementation
         self._result_persister.persist(result)
 
         total_time = round(time.perf_counter() - start, 3)

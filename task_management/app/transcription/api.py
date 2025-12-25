@@ -3,30 +3,37 @@ import binascii
 import logging
 from typing import Any, Mapping
 
-from task_management.task_queue.entities import TaskResponse
-from task_management.transcription.entities import TranscriptionRequest
-from task_management.transcription.transcriber import Transcriber
-from task_management.exceptions import (
+from task_management.app.transcription.schemas import TranscriptionPayload
+from task_management.app.transcription.service import TranscriptionService
+from task_management.common.exceptions import (
     AudioTranscriptionError,
     TranscriptionError,
     TranscriptionValidationError,
 )
+from task_management.domain.task_queue.models import TaskResponse
+from task_management.domain.transcription.models import TranscriptionRequest
 
 logger = logging.getLogger(__name__)
 
 
-class TranscriptionService:
-    def __init__(self, transcriber: Transcriber):
-        self._transcriber = transcriber
+class TranscriptionHandler:
+    def __init__(self, service: TranscriptionService) -> None:
+        # Principle 1.2: dependency injection for the service.
+        # Principle 1.4: composition over inheritance for handlers.
+        self._service = service
 
     def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         project_id = payload.get("project_id")
-        logger.info("TranscriptionService handling payload for project_id=%s", project_id)
+        logger.info("TranscriptionHandler handling payload for project_id=%s", project_id)
 
         try:
-            request = self._build_request(payload)
+            parsed_payload = self._parse_payload(payload)
+            request = TranscriptionRequest(
+                file_bytes=parsed_payload.file_bytes,
+                project_id=parsed_payload.project_id,
+            )
             try:
-                result = self._transcriber.transcribe(request)
+                result = self._service.run(request)
             except TranscriptionError:
                 raise
             except Exception as exc:  # pragma: no cover - defensive
@@ -42,7 +49,7 @@ class TranscriptionService:
             )
         except TranscriptionError as exc:  # pragma: no cover - defensive
             logger.warning(
-                "TranscriptionService failed for project_id=%s: %s", project_id, exc
+                "TranscriptionHandler failed for project_id=%s: %s", project_id, exc
             )
             return TaskResponse(
                 status="error",
@@ -51,7 +58,8 @@ class TranscriptionService:
                 project_id=project_id,
             )
 
-    def _build_request(self, payload: Mapping[str, Any]) -> TranscriptionRequest:
+    def _parse_payload(self, payload: Mapping[str, Any]) -> TranscriptionPayload:
+        # Principle 1.1: payload decoding is handled at the IO boundary.
         project_id = payload.get("project_id")
         try:
             file_bytes_encoded = payload["file_bytes"]
@@ -75,4 +83,4 @@ class TranscriptionService:
                 project_id=project_id,
             )
 
-        return TranscriptionRequest(file_bytes=raw_bytes, project_id=project_id)
+        return TranscriptionPayload(file_bytes=raw_bytes, project_id=project_id)
