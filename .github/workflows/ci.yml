@@ -21,7 +21,7 @@ jobs:
         run: pipx install poetry
 
       - name: Install deps
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --no-root
 
       # Линт (без автофикса в CI!)
       - name: Ruff lint
