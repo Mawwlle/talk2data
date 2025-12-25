@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from task_management.domain.conversation.models import (
@@ -14,8 +15,13 @@ class ConversationService:
         self._workflow = workflow
 
     def run(self, request: ConversationRequest) -> ConversationResult:
-        logger.info(
-            "conversation.service_run",
-            extra={"project_id": request.project_id, "task": "converse"},
-        )
+        logger.info("ConversationService handling project_id=%s", request.project_id)
         return self._workflow.run(request)
+
+    async def run_async(
+        self, request: ConversationRequest
+    ) -> ConversationResult:
+        logger.info(
+            "ConversationService handling async project_id=%s", request.project_id
+        )
+        return await asyncio.to_thread(self._workflow.run, request)

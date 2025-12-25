@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -25,3 +26,6 @@ class FileResultPersister:
         except OSError as exc:  # pragma: no cover - defensive
             logger.exception("Failed to persist result at %s", self._file_path)
             raise ResultPersistenceError(file_path=str(self._file_path)) from exc
+
+    async def persist_async(self, result: dict) -> None:
+        await asyncio.to_thread(self.persist, result)

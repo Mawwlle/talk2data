@@ -14,9 +14,9 @@ class _DummyTokenizer:
 
 @pytest.mark.integration
 def test_remote_chat_completion():
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPEN_AI_API_KEY")
     if not api_key:
-        pytest.skip("OPENAI_API_KEY not set for integration test")
+        pytest.skip("OPEN_AI_API_KEY not set for integration test")
 
     client = OpenAI(base_url=settings.REMOTE_URL, api_key=api_key)
     engine = WorkflowEngine(client, _DummyTokenizer())

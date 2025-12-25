@@ -11,3 +11,8 @@ class TranscriberPort(Protocol):
         self, request: TranscriptionRequest
     ) -> TranscriptionResult:  # pragma: no cover
         ...
+
+    async def transcribe_async(
+        self, request: TranscriptionRequest
+    ) -> TranscriptionResult:  # pragma: no cover
+        ...

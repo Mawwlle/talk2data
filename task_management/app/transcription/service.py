@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from task_management.domain.transcription.models import (
@@ -14,8 +15,13 @@ class TranscriptionService:
         self._transcriber = transcriber
 
     def run(self, request: TranscriptionRequest) -> TranscriptionResult:
-        logger.info(
-            "transcription.service_run",
-            extra={"project_id": request.project_id, "task": "transcribe"},
-        )
+        logger.info("TranscriptionService handling project_id=%s", request.project_id)
         return self._transcriber.transcribe(request)
+
+    async def run_async(
+        self, request: TranscriptionRequest
+    ) -> TranscriptionResult:
+        logger.info(
+            "TranscriptionService handling async project_id=%s", request.project_id
+        )
+        return await asyncio.to_thread(self._transcriber.transcribe, request)

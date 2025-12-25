@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import tempfile
 
@@ -22,3 +23,8 @@ class WhisperTranscriber:
         logger.info("Transcribing audio at %s", tmp_path)
         result = self._model.transcribe(tmp_path)
         return TranscriptionResult(text=result.get("text", ""))
+
+    async def transcribe_async(
+        self, request: TranscriptionRequest
+    ) -> TranscriptionResult:
+        return await asyncio.to_thread(self.transcribe, request)

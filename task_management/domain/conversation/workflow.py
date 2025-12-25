@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import logging
 import time
@@ -19,6 +20,9 @@ class NoopResultPersister:
     """No-op persister used when persistence is not required."""
 
     def persist(self, result: dict) -> None:
+        return None
+
+    async def persist_async(self, result: dict) -> None:
         return None
 
 
@@ -48,16 +52,12 @@ class ConversationWorkflow:
             "timing_info": {},
         }
 
-        logger.info(
-            "conversation.workflow_start",
-            extra={"project_id": request.project_id, "workflow_state": workflow_state},
-        )
+        logger.info("Starting workflow with state: %s", workflow_state)
         try:
             result = self._invoker.invoke(workflow_state)
         except Exception as exc:
             logger.exception(
-                "conversation.workflow_error",
-                extra={"project_id": request.project_id},
+                "Workflow invocation failed for project_id=%s", request.project_id
             )
             raise ConversationWorkflowError(
                 "Conversation workflow invocation failed", project_id=request.project_id
@@ -83,8 +83,10 @@ class ConversationWorkflow:
             timing=timing,
         )
 
-        logger.info(
-            "conversation.workflow_finish",
-            extra={"project_id": request.project_id, "result": conversation_result},
-        )
+        logger.info("Workflow finished with result: %s", conversation_result)
         return conversation_result
+
+    async def run_async(
+        self, request: ConversationRequest
+    ) -> ConversationResult:
+        return await asyncio.to_thread(self.run, request)
