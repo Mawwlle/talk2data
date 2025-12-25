@@ -4,7 +4,14 @@ version = "0.1.0"
 description = ""
 authors = ["maria <mashak.1998@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "*" }]
+packages = [{ include = "talk2data" }]
+exclude = [
+  ".env",
+  ".env.*",
+  "**/.env",
+  "**/.env.*",
+  ".env.local",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
@@ -26,12 +33,6 @@ openai-whisper = "^20250625"
 sentence-transformers = "^5.2.0"
 prometheus-client = "^0.22.0"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.0"
-hypothesis = "^6.103.0"
-mypy = "^1.11.2"
-pre-commit = "^4.5.1"
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -43,3 +44,10 @@ line-length = 88
 line-length = 88
 lint.select = ["E", "F", "I", "B"]
 fix = true
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.9"
+pytest = "^8.0.0"
+mypy = "^1.0.0"
+hypothesis = "^6.103.0"
