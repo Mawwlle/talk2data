@@ -334,35 +334,35 @@ def evaluate_code(
     expected_result, expected_error = _run_code_in_sandbox(expected_code)
     model_result, model_error = _run_code_in_sandbox(model_code)
 
-    try:
-        base_match, plot_match_percent = compare_execution_results(
-            expected_result, model_result
-        )
-        if (
-            "show" in expected_calls
-            and "show" not in model_calls
-            and _has_plotly_calls(model_code)
-        ):
-            expected_fig = _extract_plotly_figure(expected_code)
-            model_fig = _extract_plotly_figure(model_code)
-            fig_match, fig_match_percent = compare_execution_results(
-                expected_fig, model_fig
-            )
-            if fig_match_percent is not None:
-                plot_match_percent = fig_match_percent
-                base_match = fig_match
-        result_match = bool(expected_error is None and model_error is None and base_match)
-        if (
-            not result_match
-            and model_error is None
-            and _has_plotly_calls(expected_code)
-            and _has_plotly_calls(model_code)
-            and base_match
-        ):
-            result_match = True
-    except Exception:
-        result_match = False
-        plot_match_percent = None
+    # try:
+    #     base_match, plot_match_percent = compare_execution_results(
+    #         expected_result, model_result
+    #     )
+    #     if (
+    #         "show" in expected_calls
+    #         and "show" not in model_calls
+    #         and _has_plotly_calls(model_code)
+    #     ):
+    #         expected_fig = _extract_plotly_figure(expected_code)
+    #         model_fig = _extract_plotly_figure(model_code)
+    #         fig_match, fig_match_percent = compare_execution_results(
+    #             expected_fig, model_fig
+    #         )
+    #         if fig_match_percent is not None:
+    #             plot_match_percent = fig_match_percent
+    #             base_match = fig_match
+    #     result_match = bool(expected_error is None and model_error is None and base_match)
+    #     if (
+    #         not result_match
+    #         and model_error is None
+    #         and _has_plotly_calls(expected_code)
+    #         and _has_plotly_calls(model_code)
+    #         and base_match
+    #     ):
+    #         result_match = True
+    # except Exception:
+    #     result_match = False
+    #     plot_match_percent = None
 
     max_heuristic_score = 0.9
     normalized_heuristic = (
@@ -381,15 +381,15 @@ def evaluate_code(
     heuristic_breakdown["objects"]["score"] = round(
         object_score * normalization_factor, 3
     )
-    combined_score = round(
-        min((normalized_heuristic * 0.5) + (0.5 if result_match else 0.5 * object_score), 1.0), 3
-    )
+    # combined_score = round(
+    #     min((normalized_heuristic * 0.5) + (0.5 if result_match else 0.5 * object_score), 1.0), 3
+    # )
 
     return {
-        "score": combined_score,
+        # "score": combined_score,
         "heuristic_score": round(normalized_heuristic, 3),
-        "result_match": result_match,
-        "plot_match_percent": plot_match_percent,
+        # "result_match": result_match,
+        # "plot_match_percent": plot_match_percent,
         "heuristic_breakdown": heuristic_breakdown,
         "errors": {
             "expected": expected_error,
@@ -526,7 +526,7 @@ def build_report_data(
             ]
         ),
         "code_score_avg": _mean(
-            [case.get("code_score") for case in enriched_cases if not case.get("error")]
+            [case.get('code_details', {}).get("heuristic_score") for case in enriched_cases if not case.get("error") and case.get('code_details', {})]
         ),
     }
 

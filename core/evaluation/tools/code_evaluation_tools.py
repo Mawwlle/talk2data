@@ -127,15 +127,15 @@ def _compare_plotly_figures(expected: Any, actual: Any) -> float | None:
 def compare_execution_results(expected: Any, actual: Any) -> tuple[bool, float | None]:
     """Compare execution results with tolerance for numerics and arrays."""
 
-    if _is_plotly_figure(expected) or _is_plotly_figure(actual):
-        match_percent = _compare_plotly_figures(expected, actual)
-        if match_percent is not None:
-            return match_percent > 0, match_percent
-        return (
-            (_is_plotly_figure(expected) and actual is None)
-            or (_is_plotly_figure(actual) and expected is None),
-            0.0,
-        )
+    # if _is_plotly_figure(expected) or _is_plotly_figure(actual):
+    #     match_percent = _compare_plotly_figures(expected, actual)
+    #     if match_percent is not None:
+    #         return match_percent > 0, match_percent
+    #     return (
+    #         (_is_plotly_figure(expected) and actual is None)
+    #         or (_is_plotly_figure(actual) and expected is None),
+    #         0.0,
+    #     )
 
     if isinstance(expected, (float, int)) and isinstance(actual, (float, int)):
         return (

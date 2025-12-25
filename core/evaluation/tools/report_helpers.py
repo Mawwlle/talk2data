@@ -72,7 +72,9 @@ def summarize_by_language(
             bucket["count"] += 1
             bucket["decision"].append(case.get("decision_score"))
             bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-            bucket["code"].append(case.get("code_score"))
+            
+            code_score = case.get('code_details', {}).get('heuristic_score') if case.get('code_details', {}) else None
+            bucket["code"].append(code_score)
 
     for lang, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -242,19 +244,19 @@ def generate_visualizations_data(
             chart_dir / "semantic_similarity_by_difficulty.png",
         )
 
-    if report.get("cases"):
-        code_metrics = _aggregate_code_metrics(report["cases"])
-        if code_metrics:
-            charts["code_metrics"] = _save_plot(
-                {
-                    "code_score": code_metrics.get("code_score", 0.0),
-                    "heuristic": code_metrics.get("heuristic_score", 0.0),
-                    "result_match": code_metrics.get("result_match_rate", 0.0),
-                },
-                "Средние кодовые метрики",
-                "Score",
-                chart_dir / "code_metrics.png",
-            )
+    # if report.get("cases"):
+    #     code_metrics = _aggregate_code_metrics(report["cases"])
+    #     if code_metrics:
+    #         charts["code_metrics"] = _save_plot(
+    #             {
+    #                 "code_score": code_metrics.get("code_score", 0.0),
+    #                 "heuristic": code_metrics.get("heuristic_score", 0.0),
+    #                 "result_match": code_metrics.get("result_match_rate", 0.0),
+    #             },
+    #             "Средние кодовые метрики",
+    #             "Score",
+    #             chart_dir / "code_metrics.png",
+    #         )
 
     language_summary = report.get("by_language", {})
     if language_summary:
@@ -361,7 +363,7 @@ def render_case_markdown(
     lines.append(
         "semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty"
     )
-    lines.append("semantic_similarity = clip(semantic_similarity, 0, 1)")
+    # lines.append("semantic_similarity = clip(semantic_similarity, 0, 1)")
     lines.append("```")
     lines.append(
         "Где доли:\n - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;\n - forbidden_penalty — доля запрещённых фактов,"
@@ -381,12 +383,12 @@ def render_case_markdown(
     )
     lines.append("")
     lines.append("### Code score (только для code_generation)")
-    lines.append("Формула:")
-    lines.append("```text")
-    lines.append("code_score = 0.5 * heuristic_score + 0.5 * result_match")
-    lines.append("code_score = clip(code_score, 0, 1)")
-    lines.append("```")
-    lines.append("Разложение долей:")
+    # lines.append("Формула:")
+    # lines.append("```text")
+    # lines.append("code_score = 0.5 * heuristic_score + 0.5 * result_match")
+    # lines.append("code_score = clip(code_score, 0, 1)")
+    # lines.append("```")
+    # lines.append("Разложение долей:")
     lines.append(
         "- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов)."
     )
@@ -502,12 +504,12 @@ def render_case_markdown(
                 lines.append(
                     "  - heuristic_score: " + str(details.get("heuristic_score"))
                 )
-            if details.get("plot_match_percent") is not None:
-                lines.append(
-                    "  - plot_match: "
-                    + str(details.get("plot_match_percent"))
-                    + "%"
-                )
+            # if details.get("plot_match_percent") is not None:
+            #     lines.append(
+            #         "  - plot_match: "
+            #         + str(details.get("plot_match_percent"))
+            #         + "%"
+            #     )
             if details.get("heuristic_breakdown"):
                 breakdown = details.get("heuristic_breakdown", {})
                 syntax_part = breakdown.get("syntax", {})

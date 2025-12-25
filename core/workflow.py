@@ -5,6 +5,7 @@ import copy
 import logging
 import time
 from string import Template
+import os
 
 import openai
 import torch
@@ -27,8 +28,8 @@ logging.basicConfig(
 )
 
 client = openai.OpenAI(
-    api_key="sk-vVlZM0J1ViEnD5SFtFWW1g",
-    base_url="http://10.32.15.88:4000",
+    api_key=os.getenv("OPEN_API_KEY"),
+    base_url="http://10.32.15.88:4000/v1",
 )
 
 
@@ -106,7 +107,7 @@ def format_prompt(
 
 def _remote_chat_completion(prompt: str) -> str:
     completion = client.chat.completions.create(
-        model="qwen-coder-32b",
+        model="qwen3-instruct-30b",
         messages=[{"role": "user", "content": prompt}],
     )
     return completion.choices[0].message.content or ""
