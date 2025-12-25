@@ -24,9 +24,11 @@ from core.evaluation.constants import (
 )
 
 
-def extract_imports(code: str) -> set[str]:
+def extract_imports(code: str | None) -> set[str]:
     """Extract imported modules from Python code."""
-
+    if code is None:
+        return set()
+    
     tree = ast.parse(code)
     imports: set[str] = set()
 
@@ -41,9 +43,11 @@ def extract_imports(code: str) -> set[str]:
     return imports
 
 
-def extract_calls(code: str) -> set[str]:
+def extract_calls(code: str | None) -> set[str]:
     """Extract called function names from Python code."""
-
+    if code is None:
+        return set()
+    
     tree = ast.parse(code)
     calls: set[str] = set()
 
@@ -250,13 +254,15 @@ def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS):
         signal.signal(signal.SIGALRM, original_handler)
 
 
-def _run_code_in_sandbox(code: str) -> SandboxResult:
+def _run_code_in_sandbox(code: str | None) -> SandboxResult:
     """Execute code safely with restricted globals and a hard timeout.
 
     The function parses user code, executes statements, and if the last node is
     an expression, evaluates it to produce a return value. Any exceptions are
     captured as error strings instead of propagating.
     """
+    if code is None:
+        return None, None
 
     sandbox_globals = _sandbox_globals()
     sandbox_locals: dict[str, Any] = {}

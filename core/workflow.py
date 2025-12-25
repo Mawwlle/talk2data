@@ -11,6 +11,8 @@ import openai
 import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
+from vllm import SamplingParams
+from core.config import settings
 
 from core.models import get_llm, get_tokenizer
 
@@ -28,7 +30,7 @@ logging.basicConfig(
 )
 
 client = openai.OpenAI(
-    api_key=os.getenv("OPEN_API_KEY"),
+    api_key=os.getenv("OPEN_AI_API_KEY"),
     base_url="http://10.32.15.88:4000/v1",
 )
 
@@ -107,7 +109,7 @@ def format_prompt(
 
 def _remote_chat_completion(prompt: str) -> str:
     completion = client.chat.completions.create(
-        model="qwen3-instruct-30b",
+        model="gpt-oss-20b", #qwen3-instruct-30b, gigachat-20b-a3b или gpt-oss-20b
         messages=[{"role": "user", "content": prompt}],
     )
     return completion.choices[0].message.content or ""
@@ -123,24 +125,26 @@ def decide_action(state: AgentState) -> AgentState:
     try:
         # Формируем prompt
         prompt = format_prompt(DECIDE_ACTION_PROMPT, state)
-        # logger.info(f"[decide_action] Formatted prompt: {prompt}")
-     # Настраиваем параметры сэмплирования
-        # sampling_params = SamplingParams(
-        #     max_tokens=100,
-        #     temperature=0.0,  # полная детерминированность
-        #     top_p=1.0,  # отключает сэмплирование по вероятностям
-        #     stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
-        #     repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
-        # )
-
-        # logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
-
-        # # Генерация ответа от LLM
-        # outputs = llm.generate([prompt], sampling_params)
-        # raw_response = outputs[0].outputs[0].text.strip()
 
         # Генерация ответа от LLM
-        raw_response = _remote_chat_completion(prompt).strip()
+        if settings.REMOTE_LLM:
+            raw_response = _remote_chat_completion(prompt).strip()
+        else:
+            # Настраиваем параметры сэмплирования
+            sampling_params = SamplingParams(
+                max_tokens=100,
+                temperature=0.0,  # полная детерминированность
+                top_p=1.0,  # отключает сэмплирование по вероятностям
+                stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
+                repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
+            )
+
+            logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
+
+            # Генерация ответа от LLM
+            outputs = llm.generate([prompt], sampling_params)
+            raw_response = outputs[0].outputs[0].text.strip()
+        
         logger.info(f"[decide_action] Raw LLM response: {raw_response}")
 
         # Парсим результат
@@ -179,35 +183,34 @@ def generate_code_node(state: AgentState) -> AgentState:
     start = time.perf_counter()
     code_prompt = format_prompt(CODE_GENERATION_PROMPT, state)
 
-    # logger.info(f"[code_prompt] Prompt for code generation: {code_prompt}")
-    #     bad_words = ([
-    #         "print",
-    #         "pd.read_csv",
-    #         "pandas.read_csv",
-    #         "df =",
-    #         "df=",
-    #         "df = pd.DataFrame",
-    #         "df=pd.DataFrame",
-    #     ] 
-    #     + state.get("bad_words", [])
-    # )
+    if settings.REMOTE_LLM:
+        generated_text = _remote_chat_completion(code_prompt)
+    else:
+        bad_words = ([
+            "print",
+            "pd.read_csv",
+            "pandas.read_csv",
+            "df =",
+            "df=",
+            "df = pd.DataFrame",
+            "df=pd.DataFrame",
+        ] 
+        + state.get("bad_words", [])
+         )
     
-    # sampling_params = SamplingParams(
-    #     max_tokens=512,
-    #     temperature=0.0,  # 0.7
-    #     top_p=0.95,
-    #     stop=["<|", "</s>"],
-    #     repetition_penalty=1.05,
-    #     presence_penalty=0.5,
-    #     seed=42,
-    #     bad_words=bad_words,
-    # )
+        sampling_params = SamplingParams(
+            max_tokens=512,
+            temperature=0.0,  # 0.7
+            top_p=0.95,
+            stop=["<|", "</s>"],
+            repetition_penalty=1.05,
+            presence_penalty=0.5,
+            seed=42,
+            bad_words=bad_words,
+        )
 
-    # outputs = llm.generate([code_prompt], sampling_params, use_tqdm=False)
-    # generated_text = outputs[0].outputs[0].text
-    
-    
-    generated_text = _remote_chat_completion(code_prompt)
+        outputs = llm.generate([code_prompt], sampling_params, use_tqdm=False)
+        generated_text = outputs[0].outputs[0].text
 
     # Extract code block (heuristic: inside triple backticks or entire text)
     code_block = generated_text.split("```python")[-1].split("```")[0].strip()
@@ -232,18 +235,21 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
     """Chat response generation with TTS integration, measure time."""
     start = time.perf_counter()
     chat_prompt = format_prompt(CHAT_RESPONSE_PROMPT, state)
-    # logger.info(f"[chat_prompt] Prompt for text generation: {chat_prompt}")
-    # sampling_params = SamplingParams(
-    #     max_tokens=200,
-    #     temperature=0.0,  # 0.7
-    #     top_p=0.9,
-    #     stop=["</s>"],
-    #     seed=42,
-    # )
+    
+    if settings.REMOTE_LLM:
+        response = _remote_chat_completion(chat_prompt).strip()
+    else:
+        sampling_params = SamplingParams(
+            max_tokens=200,
+            temperature=0.0,  # 0.7
+            top_p=0.9,
+            stop=["</s>"],
+            seed=42,
+        )
 
-    # outputs = llm.generate([chat_prompt], sampling_params)
-    # response = outputs[0].outputs[0].text.strip()
-    response = _remote_chat_completion(chat_prompt).strip()
+        outputs = llm.generate([chat_prompt], sampling_params)
+        response = outputs[0].outputs[0].text.strip()
+        
     elapsed_llm = time.perf_counter() - start
     logger.info(f"[test_response] Generated text response: {response}")
     # Attempt TTS

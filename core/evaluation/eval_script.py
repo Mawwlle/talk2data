@@ -67,9 +67,11 @@ def _infer_language_from_filename(path: Path) -> str:
     return "unknown"
 
 
-def _has_plotly_calls(code: str) -> bool:
+def _has_plotly_calls(code: str | None) -> bool:
     """Detect Plotly usage to allow implicit display calls."""
-
+    if code is None:
+        return False
+    
     lowered = code.lower()
     return "plotly" in lowered or "px." in lowered or "go." in lowered
 
@@ -94,11 +96,17 @@ def _has_possible_code_object(
 
 
 def evaluate_object_match(
-    model_code: str,
+    model_code: str | None,
     possible_code_objects: list[str] | None = None,
 ) -> dict[str, Any]:
     """Evaluate code against AST-based requirements."""
-
+    if model_code is None:
+        return {
+            "score": 0.0,
+            "code_objects_match": False,
+            "errors": {"model": "code not parsed"},
+        }
+    
     try:
         tree = ast.parse(model_code)
     except SyntaxError:
@@ -240,7 +248,7 @@ def evaluate_chat_semantics(
 # Main evaluation logic
 # ---------------------------------------------------------------------------
 def evaluate_code(
-    model_code: str,
+    model_code: str | None,
     benchmark: str | None,
     possible_code_objects: list[str] | None = None,
 ) -> dict[str, Any]:
@@ -264,9 +272,10 @@ def evaluate_code(
 
     # 1️⃣ Syntax check: fail fast on invalid Python
     try:
-        ast.parse(model_code)
-        syntax_score = 0.3
-        heuristic_score += syntax_score
+        if model_code:
+            ast.parse(model_code)
+            syntax_score = 0.3
+            heuristic_score += syntax_score
     except SyntaxError:
         return {
             "score": 0.0,

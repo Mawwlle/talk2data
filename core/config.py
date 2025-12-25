@@ -9,6 +9,7 @@ class AppSettings(BaseSettings):
     RESPONSE_QUEUE: str = "smile_queue_gateway"
     EXCHANGE: str = "smile_exchange"
     ROUTING_KEY: str = "talk2data_response"
+    REMOTE_LLM: bool = True
 
     # LLM
     LLM_MODEL_NAME: str = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
