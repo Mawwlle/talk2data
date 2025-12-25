@@ -120,7 +120,8 @@ class WorkflowEngine:
                         "\n\n",
                         "\nUser:",
                     ],  # можно добавить безопасные стоп-токены
-                    repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
+                    # не трогаем (нет смысла для коротких ответов)
+                    repetition_penalty=1.0,
                 )
 
                 logger.info(f"[decide_action] Sampling parameters: {sampling_params}")

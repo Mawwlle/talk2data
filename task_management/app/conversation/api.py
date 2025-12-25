@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Mapping
 
+from pydantic import ValidationError
+
 from task_management.app.conversation.schema import ConversationPayload
 from task_management.app.conversation.service import ConversationService
 from task_management.domain.conversation.exceptions import (
@@ -69,30 +71,11 @@ class ConversationHandler:
 
     def _parse_payload(self, payload: Mapping[str, Any]) -> ConversationPayload:
         project_id = payload.get("project_id")
-        user_input = payload.get("user_input")
-        if not user_input:
+        try:
+            # Validate at the boundary so downstream code can trust types.
+            return ConversationPayload.model_validate(payload)
+        except ValidationError as exc:
             raise ConversationValidationError(
-                "Conversation request requires non-empty user_input",
+                "Conversation request payload is invalid",
                 project_id=project_id,
-            )
-
-        metadata = payload.get("metadata") or {}
-        if not isinstance(metadata, Mapping):
-            raise ConversationValidationError(
-                "Conversation metadata must be a mapping",
-                project_id=project_id,
-            )
-
-        chat_history = payload.get("chat_history") or []
-        if not isinstance(chat_history, list):
-            raise ConversationValidationError(
-                "Conversation chat_history must be a list",
-                project_id=project_id,
-            )
-
-        return ConversationPayload(
-            user_input=str(user_input),
-            metadata=dict(metadata),
-            chat_history=list(chat_history),
-            project_id=project_id,
-        )
+            ) from exc

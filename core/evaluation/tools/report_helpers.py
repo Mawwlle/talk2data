@@ -26,6 +26,32 @@ def _mean(values: Iterable[float | None]) -> float:
     return round(total / count, 3)
 
 
+def _init_metric_bucket() -> dict[str, Any]:
+    """Create a new metrics bucket for summary aggregations."""
+
+    return {"count": 0, "decision": [], "semantic_similarity": [], "code": []}
+
+
+def _extract_case_code_score(case: dict[str, Any]) -> float | None:
+    """Return the heuristic code score from available case fields."""
+
+    if "heuristic_score" in case:
+        return case.get("heuristic_score")
+    code_details = case.get("code_details") or {}
+    return code_details.get("heuristic_score")
+
+
+def _append_case_metrics(
+    bucket: dict[str, Any], case: dict[str, Any], code_score: float | None
+) -> None:
+    """Append metric values from a case into an aggregation bucket."""
+
+    bucket["count"] += 1
+    bucket["decision"].append(case.get("decision_score"))
+    bucket["semantic_similarity"].append(case.get("semantic_similarity"))
+    bucket["code"].append(code_score)
+
+
 def summarize_by_group(
     cases: list[dict[str, Any]],
     benchmarks_by_id: dict[tuple[str | None, str | None], dict[str, Any]],
@@ -46,16 +72,10 @@ def summarize_by_group(
         for value in values:
             if value is None:
                 continue
-            bucket = summary.setdefault(
-                value,
-                {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
-            )
-            bucket["count"] += 1
-            bucket["decision"].append(case.get("decision_score"))
-            bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-            bucket["code"].append(case.get("heuristic_score"))
+            bucket = summary.setdefault(value, _init_metric_bucket())
+            _append_case_metrics(bucket, case, _extract_case_code_score(case))
 
-    for value, bucket in summary.items():
+    for _value, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
         bucket["semantic_similarity_avg"] = _mean(bucket.pop("semantic_similarity"))
         bucket["code_avg"] = _mean(bucket.pop("code"))
@@ -73,17 +93,8 @@ def summarize_by_language(
         if case.get("error"):
             continue
         lang = case.get("language", "unknown")
-        bucket = summary.setdefault(
-            lang,
-            {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
-        )
-        bucket["count"] += 1
-        bucket["decision"].append(case.get("decision_score"))
-        bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-
-        code_details = case.get("code_details") or {}
-        code_score = code_details.get("heuristic_score") if code_details else None
-        bucket["code"].append(code_score)
+        bucket = summary.setdefault(lang, _init_metric_bucket())
+        _append_case_metrics(bucket, case, _extract_case_code_score(case))
 
     for lang, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -91,39 +102,6 @@ def summarize_by_language(
         bucket["code_avg"] = _mean(bucket.pop("code"))
 
     return summary
-
-
-def _aggregate_code_metrics(cases: list[dict[str, Any]]) -> dict[str, float]:
-    """Aggregate code-generation metrics across cases."""
-
-    total_cases = 0
-    code_score_total = 0.0
-    heuristic_total = 0.0
-    result_match_total = 0.0
-
-    for case in cases:
-        if case.get("expected_decision") != "code_generation" or case.get("error"):
-            continue
-        total_cases += 1
-        code_score = case.get("code_score")
-        heuristic_score = case.get("code_details", {}).get("heuristic_score")
-        result_match = case.get("code_details", {}).get("result_match")
-
-        if isinstance(code_score, (int, float)):
-            code_score_total += float(code_score)
-        if isinstance(heuristic_score, (int, float)):
-            heuristic_total += float(heuristic_score)
-        if result_match:
-            result_match_total += 1.0
-
-    if total_cases == 0:
-        return {}
-
-    return {
-        "code_score": round(code_score_total / total_cases, 3),
-        "heuristic_score": round(heuristic_total / total_cases, 3),
-        "result_match_rate": round(result_match_total / total_cases, 3),
-    }
 
 
 # --- visualization helpers ---
@@ -136,12 +114,12 @@ def _ensure_kaleido() -> bool:
     """
 
     try:
-        import importlib.util  # noqa: WPS433 (used only here)
+        import importlib.util
 
         if importlib.util.find_spec("kaleido"):
             return True
 
-        import subprocess  # noqa: WPS433
+        import subprocess
 
         subprocess.run(
             [
@@ -177,7 +155,7 @@ def _save_plot(
     plt.ylim(0, 1)
     plt.xticks(rotation=30, ha="right")
 
-    for bar, score in zip(bars, scores):
+    for bar, score in zip(bars, scores, strict=False):
         plt.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() + 0.01,
@@ -208,7 +186,7 @@ def _save_language_comparison(
     bar_width = 0.22
 
     plt.figure(figsize=(10, 5))
-    for idx, (metric, label) in enumerate(zip(metrics, metric_labels)):
+    for idx, (metric, label) in enumerate(zip(metrics, metric_labels, strict=False)):
         scores = [language_summary[lang].get(metric, 0.0) for lang in languages]
         plt.bar(x + idx * bar_width, scores, width=bar_width, label=label)
 
@@ -309,10 +287,10 @@ def _render_plotly_image(
     env = _sandbox_globals()
 
     try:
-        import plotly  # noqa: WPS433
-        import plotly.express as px  # noqa: WPS433
-        import plotly.graph_objects as go  # noqa: WPS433
-        import plotly.io as pio  # noqa: WPS433
+        import plotly
+        import plotly.express as px
+        import plotly.graph_objects as go
+        import plotly.io as pio
 
         def _no_show(*_: Any, **__: Any) -> None:  # noqa: ANN002,ANN003
             return None
@@ -364,39 +342,50 @@ def render_case_markdown(
     lines.append("Формула:")
     lines.append("```text")
     lines.append(
-        "semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty"
+        "semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage "
+        "- 0.5 * forbidden_penalty"
     )
     lines.append("```")
     lines.append(
-        "Где доли:\n - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;\n - forbidden_penalty — доля запрещённых фактов,"
+        "Где доли:\n - expected_coverage — доля ожидаемых фактов, "
+        "упомянутых в ответе;\n - forbidden_penalty — доля запрещённых "
+        "фактов,"
     )
     lines.append(
-        "попавших в ответ (штраф).\n - similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый"
+        "попавших в ответ (штраф).\n - similarity — embedding-cosine "
+        "между эталонным ответом (конкатенация expected_facts или базовый"
     )
     lines.append("референс) и ответом модели.")
     lines.append(
-        "\n\nФакт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55"
+        "\n\nФакт считается покрытым, если косинусная близость fact↔ответ " "≥ 0.55"
     )
     lines.append(
-        "(или высокая токеновая схожесть), что позволяет засчитывать перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,"
+        "(или высокая токеновая схожесть), что позволяет засчитывать "
+        "перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и "
+        "полноту фактов,"
     )
     lines.append(
-        "давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1])."
+        "давая штраф за запрещённые факты, чтобы сохранить "
+        "интерпретируемость (веса суммарно ограничивают метрику в [0, 1])."
     )
     lines.append("")
     lines.append("### Code score (только для code_generation)")
     lines.append(
-        "- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов)."
+        "- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 "
+        "(совпадение импортов) + до 0.4 (совпадение ключевых вызовов)."
     )
     lines.append(
-        "- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения."
+        "- result_match: бинарный флаг (1.0/0.0), что итоговый результат "
+        "выполнения совпал с эталоном без ошибок исполнения."
     )
     lines.append("")
     lines.append("## Кейсы")
 
     for case in cases:
         lines.append(
-            f"### {case.get('id')} ({case.get('expected_decision')}, language: {case.get('language')}, difficulty: {case.get('difficulty')})"
+            f"### {case.get('id')} ({case.get('expected_decision')}, "
+            f"language: {case.get('language')}, "
+            f"difficulty: {case.get('difficulty')})"
         )
         lines.append("")
         lines.append(f"**User input:** {case.get('user_input')}")
@@ -436,9 +425,13 @@ def render_case_markdown(
             lines.append(str(expected_error))
             lines.append("```")
             if case.get("expected_plot_path"):
-                lines.append(
-                    f"- expected_plot:\n\n ![expected plot]({_rel_image_path(case.get('expected_plot_path'), report_path)})"
+                lines.append("- expected_plot:")
+                lines.append("")
+                expected_plot_path = _rel_image_path(
+                    case.get("expected_plot_path"),
+                    report_path,
                 )
+                lines.append(f" ![expected plot]({expected_plot_path})")
             elif case.get("expected_plot_error"):
                 lines.append(
                     f"- expected_plot_error: {case.get('expected_plot_error')}"
@@ -463,9 +456,13 @@ def render_case_markdown(
             lines.append(str(model_error))
             lines.append("```python")
             if case.get("model_plot_path"):
-                lines.append(
-                    f"- model_plot:\n\n ![model plot]({_rel_image_path(case.get('model_plot_path'), report_path)})"
+                lines.append("- model_plot:")
+                lines.append("")
+                model_plot_path = _rel_image_path(
+                    case.get("model_plot_path"),
+                    report_path,
                 )
+                lines.append(f" ![model plot]({model_plot_path})")
             elif case.get("model_plot_error"):
                 lines.append(f"- model_plot_error: {case.get('model_plot_error')}")
 
@@ -476,7 +473,10 @@ def render_case_markdown(
             semantic_details = case.get("semantic_details") or {}
             lines.append(f"- semantic_similarity: {semantic_details.get('score')}")
             lines.append(
-                f"  - expected_coverage: {semantic_details.get('expected_coverage')} | forbidden_penalty: {semantic_details.get('forbidden_penalty')}"
+                "  - expected_coverage: "
+                + str(semantic_details.get("expected_coverage"))
+                + " | forbidden_penalty: "
+                + str(semantic_details.get("forbidden_penalty"))
             )
             if semantic_details.get("expected_hits"):
                 lines.append(

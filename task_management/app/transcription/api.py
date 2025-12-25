@@ -5,12 +5,12 @@ from typing import Any, Mapping
 
 from task_management.app.transcription.schemas import TranscriptionPayload
 from task_management.app.transcription.service import TranscriptionService
+from task_management.domain.task_queue.models import TaskResponse
 from task_management.domain.transcription.exceptions import (
     AudioTranscriptionError,
     TranscriptionError,
     TranscriptionValidationError,
 )
-from task_management.domain.task_queue.models import TaskResponse
 from task_management.domain.transcription.models import TranscriptionRequest
 from task_management.observability.metrics import TaskTimer, record_error
 

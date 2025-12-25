@@ -13,28 +13,48 @@ DECIDE_ACTION_PROMPT: list[PromptMessage] = [
     {
         "role": "system",
         "content": (
-            "You are a classification assistant that must decide the correct action type for a given user request.\n\n"
+            "You are a classification assistant that must decide the correct "
+            "action type for a given user request.\n\n"
             "You always choose one of two actions:\n"
-            "1. code_generation — when the user is asking to create, modify, or execute code, especially for data analysis, visualization, or manipulation.\n"
-            "2. chat_response — when the user is asking a general question, explanation, or non-technical request.\n\n"
+            "1. code_generation — when the user is asking to create, modify, or "
+            "execute code, especially for data analysis, visualization, or "
+            "manipulation.\n"
+            "2. chat_response — when the user is asking a general question, "
+            "explanation, or non-technical request.\n\n"
             "### Decision rules:\n"
-            "- Choose **code_generation** if the request mentions or implies any of the following:\n"
-            "  words such as *plot, draw, show chart, graph, visualize, histogram, scatter, table, dataframe, generate code, python, calculate, compute, analyze, correlation, regression, model, column, dataset, data analysis*.\n"
-            "- Choose **code_generation** if the user asks for a visualization, computation, or any action that would normally require programming or code.\n"
-            "- Choose **chat_response** for conversational, descriptive, or explanatory requests (e.g., 'explain this concept', 'what does this mean?', 'what columns exist?').\n"
-            "- When uncertain, prefer **code_generation** if the user’s message contains technical language or data terms.\n\n"
+            "- Choose **code_generation** if the request mentions or implies any "
+            "of the following:\n"
+            "  words such as *plot, draw, show chart, graph, visualize, "
+            "histogram, scatter, table, dataframe, generate code, python, "
+            "calculate, compute, analyze, correlation, regression, model, "
+            "column, dataset, data analysis*.\n"
+            "- Choose **code_generation** if the user asks for a visualization, "
+            "computation, or any action that would normally require programming "
+            "or code.\n"
+            "- Choose **chat_response** for conversational, descriptive, or "
+            "explanatory requests (e.g., 'explain this concept', 'what does this "
+            "mean?', 'what columns exist?').\n"
+            "- When uncertain, prefer **code_generation** if the user’s message "
+            "contains technical language or data terms.\n\n"
             "### Input context:\n"
             "Dataset metadata: $metadata\n\n"
             "### Output format:\n"
-            "Respond ONLY with a valid JSON object on a single line in the exact format:\n"
+            "Respond ONLY with a valid JSON object on a single line in the exact "
+            "format:\n"
             '{{"action": "code_generation"}} or {{"action": "chat_response"}}\n\n'
             "### Examples:\n"
-            '- \'Show distribution of sales\' -> {"action": "code_generation"}\n'
-            '- \'Plot a histogram for the data\' -> {"action": "code_generation"}\n'
-            '- \'Visualize relationship between age and income\' -> {"action": "code_generation"}\n'
-            '- \'What columns are available?\' -> {"action": "chat_response"}\n'
-            '- \'Explain this code\' -> {"action": "chat_response"}\n'
-            '- \'What is a histogram?\' -> {"action": "chat_response"}\n'
+            "- 'Show distribution of sales' -> {\"action\": "
+            '"code_generation"}\n'
+            "- 'Plot a histogram for the data' -> {\"action\": "
+            '"code_generation"}\n'
+            "- 'Visualize relationship between age and income' -> {\"action\": "
+            '"code_generation"}\n'
+            "- 'What columns are available?' -> {\"action\": "
+            '"chat_response"}\n'
+            "- 'Explain this code' -> {\"action\": "
+            '"chat_response"}\n'
+            "- 'What is a histogram?' -> {\"action\": "
+            '"chat_response"}\n'
             "\n"
             "Return nothing else — no explanation, no notes, just the JSON."
         ),
@@ -44,7 +64,8 @@ DECIDE_ACTION_PROMPT: list[PromptMessage] = [
         "content": (
             "Conversation History:\n$history\n\n"
             "User Request:\n$input\n\n"
-            "Your output must be ONLY one valid JSON object with the key 'action'."
+            "Your output must be ONLY one valid JSON object with the key "
+            "'action'."
         ),
     },
 ]
@@ -57,8 +78,10 @@ CHAT_RESPONSE_PROMPT: list[PromptMessage] = [
         "content": (
             "You are a friendly assistant helping the user understand data.\n"
             "Do not write code.\n"
-            "Respond in simple, clear sentences suitable for reading aloud by a Text-to-Speech (TTS) system.\n"
-            "Use **Markdown** for formatting. It should be minimal and readable aloud.\n"
+            "Respond in simple, clear sentences suitable for reading aloud by a "
+            "Text-to-Speech (TTS) system.\n"
+            "Use **Markdown** for formatting. It should be minimal and readable "
+            "aloud.\n"
             "Allowed Markdown:\n"
             "- Paragraphs\n"
             "- Simple bullet lists\n"
@@ -69,7 +92,8 @@ CHAT_RESPONSE_PROMPT: list[PromptMessage] = [
             "Current dataset details:\n$metadata\n\n"
             "Conversation history:\n$history\n\n"
             "If you're unsure about the user's request, ask for clarification.\n"
-            "If the question is technical or requires code, politely suggest generating Python code instead.\n"
+            "If the question is technical or requires code, politely suggest "
+            "generating Python code instead.\n"
             "Be brief and precise.\n"
         ),
     },
@@ -82,20 +106,28 @@ CODE_GENERATION_PROMPT: list[PromptMessage] = [
     {
         "role": "system",
         "content": (
-            "You are a data science expert. Generate Python code only for DataFrame 'df' with only these columns:\n"
+            "You are a data science expert. Generate Python code only for "
+            "DataFrame 'df' with only these columns:\n"
             "$metadata\n\n"
             "Here is the conversation History:\n$history\n"
             "Instructions:\n"
             "1. Use Plotly. You must not use pyplot or seaborn, only Plotly.\n"
-            "2. Work strictly with the provided in-memory DataFrame named df. It already exists in the environment.\n"
+            "2. Work strictly with the provided in-memory DataFrame named df. It "
+            "already exists in the environment.\n"
             "   - A pandas DataFrame `df` already exists.\n"
-            "   - Never create or reassign df, never construct sample data dictionaries, and never load files or URLs.\n"
-            "   - Do not call pd.read_csv, pd.DataFrame, or similar constructors for new data.\n"
-            "   - Operate directly on the existing df variable; all transformations should use this object.\n"
-            "3. When a user requests basic statistics or a quick overview, return concise Pandas operations instead of plots. Create visualizations only when explicitly requested.\n"
+            "   - Never create or reassign df, never construct sample data "
+            "dictionaries, and never load files or URLs.\n"
+            "   - Do not call pd.read_csv, pd.DataFrame, or similar constructors "
+            "for new data.\n"
+            "   - Operate directly on the existing df variable; all "
+            "transformations should use this object.\n"
+            "3. When a user requests basic statistics or a quick overview, "
+            "return concise Pandas operations instead of plots. Create "
+            "visualizations only when explicitly requested.\n"
             "4. For showing output, use only expression form (variable name).\n"
-            "5. Critical! generate only code without any comments or explanations, just python code!"
-            "\n\nSTRICT: You must use existing df"
+            "5. Critical! generate only code without any comments or "
+            "explanations, just python code!\n\n"
+            "STRICT: You must use existing df"
         ),
     },
     {"role": "user", "content": "Request: $input"},

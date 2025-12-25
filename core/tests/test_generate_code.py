@@ -70,7 +70,8 @@ def test_extracts_code_from_python_block(engine, sample_state):
 
 
 def test_no_code_block_fallback_to_full_text(engine, sample_state):
-    """Если модель не возвращает код в ```python```, результат всё равно должен содержать код."""
+    """Если модель не возвращает код в ```python```, результат всё равно
+    должен содержать код."""
     state = sample_state.copy()
     state["input_data"] = {"user_message": "Напиши простой код без блока ```python```"}
 

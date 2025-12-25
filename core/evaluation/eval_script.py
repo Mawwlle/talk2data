@@ -138,9 +138,11 @@ def _load_all_benchmarks() -> list[dict[str, Any]]:
             case_id = case.get("id")
             key = (case_id, language)
             if key in seen:
-                print(
-                    f"[benchmarks] duplicate id '{case_id}' for language {language} in {path.name} ignored",
+                message = (
+                    f"[benchmarks] duplicate id '{case_id}' for language {language} "
+                    f"in {path.name} ignored"
                 )
+                print(message)
                 continue
 
             seen.add(key)
