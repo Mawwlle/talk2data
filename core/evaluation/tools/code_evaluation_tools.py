@@ -4,7 +4,6 @@ import builtins
 import contextlib
 import importlib.util
 import io
-import math
 import os
 import signal
 import threading
