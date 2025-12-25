@@ -14,5 +14,8 @@ class TranscriptionService:
         self._transcriber = transcriber
 
     def run(self, request: TranscriptionRequest) -> TranscriptionResult:
-        logger.info("TranscriptionService handling project_id=%s", request.project_id)
+        logger.info(
+            "transcription.service_run",
+            extra={"project_id": request.project_id, "task": "transcribe"},
+        )
         return self._transcriber.transcribe(request)

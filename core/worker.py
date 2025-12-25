@@ -3,8 +3,11 @@
 import logging
 from typing import Any, Callable, Mapping
 
+from prometheus_client import start_http_server
+
 from core.config import settings
 from core.models import ModelLoader
+from core.observability.logging import setup_logging
 from core.workflow import WorkflowEngine
 from task_management.adapters.conversation.result_persister import FileResultPersister
 from task_management.adapters.task_queue.rabbitmq import RabbitMQAdapter
@@ -20,9 +23,6 @@ from task_management.domain.task_queue.models import TaskResponse
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
 
 
 class TaskRouter:
@@ -43,7 +43,7 @@ class TaskRouter:
         data = message.get("data", {})
         handler = self._handlers.get(task_type)
 
-        logger.info("Routing task type: %s", task_type)
+        logger.info("task_router.route", extra={"task": task_type})
         if handler is None:
             return TaskResponse(
                 status="error",
@@ -56,6 +56,11 @@ class TaskRouter:
 
 
 def main() -> None:
+    setup_logging()
+    if settings.METRICS_ENABLED:
+        start_http_server(settings.METRICS_PORT)
+        logger.info("metrics.server_started", extra={"port": settings.METRICS_PORT})
+
     model_loader = ModelLoader()
     tokenizer = model_loader.get_tokenizer()
     llm = model_loader.get_llm()

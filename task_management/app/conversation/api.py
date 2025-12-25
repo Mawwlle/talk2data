@@ -9,6 +9,7 @@ from task_management.domain.conversation.exceptions import (
 )
 from task_management.domain.conversation.models import ConversationRequest
 from task_management.domain.task_queue.models import TaskResponse
+from task_management.observability.metrics import TaskTimer, record_error
 
 logger = logging.getLogger(__name__)
 
@@ -20,39 +21,51 @@ class ConversationHandler:
     def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         project_id = payload.get("project_id")
         logger.info(
-            "ConversationHandler handling payload for project_id=%s", project_id
+            "conversation.handle_start",
+            extra={"project_id": project_id, "task": "converse"},
         )
 
-        try:
-            parsed_payload = self._parse_payload(payload)
-            request = ConversationRequest(
-                user_input=parsed_payload.user_input,
-                metadata=parsed_payload.metadata,
-                chat_history=parsed_payload.chat_history,
-                project_id=parsed_payload.project_id,
-            )
-            result = self._service.run(request)
-            return TaskResponse(
-                status="done",
-                task="llm_agent_response",
-                result={
-                    "code": result.code,
-                    "message": result.message,
-                    "updated_history": result.updated_history,
-                    "timing": result.timing,
-                },
-                project_id=request.project_id,
-            )
-        except ConversationError as exc:  # pragma: no cover - defensive
-            logger.warning(
-                "ConversationHandler failed for project_id=%s: %s", project_id, exc
-            )
-            return TaskResponse(
-                status="error",
-                task="converse",
-                error=str(exc),
-                project_id=project_id,
-            )
+        with TaskTimer("converse"):
+            try:
+                parsed_payload = self._parse_payload(payload)
+                request = ConversationRequest(
+                    user_input=parsed_payload.user_input,
+                    metadata=parsed_payload.metadata,
+                    chat_history=parsed_payload.chat_history,
+                    project_id=parsed_payload.project_id,
+                )
+                result = self._service.run(request)
+                logger.info(
+                    "conversation.handle_success",
+                    extra={"project_id": request.project_id, "task": "converse"},
+                )
+                return TaskResponse(
+                    status="done",
+                    task="llm_agent_response",
+                    result={
+                        "code": result.code,
+                        "message": result.message,
+                        "updated_history": result.updated_history,
+                        "timing": result.timing,
+                    },
+                    project_id=request.project_id,
+                )
+            except ConversationError as exc:  # pragma: no cover - defensive
+                record_error("converse", type(exc).__name__)
+                logger.warning(
+                    "conversation.handle_error",
+                    extra={
+                        "project_id": project_id,
+                        "task": "converse",
+                        "error_type": type(exc).__name__,
+                    },
+                )
+                return TaskResponse(
+                    status="error",
+                    task="converse",
+                    error=str(exc),
+                    project_id=project_id,
+                )
 
     def _parse_payload(self, payload: Mapping[str, Any]) -> ConversationPayload:
         project_id = payload.get("project_id")

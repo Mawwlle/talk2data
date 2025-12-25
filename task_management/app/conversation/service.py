@@ -14,5 +14,8 @@ class ConversationService:
         self._workflow = workflow
 
     def run(self, request: ConversationRequest) -> ConversationResult:
-        logger.info("ConversationService handling project_id=%s", request.project_id)
+        logger.info(
+            "conversation.service_run",
+            extra={"project_id": request.project_id, "task": "converse"},
+        )
         return self._workflow.run(request)
