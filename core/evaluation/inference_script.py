@@ -1,9 +1,10 @@
 import json
-import uuid
 from datetime import datetime
 from pathlib import Path
 
-from core.workflow import create_workflow, llm_init
+from core.evaluation.constants import RESULT_ID
+from core.workflow import create_workflow, llm_init, init_tokenizer_only
+from core.config import settings
 
 BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
@@ -48,12 +49,12 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 
 
 def main():
-    run_id = f"eval_{datetime.utcnow().isoformat()}_{uuid.uuid4().hex[:8]}"
     llm_init()
     workflow = create_workflow()
+    infer_result_path = f"infer_{RESULT_ID}"
 
     all_results = {
-        "run_id": run_id,
+        "run_id": infer_result_path,
         "timestamp": datetime.utcnow().isoformat(),
         "results": [],
     }
@@ -80,7 +81,7 @@ def main():
                     }
                 )
 
-    output_path = RESULTS_DIR / f"{run_id}.json"
+    output_path = RESULTS_DIR / f"{infer_result_path}.json"
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=2)
 

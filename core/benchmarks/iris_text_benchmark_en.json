@@ -1,6 +1,6 @@
 [
   {
-    "id": "chat_001_what_is_iris",
+    "id": "chat_001_what_is_iris_en",
     "user_input": "Explain what this dataset represents.",
     "expected_decision": "chat_response",
     "expected_facts": ["dataset contains measurements of petals and sepals", "three iris species"],
@@ -11,7 +11,7 @@
     }
   },
   {
-    "id": "chat_002_how_many_classes",
+    "id": "chat_002_how_many_classes_en",
     "user_input": "How many classes are in this dataset?",
     "expected_decision": "chat_response",
     "expected_facts": ["three classes", "setosa", "versicolor", "virginica"],
@@ -22,7 +22,7 @@
     }
   },
   {
-    "id": "chat_003_best_features",
+    "id": "chat_003_best_features_en",
     "user_input": "Which features best separate the iris species?",
     "expected_decision": "chat_response",
     "expected_facts": ["petal length", "petal width"],
@@ -33,7 +33,7 @@
     }
   },
   {
-    "id": "chat_004_easiest_class",
+    "id": "chat_004_easiest_class_en",
     "user_input": "Which iris species is the easiest to separate from the others?",
     "expected_decision": "chat_response",
     "expected_facts": ["setosa", "shorter petals", "wider petals"],
@@ -44,7 +44,7 @@
     }
   },
   {
-    "id": "theory_001_overfitting",
+    "id": "theory_001_overfitting_en",
     "user_input": "What is overfitting in machine learning?",
     "expected_decision": "chat_response",
     "expected_facts": [
@@ -61,7 +61,7 @@
     }
   },
   {
-    "id": "theory_002_train_test_split",
+    "id": "theory_002_train_test_split_en",
     "user_input": "Why is a train-test split used?",
     "expected_decision": "chat_response",
     "expected_facts": [
@@ -78,7 +78,7 @@
     }
   },
   {
-    "id": "theory_003_regularization",
+    "id": "theory_003_regularization_en",
     "user_input": "What is regularization and why is it used?",
     "expected_decision": "chat_response",
     "expected_facts": [
@@ -95,7 +95,7 @@
     }
   },
   {
-    "id": "theory_004_bias_variance",
+    "id": "theory_004_bias_variance_en",
     "user_input": "Explain the bias-variance tradeoff.",
     "expected_decision": "chat_response",
     "expected_facts": [
@@ -113,4 +113,3 @@
     }
   }
 ]
-

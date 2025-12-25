@@ -3,7 +3,6 @@ import ast
 import builtins
 import contextlib
 import io
-import math
 import os
 import signal
 import threading
@@ -23,9 +22,11 @@ from core.evaluation.constants import (
 )
 
 
-def extract_imports(code: str) -> set[str]:
+def extract_imports(code: str | None) -> set[str]:
     """Extract imported modules from Python code."""
-
+    if code is None:
+        return set()
+    
     tree = ast.parse(code)
     imports: set[str] = set()
 
@@ -40,9 +41,11 @@ def extract_imports(code: str) -> set[str]:
     return imports
 
 
-def extract_calls(code: str) -> set[str]:
+def extract_calls(code: str | None) -> set[str]:
     """Extract called function names from Python code."""
-
+    if code is None:
+        return set()
+    
     tree = ast.parse(code)
     calls: set[str] = set()
 
@@ -57,24 +60,6 @@ def extract_calls(code: str) -> set[str]:
             calls.add(func.id)
 
     return calls
-
-
-def compare_execution_results(expected: Any, actual: Any) -> bool:
-    """Compare execution results with tolerance for numerics and arrays."""
-
-    if isinstance(expected, (float, int)) and isinstance(actual, (float, int)):
-        return math.isclose(float(expected), float(actual), rel_tol=1e-6, abs_tol=1e-6)
-
-    if isinstance(expected, str) and isinstance(actual, str):
-        return expected.strip() == actual.strip()
-
-    if isinstance(expected, pd.DataFrame) and isinstance(actual, pd.DataFrame):
-        return expected.equals(actual)
-
-    if isinstance(expected, np.ndarray) and isinstance(actual, np.ndarray):
-        return np.allclose(expected, actual)
-
-    return expected == actual
 
 
 # --- code execution ---
@@ -131,13 +116,15 @@ def _enforce_timeout(seconds: int = SANDBOX_TIMEOUT_SECONDS):
         signal.signal(signal.SIGALRM, original_handler)
 
 
-def _run_code_in_sandbox(code: str) -> SandboxResult:
+def _run_code_in_sandbox(code: str | None) -> SandboxResult:
     """Execute code safely with restricted globals and a hard timeout.
 
     The function parses user code, executes statements, and if the last node is
     an expression, evaluates it to produce a return value. Any exceptions are
     captured as error strings instead of propagating.
     """
+    if code is None:
+        return None, None
 
     sandbox_globals = _sandbox_globals()
     sandbox_locals: dict[str, Any] = {}
