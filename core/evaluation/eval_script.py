@@ -10,9 +10,7 @@ from torch.nn.functional import cosine_similarity
 from core.evaluation.constants import TEST_RESULT_PATH, REPORT_OUTPUT_DIR
 from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
 from core.evaluation.tools.code_evaluation_tools import (
-    _extract_plotly_figure,
     _run_code_in_sandbox,
-    compare_execution_results,
     extract_calls,
     extract_imports,
 )
@@ -119,7 +117,7 @@ def evaluate_object_match(
     object_match = _has_possible_code_object(tree, possible_code_objects)
 
     return {
-        "score": 0.4,
+        "score": 0.4 if object_match else 0.0,
         "code_objects_match": object_match,
     }
 
@@ -342,37 +340,7 @@ def evaluate_code(
     # ---------- execution-based scoring ----------
     expected_result, expected_error = _run_code_in_sandbox(expected_code)
     model_result, model_error = _run_code_in_sandbox(model_code)
-
-    # try:
-    #     base_match, plot_match_percent = compare_execution_results(
-    #         expected_result, model_result
-    #     )
-    #     if (
-    #         "show" in expected_calls
-    #         and "show" not in model_calls
-    #         and _has_plotly_calls(model_code)
-    #     ):
-    #         expected_fig = _extract_plotly_figure(expected_code)
-    #         model_fig = _extract_plotly_figure(model_code)
-    #         fig_match, fig_match_percent = compare_execution_results(
-    #             expected_fig, model_fig
-    #         )
-    #         if fig_match_percent is not None:
-    #             plot_match_percent = fig_match_percent
-    #             base_match = fig_match
-    #     result_match = bool(expected_error is None and model_error is None and base_match)
-    #     if (
-    #         not result_match
-    #         and model_error is None
-    #         and _has_plotly_calls(expected_code)
-    #         and _has_plotly_calls(model_code)
-    #         and base_match
-    #     ):
-    #         result_match = True
-    # except Exception:
-    #     result_match = False
-    #     plot_match_percent = None
-
+    
     max_heuristic_score = 0.9
     normalized_heuristic = (
         heuristic_score / max_heuristic_score if max_heuristic_score else 0.0
@@ -390,15 +358,9 @@ def evaluate_code(
     heuristic_breakdown["objects"]["score"] = round(
         object_score * normalization_factor, 3
     )
-    # combined_score = round(
-    #     min((normalized_heuristic * 0.5) + (0.5 if result_match else 0.5 * object_score), 1.0), 3
-    # )
 
     return {
-        # "score": combined_score,
         "heuristic_score": round(normalized_heuristic, 3),
-        # "result_match": result_match,
-        # "plot_match_percent": plot_match_percent,
         "heuristic_breakdown": heuristic_breakdown,
         "errors": {
             "expected": expected_error,

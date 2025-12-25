@@ -31,7 +31,7 @@ logging.basicConfig(
 
 client = openai.OpenAI(
     api_key=os.getenv("OPEN_AI_API_KEY"),
-    base_url="http://10.32.15.88:4000/v1",
+    base_url=settings.REMOTE_URL,
 )
 
 
@@ -80,8 +80,6 @@ def format_prompt(
     metadata_fields = metadata_fields or {}
     local_prompt = copy.deepcopy(messages_template)
 
-    # logger.info(f"state: {state}")
-
     mapping = {
         "input": str(state.get("user_input", "")),
         "history": str(state.get("conversation_history", "")),
@@ -118,8 +116,6 @@ def _remote_chat_completion(prompt: str) -> str:
 def decide_action(state: AgentState) -> AgentState:
     """Decision node with enhanced logging using print and timing."""
     start = time.perf_counter()
-    # logger.info(f"[decide_action] Starting with state: {state}")
-
     parser = JsonOutputParser(pydantic_object=Decision)
 
     try:
@@ -186,7 +182,7 @@ def generate_code_node(state: AgentState) -> AgentState:
     if settings.REMOTE_LLM:
         generated_text = _remote_chat_completion(code_prompt)
     else:
-        bad_words = ([
+        bad_words = [
             "print",
             "pd.read_csv",
             "pandas.read_csv",
@@ -195,8 +191,6 @@ def generate_code_node(state: AgentState) -> AgentState:
             "df = pd.DataFrame",
             "df=pd.DataFrame",
         ] 
-        + state.get("bad_words", [])
-         )
     
         sampling_params = SamplingParams(
             max_tokens=512,
@@ -252,22 +246,11 @@ def generate_chat_response_node(state: AgentState) -> AgentState:
         
     elapsed_llm = time.perf_counter() - start
     logger.info(f"[test_response] Generated text response: {response}")
-    # Attempt TTS
-    # tts_start = time.perf_counter()
-    # audio_b64 = None
-    # try:
-    #     audio_bytes = text_to_speech(response)
-    #     audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
-    # except Exception as e:
-    #     logger.info(f"TTS Error: {str(e)}")
-    # tts_elapsed = time.perf_counter() - tts_start
 
     timing_info = state.get("timing_info", {})
     timing_info["generate_chat_response_sec"] = round(elapsed_llm, 4)
-    # timing_info["tts_sec"] = round(tts_elapsed, 4)
     state["timing_info"] = timing_info
 
-    # state["response_audio"] = audio_b64
     state["response_message"] = response
     return state
 

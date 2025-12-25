@@ -49,7 +49,6 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 
 
 def main():
-    
     if not settings.REMOTE_LLM:
         llm_init()
     else: 

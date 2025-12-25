@@ -17,9 +17,6 @@ class AgentState(TypedDict):
 
     timing_info: dict[str, float] = Field(default_factory=dict)  # type: ignore
     bad_words: list[str]               # слова, запрещённые к генерации
-    val_errors: list[str]                 # ошибки исполнения generated_code
-    attempts: int                   # число попыток
-    max_attempts: int               # лимит
 
     class Config:
         extra = "allow"  # type: ignore
