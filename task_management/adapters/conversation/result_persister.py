@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 
-from task_management.common.exceptions import ResultPersistenceError
+from task_management.domain.conversation.exceptions import ResultPersistenceError
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ from typing import Any, Mapping
 
 from task_management.app.transcription.schemas import TranscriptionPayload
 from task_management.app.transcription.service import TranscriptionService
-from task_management.common.exceptions import (
+from task_management.domain.transcription.exceptions import (
     AudioTranscriptionError,
     TranscriptionError,
     TranscriptionValidationError,

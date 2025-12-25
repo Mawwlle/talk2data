@@ -2,7 +2,7 @@ import copy
 import logging
 import time
 
-from task_management.common.exceptions import ConversationWorkflowError
+from task_management.domain.conversation.exceptions import ConversationWorkflowError
 from task_management.domain.conversation.models import ConversationRequest, ConversationResult
 from task_management.domain.conversation.ports import ResultPersisterPort, WorkflowInvokerPort
 

@@ -64,13 +64,8 @@ class WorkflowEngine:
 
         formatted_messages = []
         for msg in local_prompt:
-            try:
-                tmpl = Template(msg["content"])
-                content = tmpl.safe_substitute(mapping)
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.info("[format_prompt] Template substitution error: %s", exc)
-                content = msg["content"]
-
+            tmpl = Template(msg["content"])
+            content = tmpl.safe_substitute(mapping)
             formatted_messages.append({"role": msg["role"], "content": content})
 
         return self._tokenizer.apply_chat_template(
@@ -118,9 +113,8 @@ class WorkflowEngine:
             logger.info("[decide_action] Parsed decision: %s", decision)
 
         except Exception as exc:  # pragma: no cover - defensive
-            logger.info("[decide_action] Decision error: %s", exc)
+            logger.exception("[decide_action] Decision error: %s", exc)
             decision = {"action": DECIDE_ACTION_DEFAULT}
-            logger.info("[decide_action] Defaulting decision to: %s", decision)
 
         elapsed = time.perf_counter() - start
         timing_info = state.get("timing_info", {})
@@ -135,10 +129,7 @@ class WorkflowEngine:
 
     @staticmethod
     def _route_action(state: AgentState) -> str:
-        try:
-            return state.get("decision", {}).get("action", DECIDE_ACTION_DEFAULT)
-        except Exception:  # pragma: no cover - defensive
-            return DECIDE_ACTION_DEFAULT
+        return state.get("decision", {}).get("action", DECIDE_ACTION_DEFAULT)
 
     def _generate_code_node(self, state: AgentState) -> AgentState:
         start = time.perf_counter()
@@ -241,7 +232,8 @@ def safe_destroy_process_group() -> None:
         try:
             torch.distributed.destroy_process_group()
         except Exception as e:
-            logger.error(f"Error during destroy_process_group: {e}")
+            logger.exception("Error during destroy_process_group: %s", e)
+            raise
 
 
 atexit.register(safe_destroy_process_group)

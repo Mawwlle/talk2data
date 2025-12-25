@@ -3,7 +3,10 @@ from typing import Any, Mapping
 
 from task_management.app.conversation.schema import ConversationPayload
 from task_management.app.conversation.service import ConversationService
-from task_management.common.exceptions import ConversationError, ConversationValidationError
+from task_management.domain.conversation.exceptions import (
+    ConversationError,
+    ConversationValidationError,
+)
 from task_management.domain.conversation.models import ConversationRequest
 from task_management.domain.task_queue.models import TaskResponse
 
