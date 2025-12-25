@@ -1,1 +1,4 @@
-# talk2data/__init__.py
+"""Top-level package for Talk2Data."""
+
+__all__ = ["__version__"]
+__version__ = "0.1.0"
