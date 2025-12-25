@@ -55,3 +55,7 @@ hypothesis = "^6.103.0"
 [tool.mypy]
 explicit_package_bases = true
 namespace_packages = true
+
+[[tool.mypy.overrides]]
+module = ["plotly", "plotly.*"]
+ignore_missing_imports = true
