@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import pandas as pd
-from sklearn.datasets import load_iris
+import pandas as pd  # type: ignore[import-untyped]
+from sklearn.datasets import load_iris  # type: ignore[import-untyped]
 
 from core.evaluation.constants import (
     RANDOM_SEED,

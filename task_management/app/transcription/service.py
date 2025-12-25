@@ -18,9 +18,7 @@ class TranscriptionService:
         logger.info("TranscriptionService handling project_id=%s", request.project_id)
         return self._transcriber.transcribe(request)
 
-    async def run_async(
-        self, request: TranscriptionRequest
-    ) -> TranscriptionResult:
+    async def run_async(self, request: TranscriptionRequest) -> TranscriptionResult:
         logger.info(
             "TranscriptionService handling async project_id=%s", request.project_id
         )

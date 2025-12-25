@@ -18,9 +18,7 @@ class ConversationService:
         logger.info("ConversationService handling project_id=%s", request.project_id)
         return self._workflow.run(request)
 
-    async def run_async(
-        self, request: ConversationRequest
-    ) -> ConversationResult:
+    async def run_async(self, request: ConversationRequest) -> ConversationResult:
         logger.info(
             "ConversationService handling async project_id=%s", request.project_id
         )

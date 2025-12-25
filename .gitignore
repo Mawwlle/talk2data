@@ -10,3 +10,4 @@ model_weights_presaved/
 cache/
 reports/
 .hypothesis/
+.mypy_cache/

@@ -86,7 +86,5 @@ class ConversationWorkflow:
         logger.info("Workflow finished with result: %s", conversation_result)
         return conversation_result
 
-    async def run_async(
-        self, request: ConversationRequest
-    ) -> ConversationResult:
+    async def run_async(self, request: ConversationRequest) -> ConversationResult:
         return await asyncio.to_thread(self.run, request)

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-import environ
+import environ  # type: ignore[import-untyped]
 import openai
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 from vllm import LLM

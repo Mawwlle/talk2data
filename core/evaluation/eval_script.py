@@ -5,7 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 from torch.nn.functional import cosine_similarity
 
 from core.evaluation.constants import REPORT_OUTPUT_DIR, TEST_RESULT_PATH
