@@ -54,11 +54,13 @@ class ModelLoader:
 
     def get_llm(self) -> LLM | openai.OpenAI:
         if settings.REMOTE_LLM:
-            self._llm = openai.OpenAI(
-                        api_key=os.getenv("OPEN_AI_API_KEY"),
-                        base_url=settings.REMOTE_URL,
-                    )
-        
+            if self._llm is None:
+                self._llm = openai.OpenAI(
+                    api_key=os.getenv("OPEN_AI_API_KEY"),
+                    base_url=settings.REMOTE_URL,
+                )
+            return self._llm
+
         if self._llm is None:
             logger.info("Загружаю модель...")
             self._llm = LLM(

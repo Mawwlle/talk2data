@@ -2,11 +2,11 @@
 import ast
 import builtins
 import contextlib
-import importlib.util
 import io
 import os
 import signal
 import threading
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +23,7 @@ from core.evaluation.constants import (
 )
 
 
+@lru_cache(maxsize=1024)
 def extract_imports(code: str | None) -> set[str]:
     """Extract imported modules from Python code."""
     if code is None:
@@ -42,6 +43,7 @@ def extract_imports(code: str | None) -> set[str]:
     return imports
 
 
+@lru_cache(maxsize=1024)
 def extract_calls(code: str | None) -> set[str]:
     """Extract called function names from Python code."""
     if code is None:
@@ -142,7 +144,13 @@ def _run_code_in_sandbox(code: str | None) -> SandboxResult:
     try:
         with _enforce_timeout():
             with contextlib.redirect_stdout(stdout_buffer):
-                if parsed.body and isinstance(parsed.body[-1], ast.Expr):
+                if not parsed.body or not isinstance(parsed.body[-1], ast.Expr):
+                    exec(
+                        compile(parsed, SANDBOX_FILENAME, "exec"),
+                        sandbox_globals,
+                        sandbox_locals,
+                    )
+                else:
                     body_without_last = ast.Module(
                         body=parsed.body[:-1], type_ignores=[]
                     )
@@ -157,12 +165,6 @@ def _run_code_in_sandbox(code: str | None) -> SandboxResult:
 
                     result_value = eval(
                         compile(last_expr, SANDBOX_FILENAME, "eval"),
-                        sandbox_globals,
-                        sandbox_locals,
-                    )
-                else:
-                    exec(
-                        compile(parsed, SANDBOX_FILENAME, "exec"),
                         sandbox_globals,
                         sandbox_locals,
                     )

@@ -1,3 +1,6 @@
+import pytest
+
+from core.config import settings
 from core.prompts import CODE_GENERATION_PROMPT
 from core.tests.tools import TEST_INITIAL_STATES
 from core.workflow import WorkflowEngine
@@ -13,7 +16,14 @@ class _DummyTokenizer:
         return " ".join(message["content"] for message in messages)
 
 
-engine = WorkflowEngine(_DummyLLM(), _DummyTokenizer())
-result = engine._format_prompt(CODE_GENERATION_PROMPT, TEST_INITIAL_STATES[0])
+@pytest.fixture
+def engine(monkeypatch):
+    monkeypatch.setattr(settings, "REMOTE_LLM", False)
+    return WorkflowEngine(_DummyLLM(), _DummyTokenizer())
 
-print("result: ", result)
+
+def test_format_prompt_includes_user_input(engine):
+    result = engine._format_prompt(CODE_GENERATION_PROMPT, TEST_INITIAL_STATES[0])
+
+    assert isinstance(result, str)
+    assert TEST_INITIAL_STATES[0]["user_input"] in result

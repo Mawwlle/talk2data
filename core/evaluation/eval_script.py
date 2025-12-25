@@ -9,7 +9,7 @@ import pandas as pd
 from torch.nn.functional import cosine_similarity
 
 from core.evaluation.constants import TEST_RESULT_PATH, REPORT_OUTPUT_DIR
-from core.evaluation.inference_script import BENCHMARKS_DIR, load_json
+from core.evaluation.io_utils import BENCHMARKS_DIR, load_json
 from core.evaluation.tools.code_evaluation_tools import (
     _run_code_in_sandbox,
     extract_calls,
@@ -481,6 +481,12 @@ def build_report_data(
             }
         )
 
+    def _extract_heuristic_score(case: dict[str, Any]) -> float | None:
+        code_details = case.get("code_details")
+        if not isinstance(code_details, dict):
+            return None
+        return code_details.get("heuristic_score")
+
     summary = {
         "cases_total": len(enriched_cases),
         "missing": sum(1 for case in enriched_cases if case.get("error")),
@@ -495,7 +501,9 @@ def build_report_data(
             if not case.get("error")
         ),
         "code_score_avg": _mean(
-            case.get('code_details', {}).get("heuristic_score") for case in enriched_cases if not case.get("error") and case.get('code_details', {})
+            _extract_heuristic_score(case)
+            for case in enriched_cases
+            if not case.get("error")
         ),
     }
 

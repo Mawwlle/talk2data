@@ -4,11 +4,11 @@ from pathlib import Path
 from typing import Any
 
 from core.evaluation.constants import RESULT_ID
+from core.evaluation.io_utils import BENCHMARKS_DIR, load_json
 from core.evaluation.ports import WorkflowRunner
 from core.models import ModelLoader
 from core.workflow import WorkflowEngine
 
-BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
 RESULTS_DIR.mkdir(exist_ok=True)
 METADATA = {
@@ -18,10 +18,6 @@ METADATA = {
     "petal_width": "float",
     "species": "category",
 }
-
-def load_json(path: Path) -> list[dict[str, Any]]:
-    text = path.read_text(encoding="utf-8").strip()
-    return json.loads(text)
 
 
 def run_single_case(workflow: WorkflowRunner, benchmark: dict[str, Any]) -> dict[str, Any]:
@@ -53,7 +49,7 @@ def main() -> None:
     loader = ModelLoader()
     workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
     workflow = workflow_engine.create_workflow()
-    
+
     infer_result_path = f"infer_{RESULT_ID}"
 
     all_results = {

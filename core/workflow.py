@@ -31,6 +31,20 @@ logging.basicConfig(
 DECIDE_ACTION_DEFAULT = "chat_response"
 
 
+def extract_code_block(generated_text: str) -> str:
+    if "```python" in generated_text:
+        _, _, remainder = generated_text.partition("```python")
+        code, _, _ = remainder.partition("```")
+        return code.strip()
+
+    if "```" in generated_text:
+        _, _, remainder = generated_text.partition("```")
+        code, _, _ = remainder.partition("```")
+        return code.strip()
+
+    return generated_text.strip()
+
+
 class WorkflowEngine:
     def __init__(self, llm: LLM | OpenAI | None, tokenizer: PreTrainedTokenizerBase) -> None:
         self._llm = llm
@@ -162,7 +176,7 @@ class WorkflowEngine:
             outputs = self._llm.generate([code_prompt], sampling_params)
             generated_text = outputs[0].outputs[0].text
 
-        code_block = generated_text.split("```python")[-1].split("```")[0].strip()
+        code_block = extract_code_block(generated_text)
 
         elapsed = time.perf_counter() - start
         timing_info = state.get("timing_info", {})

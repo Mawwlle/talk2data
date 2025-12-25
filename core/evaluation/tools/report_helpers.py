@@ -35,6 +35,8 @@ def summarize_by_group(
 
     summary: dict[str, dict[str, Any]] = {}
     for case in cases:
+        if case.get("error"):
+            continue
         meta_key = (case.get("id"), case.get("language", "unknown"))
         meta = benchmarks_by_id.get(meta_key, {})
         values = meta.get("metadata", {}).get(group_key, [])
@@ -48,11 +50,10 @@ def summarize_by_group(
                 value,
                 {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
             )
-            if not case.get("error"):
-                bucket["count"] += 1
-                bucket["decision"].append(case.get("decision_score"))
-                bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-                bucket["code"].append(case.get("heuristic_score"))
+            bucket["count"] += 1
+            bucket["decision"].append(case.get("decision_score"))
+            bucket["semantic_similarity"].append(case.get("semantic_similarity"))
+            bucket["code"].append(case.get("heuristic_score"))
 
     for value, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -69,18 +70,20 @@ def summarize_by_language(
 
     summary: dict[str, dict[str, Any]] = {}
     for case in cases:
+        if case.get("error"):
+            continue
         lang = case.get("language", "unknown")
         bucket = summary.setdefault(
             lang,
             {"count": 0, "decision": [], "semantic_similarity": [], "code": []},
         )
-        if not case.get("error"):
-            bucket["count"] += 1
-            bucket["decision"].append(case.get("decision_score"))
-            bucket["semantic_similarity"].append(case.get("semantic_similarity"))
-            
-            code_score = case.get('code_details', {}).get('heuristic_score') if case.get('code_details', {}) else None
-            bucket["code"].append(code_score)
+        bucket["count"] += 1
+        bucket["decision"].append(case.get("decision_score"))
+        bucket["semantic_similarity"].append(case.get("semantic_similarity"))
+
+        code_details = case.get("code_details") or {}
+        code_score = code_details.get("heuristic_score") if code_details else None
+        bucket["code"].append(code_score)
 
     for lang, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
@@ -458,7 +461,7 @@ def render_case_markdown(
             lines.append("```python")
             model_error = details.get("errors", {}).get("model")
             lines.append(str(model_error))
-            lines.append("```")
+            lines.append("```python")
             if case.get("model_plot_path"):
                 lines.append(
                     f"- model_plot:\n\n ![model plot]({_rel_image_path(case.get('model_plot_path'), report_path)})"
