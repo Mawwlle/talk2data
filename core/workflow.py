@@ -4,7 +4,7 @@ import copy
 import logging
 import time
 from string import Template
-from typing import cast
+from typing import Any, cast
 
 import torch
 from langchain_core.output_parsers import JsonOutputParser
@@ -260,7 +260,16 @@ class WorkflowEngine:
         builder.add_edge("generate_code", END)
         builder.add_edge("generate_chat_response", END)
         builder.set_entry_point("decide_action")
-        return builder.compile()
+        compiled = builder.compile()
+        return _WorkflowInvoker(compiled)
+
+
+class _WorkflowInvoker:
+    def __init__(self, compiled: Any) -> None:
+        self._compiled = compiled
+
+    def invoke(self, state: dict) -> dict:
+        return cast(dict, self._compiled.invoke(state))
 
 
 def safe_destroy_process_group() -> None:

@@ -34,7 +34,7 @@ semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidd
 df.describe()
 ```
 - expected_result:
- 
+
 ```python
        sepal_length  sepal_width  petal_length  petal_width
 count    150.000000   150.000000    150.000000   150.000000
@@ -47,7 +47,7 @@ min        4.300000     2.000000      1.000000     0.100000
 max        7.900000     4.400000      6.900000     2.500000
 ```
 - expected_error:
- 
+
 ```python
 None
 ```
@@ -59,7 +59,7 @@ None
 df.describe()
 ```
 - model_result:
- 
+
 ```python
        sepal_length  sepal_width  petal_length  petal_width
 count    150.000000   150.000000    150.000000   150.000000
@@ -72,7 +72,7 @@ min        4.300000     2.000000      1.000000     0.100000
 max        7.900000     4.400000      6.900000     2.500000
 ```
 - model_error:
- 
+
 ```python
 None
 ```
@@ -82,7 +82,7 @@ None
 - decision_score: True
   - heuristic_score: 1.0
     - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected:  | model:  | matched: 
+    - imports_score: 0.222 | expected:  | model:  | matched:
     - calls_score: 0.444 | expected: describe | model: describe | matched: describe
 
 ### code_002_pairplot (code_generation, language: ru, difficulty: medium)
@@ -98,13 +98,13 @@ fig = px.scatter_matrix(df, dimensions=df.columns, color="species")
 fig.show()
 ```
 - expected_result:
- 
+
 ```python
 None
 ```
 - expected_output: Интерактивный график (Plotly)
 - expected_error:
- 
+
 ```python
 execution_timeout: sandbox_timeout
 ```
@@ -121,7 +121,7 @@ fig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_le
 fig
 ```
 - model_result:
- 
+
 ```python
 Figure({
     'data': [{'dimensions': [{'axis': {'matches': True},
@@ -197,7 +197,7 @@ Figure({
 })
 ```
 - model_error:
- 
+
 ```python
 None
 ```
@@ -231,12 +231,12 @@ model.fit(X, y)
 ```
 - possible_code_objects: RandomForestClassifier, DecisionTreeClassifier, SVC, KNeighborsClassifier, GaussianNB
 - expected_result:
- 
+
 ```python
 LogisticRegression(max_iter=200)
 ```
 - expected_error:
- 
+
 ```python
 None
 ```
@@ -260,14 +260,14 @@ clf.fit(X_train, y_train)
 clf
 ```
 - model_result:
- 
+
 ```python
 Pipeline(steps=[('standardscaler', StandardScaler()),
                 ('randomforestclassifier',
                  RandomForestClassifier(random_state=42))])
 ```
 - model_error:
- 
+
 ```python
 None
 ```
@@ -277,7 +277,7 @@ None
 - decision_score: True
   - heuristic_score: 0.63
     - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.0 | expected: sklearn.linear_model | model: sklearn.ensemble, sklearn.model_selection, sklearn.pipeline, sklearn.preprocessing | matched: 
+    - imports_score: 0.0 | expected: sklearn.linear_model | model: sklearn.ensemble, sklearn.model_selection, sklearn.pipeline, sklearn.preprocessing | matched:
     - calls_score: 0.296 | expected: LogisticRegression, drop, fit | model: RandomForestClassifier, StandardScaler, drop, fit, make_pipeline, train_test_split | matched: drop, fit
 
 ### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
@@ -361,12 +361,12 @@ separation = between_dist / within_var
 best_species = separation.idxmax()
 ```
 - model_result:
- 
+
 ```python
 None
 ```
 - model_error:
- 
+
 ```python
 None
 ```

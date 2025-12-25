@@ -46,9 +46,7 @@ class ModelLoader:
                 )
             except OSError:
                 logger.warning("Local weights not found, trying to download from HF...")
-                tokenizer = AutoTokenizer.from_pretrained(
-                    self._settings.LLM_MODEL_NAME
-                )
+                tokenizer = AutoTokenizer.from_pretrained(self._settings.LLM_MODEL_NAME)
                 tokenizer.save_pretrained(self._settings.LLM_LOCAL_PATH)
             if tokenizer.pad_token is None:
                 tokenizer.add_special_tokens({"pad_token": "[PAD]"})
