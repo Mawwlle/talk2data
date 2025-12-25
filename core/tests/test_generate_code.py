@@ -29,7 +29,7 @@ print('hello world')
 
 class _StubTokenizer:
     def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True):
-        return " ".join([message["content"] for message in messages])
+        return " ".join(message["content"] for message in messages)
 
 
 class TestGenerateCode(unittest.TestCase):

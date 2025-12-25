@@ -10,7 +10,7 @@ class _DummyLLM:
 
 class _DummyTokenizer:
     def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True):
-        return " ".join([message["content"] for message in messages])
+        return " ".join(message["content"] for message in messages)
 
 
 engine = WorkflowEngine(_DummyLLM(), _DummyTokenizer())

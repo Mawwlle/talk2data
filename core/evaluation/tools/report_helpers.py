@@ -1,5 +1,6 @@
+from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -10,13 +11,18 @@ from core.evaluation.tools.code_evaluation_tools import _sandbox_globals
 # --- aggregation ---
 
 
-def _mean(values: list[float | None]) -> float:
+def _mean(values: Iterable[float | None]) -> float:
     """Compute a rounded mean ignoring non-numeric entries."""
 
-    numeric = [float(v) for v in values if isinstance(v, (int, float))]
-    if not numeric:
+    total = 0.0
+    count = 0
+    for value in values:
+        if isinstance(value, (int, float)):
+            total += float(value)
+            count += 1
+    if count == 0:
         return 0.0
-    return round(sum(numeric) / len(numeric), 3)
+    return round(total / count, 3)
 
 
 def summarize_by_group(
@@ -84,27 +90,33 @@ def summarize_by_language(
 def _aggregate_code_metrics(cases: list[dict[str, Any]]) -> dict[str, float]:
     """Aggregate code-generation metrics across cases."""
 
-    code_cases = [
-        case
-        for case in cases
-        if case.get("expected_decision") == "code_generation" and not case.get("error")
-    ]
-    if not code_cases:
+    total_cases = 0
+    code_score_total = 0.0
+    heuristic_total = 0.0
+    result_match_total = 0.0
+
+    for case in cases:
+        if case.get("expected_decision") != "code_generation" or case.get("error"):
+            continue
+        total_cases += 1
+        code_score = case.get("code_score")
+        heuristic_score = case.get("code_details", {}).get("heuristic_score")
+        result_match = case.get("code_details", {}).get("result_match")
+
+        if isinstance(code_score, (int, float)):
+            code_score_total += float(code_score)
+        if isinstance(heuristic_score, (int, float)):
+            heuristic_total += float(heuristic_score)
+        if result_match:
+            result_match_total += 1.0
+
+    if total_cases == 0:
         return {}
 
-    heuristics = [
-        case.get("code_details", {}).get("heuristic_score") for case in code_cases
-    ]
-    result_matches = [
-        1.0 if case.get("code_details", {}).get("result_match") else 0.0
-        for case in code_cases
-    ]
-    code_scores = [case.get("code_score") for case in code_cases]
-
     return {
-        "code_score": _mean(code_scores),
-        "heuristic_score": _mean(heuristics),
-        "result_match_rate": _mean(result_matches),  # type: ignore
+        "code_score": round(code_score_total / total_cases, 3),
+        "heuristic_score": round(heuristic_total / total_cases, 3),
+        "result_match_rate": round(result_match_total / total_cases, 3),
     }
 
 
@@ -265,6 +277,7 @@ def generate_visualizations_data(
     return charts
 
 
+@lru_cache(maxsize=512)
 def _describe_visual_output(code_text: str) -> str:
     """Provide a readable hint for visual outputs without raw JSON dumps."""
 
@@ -276,6 +289,7 @@ def _describe_visual_output(code_text: str) -> str:
     return "Графический вывод"
 
 
+@lru_cache(maxsize=1024)
 def _rel_image_path(image_path: str | None, report_path: Path) -> str:
     """Render a stable relative path for images in markdown reports."""
 
@@ -457,18 +471,20 @@ def render_case_markdown(
                 f"  - expected_coverage: {semantic_details.get('expected_coverage')} | forbidden_penalty: {semantic_details.get('forbidden_penalty')}"
             )
             if semantic_details.get("expected_hits"):
-                formatted = [
-                    f"{fact} (score {score})"
-                    for fact, score in semantic_details.get("expected_hits", [])
-                ]
-                lines.append("  - покрытые факты: " + "; ".join(formatted))
-            if semantic_details.get("forbidden_hits"):
-                formatted = [
-                    f"{fact} (score {score})"
-                    for fact, score in semantic_details.get("forbidden_hits", [])
-                ]
                 lines.append(
-                    "  - упомянутые запрещённые факты: " + "; ".join(formatted)
+                    "  - покрытые факты: "
+                    + "; ".join(
+                        f"{fact} (score {score})"
+                        for fact, score in semantic_details.get("expected_hits", [])
+                    )
+                )
+            if semantic_details.get("forbidden_hits"):
+                lines.append(
+                    "  - упомянутые запрещённые факты: "
+                    + "; ".join(
+                        f"{fact} (score {score})"
+                        for fact, score in semantic_details.get("forbidden_hits", [])
+                    )
                 )
 
         if case.get("expected_decision") == "code_generation":

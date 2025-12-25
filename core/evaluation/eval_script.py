@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -59,6 +60,7 @@ def _collect_benchmark_metadata(
     return meta
 
 
+@lru_cache(maxsize=256)
 def _infer_language_from_filename(path: Path) -> str:
     """Infer language from filename suffix: *_en.json or *_ru.json."""
 
@@ -396,23 +398,21 @@ def build_report_data(
 
     summary = {
         "cases_total": len(enriched_cases),
-        "missing": len([case for case in enriched_cases if case.get("error")]),
+        "missing": sum(1 for case in enriched_cases if case.get("error")),
         "decision_accuracy": _mean(
-            [
-                case.get("decision_score")
-                for case in enriched_cases
-                if not case.get("error")
-            ]
+            case.get("decision_score")
+            for case in enriched_cases
+            if not case.get("error")
         ),
         "semantic_similarity_avg": _mean(
-            [
-                case.get("semantic_similarity")
-                for case in enriched_cases
-                if not case.get("error")
-            ]
+            case.get("semantic_similarity")
+            for case in enriched_cases
+            if not case.get("error")
         ),
         "code_score_avg": _mean(
-            [case.get("code_score") for case in enriched_cases if not case.get("error")]
+            case.get("code_score")
+            for case in enriched_cases
+            if not case.get("error")
         ),
     }
 
