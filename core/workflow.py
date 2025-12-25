@@ -93,12 +93,37 @@ class WorkflowEngine:
             content = tmpl.safe_substitute(mapping)
             formatted_messages.append({"role": msg["role"], "content": content})
 
-        return cast(
-            str,
-            self._tokenizer.apply_chat_template(
-                formatted_messages, tokenize=False, add_generation_prompt=True
-            ),
-        )
+        if not settings.REMOTE_LLM:
+            return cast(
+                str,
+                self._tokenizer.apply_chat_template(
+                    formatted_messages, tokenize=False, add_generation_prompt=True
+                ),
+            )
+
+        # REMOTE_LLM=True:
+        # Do NOT use local tokenizer chat template
+        # (it will leak template tokens to OpenAI-compatible servers).
+        # Instead, pass a plain-text, role-delimited transcript.
+        role_map = {
+            "system": "SYSTEM",
+            "user": "USER",
+            "assistant": "ASSISTANT",
+            "tool": "TOOL",
+        }
+
+        chunks: list[str] = []
+        for m in formatted_messages:
+            role = role_map.get(m["role"], m["role"].upper())
+            content = (m.get("content") or "").strip()
+            if not content:
+                continue
+            chunks.append(f"{role}:\n{content}")
+
+        # add_generation_prompt=True equivalent
+        chunks.append("ASSISTANT:\n")
+
+        return "\n\n".join(chunks).strip()
 
     def _remote_chat_completion(self, prompt: str) -> str:
         llm = self.llm
