@@ -2,7 +2,8 @@
 import logging
 from pathlib import Path
 from typing import Any
-
+import os
+import openai
 import environ
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 from vllm import LLM
@@ -51,7 +52,13 @@ class ModelLoader:
             logger.info("Токенайзер загружен")
         return self._tokenizer
 
-    def get_llm(self) -> LLM:
+    def get_llm(self) -> LLM | openai.OpenAI:
+        if settings.REMOTE_LLM:
+            self._llm = openai.OpenAI(
+                        api_key=os.getenv("OPEN_AI_API_KEY"),
+                        base_url=settings.REMOTE_URL,
+                    )
+        
         if self._llm is None:
             logger.info("Загружаю модель...")
             self._llm = LLM(

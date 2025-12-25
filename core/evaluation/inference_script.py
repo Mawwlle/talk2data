@@ -4,8 +4,7 @@ from pathlib import Path
 
 from core.models import ModelLoader
 from core.evaluation.constants import RESULT_ID
-from core.workflow import WorkflowEngine, init_tokenizer_only
-from core.config import settings
+from core.workflow import WorkflowEngine
 
 BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
@@ -52,12 +51,7 @@ def run_single_case(workflow, benchmark: dict) -> dict:
 def main():
     loader = ModelLoader()
     workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
-    if not settings.REMOTE_LLM:
-        workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
-        workflow = workflow_engine.create_workflow()
-    else: 
-        # TODO: дописать
-        
+    workflow = workflow_engine.create_workflow()
     
     infer_result_path = f"infer_{RESULT_ID}"
 

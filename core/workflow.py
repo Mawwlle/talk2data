@@ -6,9 +6,7 @@ import logging
 import time
 from string import Template
 from typing import Callable
-import os
 
-import openai
 import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
@@ -28,54 +26,21 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-client = openai.OpenAI(
-    api_key=os.getenv("OPEN_AI_API_KEY"),
-    base_url=settings.REMOTE_URL,
-)
-
-
-def init_tokenizer_only():
-    global tokenizer
-    tokenizer = get_tokenizer()
-
-
-def llm_init(max_retries: int = 3, retry_delay: float = 5.0):
-    """
-    Прогрев моделей с логированием времени и повторными попытками.
-    """
-    global llm
-    global tokenizer
-
-    start_time = time.perf_counter()
-    logger.info("Starting model warm-up...")
-
-    for attempt in range(1, max_retries + 1):
-        try:
-            tokenizer = get_tokenizer()
-            llm = get_llm()
-            elapsed = round(time.perf_counter() - start_time, 2)
-            logger.info(f"Models ready (loaded in {elapsed} sec on attempt {attempt})")
-            return
-        except Exception as e:
-            logger.error(f"LLM init failed on attempt {attempt}/{max_retries}: {e}")
-            if attempt < max_retries:
-                logger.info(f"Retrying in {retry_delay} sec...")
-                time.sleep(retry_delay)
-            else:
-                elapsed = round(time.perf_counter() - start_time, 2)
-                logger.critical(
-                    f"Failed to initialize models after {max_retries} attempts (elapsed {elapsed}s)"
-                )
-                raise
-
 
 DECIDE_ACTION_DEFAULT = "chat_response"
 
 
 class WorkflowEngine:
-    def __init__(self, llm: LLM, tokenizer: PreTrainedTokenizerBase) -> None:
+    def __init__(self, llm: LLM | None, tokenizer: PreTrainedTokenizerBase) -> None:
         self._llm = llm
         self._tokenizer = tokenizer
+        
+    @property
+    def llm(self) -> LLM:
+        if self._llm is not None:
+            return self._llm
+        
+        raise ValueError("You are trying to implement the local llm which is not initialized") 
 
     def _format_prompt(
         self,
@@ -112,15 +77,15 @@ class WorkflowEngine:
         )
 
 
-    def _remote_chat_completion(prompt: str) -> str:
-        completion = client.chat.completions.create(
+    def _remote_chat_completion(self, prompt: str) -> str:
+        completion = self.llm.chat.completions.create(
             model=settings.REMOTE_MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
         )
         return completion.choices[0].message.content or ""
 
 
-    def decide_action(state: AgentState) -> AgentState:
+    def _decide_action(self, state: AgentState) -> AgentState:
         """Decision node with enhanced logging using print and timing."""
         start = time.perf_counter()
         parser = JsonOutputParser(pydantic_object=Decision)
@@ -129,24 +94,24 @@ class WorkflowEngine:
             prompt = self._format_prompt(DECIDE_ACTION_PROMPT, state)
             logger.info("[decide_action] Formatted prompt: %s", prompt)
 
-        # Генерация ответа от LLM
-        if settings.REMOTE_LLM:
-            raw_response = _remote_chat_completion(prompt).strip()
-        else:
-            # Настраиваем параметры сэмплирования
-            sampling_params = SamplingParams(
-                max_tokens=100,
-                temperature=0.0,  # полная детерминированность
-                top_p=1.0,  # отключает сэмплирование по вероятностям
-                stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
-                repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
-            )
+            # Генерация ответа от LLM
+            if settings.REMOTE_LLM:
+                raw_response = self._remote_chat_completion(prompt).strip()
+            else:
+                # Настраиваем параметры сэмплирования
+                sampling_params = SamplingParams(
+                    max_tokens=100,
+                    temperature=0.0,  # полная детерминированность
+                    top_p=1.0,  # отключает сэмплирование по вероятностям
+                    stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
+                    repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
+                )
 
-            logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
+                logger.info(f"[decide_action] Sampling parameters: {sampling_params}")
 
-            outputs = self._llm.generate([prompt], sampling_params)
-            raw_response = outputs[0].outputs[0].text.strip()
-            logger.info("[decide_action] Raw LLM response: %s", raw_response)
+                outputs = self._llm.generate([prompt], sampling_params)
+                raw_response = outputs[0].outputs[0].text.strip()
+                logger.info("[decide_action] Raw LLM response: %s", raw_response)
 
             decision = parser.parse(raw_response)
             logger.info("[decide_action] Parsed decision: %s", decision)
@@ -178,32 +143,32 @@ class WorkflowEngine:
         start = time.perf_counter()
         code_prompt = self._format_prompt(CODE_GENERATION_PROMPT, state)
 
-    if settings.REMOTE_LLM:
-        generated_text = _remote_chat_completion(code_prompt)
-    else:
-        bad_words = [
-            "print",
-            "pd.read_csv",
-            "pandas.read_csv",
-            "df =",
-            "df=",
-            "df = pd.DataFrame",
-            "df=pd.DataFrame",
-        ] 
-    
-        sampling_params = SamplingParams(
-            max_tokens=512,
-            temperature=0.0,  # 0.7
-            top_p=0.95,
-            stop=["<|", "</s>"],
-            repetition_penalty=1.05,
-            presence_penalty=0.5,
-            seed=42,
-            bad_words=bad_words,
-        )
+        if settings.REMOTE_LLM:
+            generated_text = self._remote_chat_completion(code_prompt)
+        else:
+            bad_words = [
+                "print",
+                "pd.read_csv",
+                "pandas.read_csv",
+                "df =",
+                "df=",
+                "df = pd.DataFrame",
+                "df=pd.DataFrame",
+            ] 
+        
+            sampling_params = SamplingParams(
+                max_tokens=512,
+                temperature=0.0,  # 0.7
+                top_p=0.95,
+                stop=["<|", "</s>"],
+                repetition_penalty=1.05,
+                presence_penalty=0.5,
+                seed=42,
+                bad_words=bad_words,
+            )
 
-        outputs = self._llm.generate([code_prompt], sampling_params)
-        generated_text = outputs[0].outputs[0].text
+            outputs = self._llm.generate([code_prompt], sampling_params)
+            generated_text = outputs[0].outputs[0].text
 
         code_block = generated_text.split("```python")[-1].split("```")[0].strip()
 
@@ -226,10 +191,10 @@ class WorkflowEngine:
     def _generate_chat_response_node(self, state: AgentState) -> AgentState:
         """Chat response generation with TTS integration, measure time."""
         start = time.perf_counter()
-        chat_prompt = format_prompt(CHAT_RESPONSE_PROMPT, state)
+        chat_prompt = self._format_prompt(CHAT_RESPONSE_PROMPT, state)
         
         if settings.REMOTE_LLM:
-            response = _remote_chat_completion(chat_prompt).strip()
+            response = self._remote_chat_completion(chat_prompt).strip()
         else:
             sampling_params = SamplingParams(
                 max_tokens=200,
@@ -239,8 +204,8 @@ class WorkflowEngine:
                 seed=42,
             )
 
-        outputs = self._llm.generate([chat_prompt], sampling_params)
-        response = outputs[0].outputs[0].text.strip()
+            outputs = self._llm.generate([chat_prompt], sampling_params)
+            response = outputs[0].outputs[0].text.strip()
         elapsed_llm = time.perf_counter() - start
         logger.info("[test_response] Generated text response: %s", response)
 
