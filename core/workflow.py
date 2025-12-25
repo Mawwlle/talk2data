@@ -10,11 +10,11 @@ from typing import Callable
 import torch
 from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import END, StateGraph
+from openai import OpenAI
 from transformers import PreTrainedTokenizerBase
 from vllm import LLM, SamplingParams
-from core.config import settings
-from openai import OpenAI
 
+from core.config import settings
 from core.prompts import (
     CHAT_RESPONSE_PROMPT,
     CODE_GENERATION_PROMPT,
@@ -46,16 +46,20 @@ def extract_code_block(generated_text: str) -> str:
 
 
 class WorkflowEngine:
-    def __init__(self, llm: LLM | OpenAI | None, tokenizer: PreTrainedTokenizerBase) -> None:
+    def __init__(
+        self, llm: LLM | OpenAI | None, tokenizer: PreTrainedTokenizerBase
+    ) -> None:
         self._llm = llm
         self._tokenizer = tokenizer
-        
+
     @property
     def llm(self) -> LLM | OpenAI:
         if self._llm is not None:
             return self._llm
-        
-        raise ValueError("You are trying to implement the local llm which is not initialized") 
+
+        raise ValueError(
+            "You are trying to implement the local llm which is not initialized"
+        )
 
     def _format_prompt(
         self,
@@ -86,14 +90,12 @@ class WorkflowEngine:
             formatted_messages, tokenize=False, add_generation_prompt=True
         )
 
-
     def _remote_chat_completion(self, prompt: str) -> str:
         completion = self.llm.chat.completions.create(
             model=settings.REMOTE_MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
         )
         return completion.choices[0].message.content or ""
-
 
     def _decide_action(self, state: AgentState) -> AgentState:
         """Decision node with enhanced logging using print and timing."""
@@ -113,7 +115,11 @@ class WorkflowEngine:
                     max_tokens=100,
                     temperature=0.0,  # полная детерминированность
                     top_p=1.0,  # отключает сэмплирование по вероятностям
-                    stop=["</s>", "\n\n", "\nUser:"],  # можно добавить безопасные стоп-токены
+                    stop=[
+                        "</s>",
+                        "\n\n",
+                        "\nUser:",
+                    ],  # можно добавить безопасные стоп-токены
                     repetition_penalty=1.0,  # не трогаем (нет смысла для коротких ответов)
                 )
 
@@ -160,8 +166,8 @@ class WorkflowEngine:
                 "df=",
                 "df = pd.DataFrame",
                 "df=pd.DataFrame",
-            ] 
-        
+            ]
+
             sampling_params = SamplingParams(
                 max_tokens=512,
                 temperature=0.0,  # 0.7
@@ -193,12 +199,11 @@ class WorkflowEngine:
         )
         return state
 
-
     def _generate_chat_response_node(self, state: AgentState) -> AgentState:
         """Chat response generation with TTS integration, measure time."""
         start = time.perf_counter()
         chat_prompt = self._format_prompt(CHAT_RESPONSE_PROMPT, state)
-        
+
         if settings.REMOTE_LLM:
             response = self._remote_chat_completion(chat_prompt).strip()
         else:
@@ -230,7 +235,10 @@ class WorkflowEngine:
         builder.add_conditional_edges(
             "decide_action",
             self._route_action,
-            {"code_generation": "generate_code", "chat_response": "generate_chat_response"},
+            {
+                "code_generation": "generate_code",
+                "chat_response": "generate_chat_response",
+            },
         )
         builder.add_edge("generate_code", END)
         builder.add_edge("generate_chat_response", END)

@@ -1,7 +1,10 @@
 import logging
 import tempfile
 
-from task_management.domain.transcription.models import TranscriptionRequest, TranscriptionResult
+from task_management.domain.transcription.models import (
+    TranscriptionRequest,
+    TranscriptionResult,
+)
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)

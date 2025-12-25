@@ -1,6 +1,9 @@
 import logging
 
-from task_management.domain.conversation.models import ConversationRequest, ConversationResult
+from task_management.domain.conversation.models import (
+    ConversationRequest,
+    ConversationResult,
+)
 from task_management.domain.conversation.workflow import ConversationWorkflow
 
 logger = logging.getLogger(__name__)

@@ -10,8 +10,12 @@ logger = logging.getLogger(__name__)
 class FileResultPersister:
     """Persists workflow results to a JSON file."""
 
-    def __init__(self, *, base_path: Path | None = None, filename: str = "result.json") -> None:
-        self._file_path = (base_path or Path(__file__).resolve().parents[3] / "core") / filename
+    def __init__(
+        self, *, base_path: Path | None = None, filename: str = "result.json"
+    ) -> None:
+        self._file_path = (
+            base_path or Path(__file__).resolve().parents[3] / "core"
+        ) / filename
 
     def persist(self, result: dict) -> None:
         try:

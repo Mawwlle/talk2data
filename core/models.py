@@ -1,10 +1,11 @@
 # models.py
 import logging
+import os
 from pathlib import Path
 from typing import Any
-import os
-import openai
+
 import environ
+import openai
 from transformers import AutoTokenizer, PreTrainedTokenizerBase
 from vllm import LLM
 
@@ -45,7 +46,9 @@ class ModelLoader:
                 )
             except OSError:
                 logger.warning("Local weights not found, trying to download from HF...")
-                self._tokenizer = AutoTokenizer.from_pretrained(self._settings.LLM_MODEL_NAME)
+                self._tokenizer = AutoTokenizer.from_pretrained(
+                    self._settings.LLM_MODEL_NAME
+                )
                 self._tokenizer.save_pretrained(self._settings.LLM_LOCAL_PATH)
             if self._tokenizer.pad_token is None:
                 self._tokenizer.add_special_tokens({"pad_token": "[PAD]"})

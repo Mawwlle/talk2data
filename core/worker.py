@@ -8,7 +8,9 @@ from core.models import ModelLoader
 from core.workflow import WorkflowEngine
 from task_management.adapters.conversation.result_persister import FileResultPersister
 from task_management.adapters.task_queue.rabbitmq import RabbitMQAdapter
-from task_management.adapters.transcription.whisper_transcriber import WhisperTranscriber
+from task_management.adapters.transcription.whisper_transcriber import (
+    WhisperTranscriber,
+)
 from task_management.app.conversation.api import ConversationHandler
 from task_management.app.conversation.service import ConversationService
 from task_management.app.transcription.api import TranscriptionHandler
@@ -18,7 +20,9 @@ from task_management.domain.task_queue.models import TaskResponse
 from voice2text.whisper_model import Voice2Text
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
 class TaskRouter:

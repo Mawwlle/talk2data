@@ -12,9 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 class _StubLLM:
-    def __init__(self, response_text: str = """```python
+    def __init__(
+        self,
+        response_text: str = """```python
 print('hello world')
-```"""):
+```""",
+    ):
         self._response_text = response_text
 
     class _Output:
@@ -69,9 +72,7 @@ def test_extracts_code_from_python_block(engine, sample_state):
 def test_no_code_block_fallback_to_full_text(engine, sample_state):
     """Если модель не возвращает код в ```python```, результат всё равно должен содержать код."""
     state = sample_state.copy()
-    state["input_data"] = {
-        "user_message": "Напиши простой код без блока ```python```"
-    }
+    state["input_data"] = {"user_message": "Напиши простой код без блока ```python```"}
 
     engine._llm = _StubLLM("print('no code block')")
     result = engine._generate_code_node(state)
@@ -132,8 +133,12 @@ def test_generated_code_for_all_cases(engine):
             kw in generated for kw in ("print", "import", "def", "for", "return")
         ), f"Case {idx} generated text may not be code:\n{generated}"
 
-        assert "plt" not in generated, f"Case {idx} contains forbidden 'plt':\n{generated}"
-        assert "sns" not in generated, f"Case {idx} contains forbidden 'sns':\n{generated}"
+        assert (
+            "plt" not in generated
+        ), f"Case {idx} contains forbidden 'plt':\n{generated}"
+        assert (
+            "sns" not in generated
+        ), f"Case {idx} contains forbidden 'sns':\n{generated}"
 
         assert "response_message" in result, f"Case {idx} missing response_message"
 

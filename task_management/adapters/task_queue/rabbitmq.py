@@ -9,7 +9,9 @@ from pika.exceptions import AMQPChannelError, AMQPConnectionError
 from task_management.domain.task_queue.models import TaskResponse
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
 class RabbitMQAdapter:
@@ -80,7 +82,9 @@ class RabbitMQAdapter:
                 message: Mapping[str, Any] = json.loads(body)
                 logger.info("Received task: %s", message.get("task"))
                 response = handler(message)
-                resolved_project_id = response.project_id or message.get("data", {}).get("project_id")
+                resolved_project_id = response.project_id or message.get(
+                    "data", {}
+                ).get("project_id")
                 response_with_project = (
                     replace(response, project_id=resolved_project_id)
                     if resolved_project_id != response.project_id
@@ -93,7 +97,9 @@ class RabbitMQAdapter:
                 ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
         self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(queue=self._task_queue, on_message_callback=_callback)
+        self.channel.basic_consume(
+            queue=self._task_queue, on_message_callback=_callback
+        )
         logger.info("Worker started. Waiting for tasks...")
         logger.info("Listening to queue: %s", self._task_queue)
         self.channel.start_consuming()

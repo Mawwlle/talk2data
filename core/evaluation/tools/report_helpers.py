@@ -1,5 +1,5 @@
-from functools import lru_cache
 import ast
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -537,8 +537,7 @@ def render_case_markdown(
                 lines.append("  - result_match: " + str(details.get("result_match")))
             if details.get("requirements"):
                 lines.append(
-                    "  - requirements_match: "
-                    + str(details.get("requirements_match"))
+                    "  - requirements_match: " + str(details.get("requirements_match"))
                 )
                 for requirement in details.get("requirements", []):
                     lines.append(

@@ -8,7 +8,7 @@ from typing import Any
 import pandas as pd
 from torch.nn.functional import cosine_similarity
 
-from core.evaluation.constants import TEST_RESULT_PATH, REPORT_OUTPUT_DIR
+from core.evaluation.constants import REPORT_OUTPUT_DIR, TEST_RESULT_PATH
 from core.evaluation.io_utils import BENCHMARKS_DIR, load_json
 from core.evaluation.tools.code_evaluation_tools import (
     _run_code_in_sandbox,
@@ -71,9 +71,10 @@ def _has_plotly_calls(code: str | None) -> bool:
     """Detect Plotly usage to allow implicit display calls."""
     if code is None:
         return False
-    
+
     lowered = code.lower()
     return "plotly" in lowered or "px." in lowered or "go." in lowered
+
 
 def _has_possible_code_object(
     tree: ast.AST, possible_code_objects: list[str] | None
@@ -106,7 +107,7 @@ def evaluate_object_match(
             "code_objects_match": False,
             "errors": {"model": "code not parsed"},
         }
-    
+
     try:
         tree = ast.parse(model_code)
     except SyntaxError:
@@ -342,7 +343,7 @@ def evaluate_code(
     # ---------- execution-based scoring ----------
     expected_result, expected_error = _run_code_in_sandbox(expected_code)
     model_result, model_error = _run_code_in_sandbox(model_code)
-    
+
     max_heuristic_score = 0.9
     normalized_heuristic = (
         heuristic_score / max_heuristic_score if max_heuristic_score else 0.0
@@ -405,7 +406,7 @@ def run_eval(
                 }
             )
             continue
-        
+
         decision_score = 0
         if model_output.get("model_decision", {}):
             decision_score = evaluate_decision(

@@ -3,8 +3,14 @@ import logging
 import time
 
 from task_management.domain.conversation.exceptions import ConversationWorkflowError
-from task_management.domain.conversation.models import ConversationRequest, ConversationResult
-from task_management.domain.conversation.ports import ResultPersisterPort, WorkflowInvokerPort
+from task_management.domain.conversation.models import (
+    ConversationRequest,
+    ConversationResult,
+)
+from task_management.domain.conversation.ports import (
+    ResultPersisterPort,
+    WorkflowInvokerPort,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +67,8 @@ class ConversationWorkflow:
         updated_history = result.get("conversation_history", []) + [
             {
                 "user": request.user_input,
-                "system": result.get("generated_code") or result.get("response_message"),
+                "system": result.get("generated_code")
+                or result.get("response_message"),
             }
         ]
 

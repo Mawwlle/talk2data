@@ -95,7 +95,7 @@ CODE_GENERATION_PROMPT: list[PromptMessage] = [
             "3. When a user requests basic statistics or a quick overview, return concise Pandas operations instead of plots. Create visualizations only when explicitly requested.\n"
             "4. For showing output, use only expression form (variable name).\n"
             "5. Critical! generate only code without any comments or explanations, just python code!"
-            f"\n\nSTRICT: You must use existing df"
+            "\n\nSTRICT: You must use existing df"
         ),
     },
     {"role": "user", "content": "Request: $input"},

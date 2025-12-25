@@ -28,7 +28,7 @@ def extract_imports(code: str | None) -> set[str]:
     """Extract imported modules from Python code."""
     if code is None:
         return set()
-    
+
     tree = ast.parse(code)
     imports: set[str] = set()
 
@@ -48,7 +48,7 @@ def extract_calls(code: str | None) -> set[str]:
     """Extract called function names from Python code."""
     if code is None:
         return set()
-    
+
     tree = ast.parse(code)
     calls: set[str] = set()
 

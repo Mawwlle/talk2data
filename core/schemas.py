@@ -16,7 +16,7 @@ class AgentState(TypedDict):
     decision: dict[str, Any]
 
     timing_info: dict[str, float] = Field(default_factory=dict)  # type: ignore
-    bad_words: list[str]               # слова, запрещённые к генерации
+    bad_words: list[str]  # слова, запрещённые к генерации
 
     class Config:
         extra = "allow"  # type: ignore

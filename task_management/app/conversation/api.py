@@ -19,7 +19,9 @@ class ConversationHandler:
 
     def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         project_id = payload.get("project_id")
-        logger.info("ConversationHandler handling payload for project_id=%s", project_id)
+        logger.info(
+            "ConversationHandler handling payload for project_id=%s", project_id
+        )
 
         try:
             parsed_payload = self._parse_payload(payload)
