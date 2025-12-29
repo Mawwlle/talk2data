@@ -454,7 +454,7 @@ def render_case_markdown(
             lines.append("```python")
             model_error = details.get("errors", {}).get("model")
             lines.append(str(model_error))
-            lines.append("```python")
+            lines.append("```")
             if case.get("model_plot_path"):
                 lines.append("- model_plot:")
                 lines.append("")
