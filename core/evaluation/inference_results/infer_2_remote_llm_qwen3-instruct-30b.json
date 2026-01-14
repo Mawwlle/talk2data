@@ -1,6 +1,6 @@
 {
-  "run_id": "infer_2_remote_llm_qwen3-instruct-30b",
-  "timestamp": "2025-12-29T08:31:28.612896",
+  "run_id": "infer_3_remote_llm_qwen3-instruct-30b",
+  "timestamp": "2026-01-14T20:21:06.849352",
   "results": [
     {
       "benchmark_id": "code_001_describe_en",
@@ -11,8 +11,8 @@
       "generated_code": "df.describe(include='all')",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.8341,
-        "generate_code_sec": 0.1154
+        "decide_action_sec": 0.4859,
+        "generate_code_sec": 0.1182
       },
       "raw_state": {
         "user_input": "Write code that outputs statistics for the dataset.",
@@ -31,8 +31,8 @@
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.8341,
-          "generate_code_sec": 0.1154
+          "decide_action_sec": 0.4859,
+          "generate_code_sec": 0.1182
         }
       },
       "benchmark_file": "iris_code_benchmark_en.json"
@@ -43,11 +43,11 @@
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "import plotly.express as px\npx.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')",
+      "generated_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')\nfig.show()",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.133,
-        "generate_code_sec": 0.4514
+        "decide_action_sec": 0.1342,
+        "generate_code_sec": 0.4525
       },
       "raw_state": {
         "user_input": "Create a pairplot for all features.",
@@ -59,15 +59,15 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "import plotly.express as px\npx.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')",
+        "generated_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')\nfig.show()",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.133,
-          "generate_code_sec": 0.4514
+          "decide_action_sec": 0.1342,
+          "generate_code_sec": 0.4525
         }
       },
       "benchmark_file": "iris_code_benchmark_en.json"
@@ -78,11 +78,11 @@
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X_train, y_train)\n\ny_pred = model.predict(X_test)\naccuracy_score(y_test, y_pred)",
+      "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nclf = LogisticRegression(max_iter=200)\nclf.fit(X_train, y_train)\n\ny_pred = clf.predict(X_test)\naccuracy_score(y_test, y_pred)",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1321,
-        "generate_code_sec": 1.1958
+        "decide_action_sec": 0.1312,
+        "generate_code_sec": 1.1279
       },
       "raw_state": {
         "user_input": "Write code that trains a simple classifier on this data.",
@@ -94,21 +94,371 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X_train, y_train)\n\ny_pred = model.predict(X_test)\naccuracy_score(y_test, y_pred)",
+        "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nclf = LogisticRegression(max_iter=200)\nclf.fit(X_train, y_train)\n\ny_pred = clf.predict(X_test)\naccuracy_score(y_test, y_pred)",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1321,
-          "generate_code_sec": 1.1958
+          "decide_action_sec": 0.1312,
+          "generate_code_sec": 1.1279
         }
       },
       "benchmark_file": "iris_code_benchmark_en.json"
     },
     {
-      "benchmark_id": "code_004_show_all_plots_en",
+      "benchmark_id": "code_004_missing_check_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "df.isnull().sum()",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1338,
+        "generate_code_sec": 0.1148
+      },
+      "raw_state": {
+        "user_input": "Check if there are missing values in the dataset.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "df.isnull().sum()",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1338,
+          "generate_code_sec": 0.1148
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_005_fill_missing_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "df.fillna(df.mean(numeric_only=True), inplace=True)",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1325,
+        "generate_code_sec": 0.1743
+      },
+      "raw_state": {
+        "user_input": "Fill missing values with the mean value of column.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "df.fillna(df.mean(numeric_only=True), inplace=True)",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1325,
+          "generate_code_sec": 0.1743
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_006_boxplot_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "import plotly.express as px\n\nfig = px.box(df, x='species', y='sepal_length', title='Boxplot of Sepal Length by Species')\nfig.show()\n\nfig = px.box(df, x='species', y='sepal_width', title='Boxplot of Sepal Width by Species')\nfig.show()\n\nfig = px.box(df, x='species', y='petal_length', title='Boxplot of Petal Length by Species')\nfig.show()\n\nfig = px.box(df, x='species', y='petal_width', title='Boxplot of Petal Width by Species')\nfig.show()",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1295,
+        "generate_code_sec": 1.1975
+      },
+      "raw_state": {
+        "user_input": "Create boxplots for all numeric features.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "import plotly.express as px\n\nfig = px.box(df, x='species', y='sepal_length', title='Boxplot of Sepal Length by Species')\nfig.show()\n\nfig = px.box(df, x='species', y='sepal_width', title='Boxplot of Sepal Width by Species')\nfig.show()\n\nfig = px.box(df, x='species', y='petal_length', title='Boxplot of Petal Length by Species')\nfig.show()\n\nfig = px.box(df, x='species', y='petal_width', title='Boxplot of Petal Width by Species')\nfig.show()",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1295,
+          "generate_code_sec": 1.1975
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_007_standardize_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1282,
+        "generate_code_sec": 0.5977
+      },
+      "raw_state": {
+        "user_input": "Standardize all feature columns.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1282,
+          "generate_code_sec": 0.5977
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_008_normalize_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.preprocessing import MinMaxScaler\n\nscaler = MinMaxScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1259,
+        "generate_code_sec": 0.6012
+      },
+      "raw_state": {
+        "user_input": "Normalize the features in range 0 to 1.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.preprocessing import MinMaxScaler\n\nscaler = MinMaxScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1259,
+          "generate_code_sec": 0.6012
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_009_pca_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.decomposition import PCA\nimport pandas as pd\n\npca = PCA(n_components=2)\ndf_pca = pd.DataFrame(pca.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]), columns=['PC1', 'PC2'])\ndf_pca['species'] = df['species']",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1255,
+        "generate_code_sec": 0.7093
+      },
+      "raw_state": {
+        "user_input": "Reduce dimensionality to two components using PCA.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.decomposition import PCA\nimport pandas as pd\n\npca = PCA(n_components=2)\ndf_pca = pd.DataFrame(pca.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]), columns=['PC1', 'PC2'])\ndf_pca['species'] = df['species']",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1255,
+          "generate_code_sec": 0.7093
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_010_pca_plot_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "import pandas as pd\nfrom sklearn.decomposition import PCA\nimport plotly.express as px\n\n# Standardize the features\nfeatures = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']\ndf_scaled = (df[features] - df[features].mean()) / df[features].std()\n\n# Apply PCA\npca = PCA(n_components=2)\npca_components = pca.fit_transform(df_scaled)\n\n# Create a DataFrame with PCA components and species\npca_df = pd.DataFrame(data=pca_components, columns=['PC1', 'PC2'])\npca_df['species'] = df['species']\n\n# Create scatter plot\nfig = px.scatter(pca_df, x='PC1', y='PC2', color='species', title='Scatter Plot of First Two PCA Components Colored by Species')\nfig.show()",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1336,
+        "generate_code_sec": 1.6322
+      },
+      "raw_state": {
+        "user_input": "Make scatter plot of first two PCA components colored by species.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "import pandas as pd\nfrom sklearn.decomposition import PCA\nimport plotly.express as px\n\n# Standardize the features\nfeatures = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']\ndf_scaled = (df[features] - df[features].mean()) / df[features].std()\n\n# Apply PCA\npca = PCA(n_components=2)\npca_components = pca.fit_transform(df_scaled)\n\n# Create a DataFrame with PCA components and species\npca_df = pd.DataFrame(data=pca_components, columns=['PC1', 'PC2'])\npca_df['species'] = df['species']\n\n# Create scatter plot\nfig = px.scatter(pca_df, x='PC1', y='PC2', color='species', title='Scatter Plot of First Two PCA Components Colored by Species')\nfig.show()",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1336,
+          "generate_code_sec": 1.6322
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_011_kmeans_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.cluster import KMeans\nimport plotly.express as px\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])\n\npx.scatter_3d(df, x='sepal_length', y='sepal_width', z='petal_length', color='cluster', symbol='species', title='KMeans Clustering (3 Clusters)')",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1304,
+        "generate_code_sec": 1.0524
+      },
+      "raw_state": {
+        "user_input": "Make three clusters using KMeans.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.cluster import KMeans\nimport plotly.express as px\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])\n\npx.scatter_3d(df, x='sepal_length', y='sepal_width', z='petal_length', color='cluster', symbol='species', title='KMeans Clustering (3 Clusters)')",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1304,
+          "generate_code_sec": 1.0524
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_012_cluster_plot_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "import plotly.express as px\nfrom sklearn.cluster import KMeans\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width']])\n\npx.scatter(df, x='sepal_length', y='sepal_width', color='cluster', symbol='species', title='KMeans Clusters using First Two Features')",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1323,
+        "generate_code_sec": 0.8735
+      },
+      "raw_state": {
+        "user_input": "Make scatter plot of KMeans clusters using the first two features.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "import plotly.express as px\nfrom sklearn.cluster import KMeans\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width']])\n\npx.scatter(df, x='sepal_length', y='sepal_width', color='cluster', symbol='species', title='KMeans Clusters using First Two Features')",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1323,
+          "generate_code_sec": 0.8735
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_013_train_test_split_en",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.model_selection import train_test_split\n\nX = df.drop('species', axis=1)\ny = df['species']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1296,
+        "generate_code_sec": 0.6086
+      },
+      "raw_state": {
+        "user_input": "Split the dataset into train and test sets.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.model_selection import train_test_split\n\nX = df.drop('species', axis=1)\ny = df['species']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1296,
+          "generate_code_sec": 0.6086
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "code_014_show_all_plots_en",
       "expected_decision": "code_generation",
       "model_decision": {
         "action": "code_generation"
@@ -116,8 +466,8 @@
       "generated_code": "import plotly.express as px\n\nfig1 = px.scatter(df, x='sepal_length', y='sepal_width', color='species', title='Sepal Length vs Sepal Width')\nfig2 = px.scatter(df, x='petal_length', y='petal_width', color='species', title='Petal Length vs Petal Width')\nfig3 = px.box(df, x='species', y='sepal_length', title='Sepal Length by Species')\nfig4 = px.box(df, x='species', y='sepal_width', title='Sepal Width by Species')\nfig5 = px.box(df, x='species', y='petal_length', title='Petal Length by Species')\nfig6 = px.box(df, x='species', y='petal_width', title='Petal Width by Species')\n\nfig1.show()\nfig2.show()\nfig3.show()\nfig4.show()\nfig5.show()\nfig6.show()",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1264,
-        "generate_code_sec": 1.9194
+        "decide_action_sec": 0.1222,
+        "generate_code_sec": 1.8097
       },
       "raw_state": {
         "user_input": "Show all plots.",
@@ -136,23 +486,23 @@
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1264,
-          "generate_code_sec": 1.9194
+          "decide_action_sec": 0.1222,
+          "generate_code_sec": 1.8097
         }
       },
       "benchmark_file": "iris_code_benchmark_en.json"
     },
     {
-      "benchmark_id": "code_005_histogram_en",
+      "benchmark_id": "code_015_histogram_en",
       "expected_decision": "code_generation",
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "import plotly.express as px\npx.histogram(df, x='sepal_length', nbins=20)",
+      "generated_code": "fig = px.histogram(df, x='sepal_length', nbins=20, title='Histogram of Sepal Length')",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1286,
-        "generate_code_sec": 0.3822
+        "decide_action_sec": 0.1243,
+        "generate_code_sec": 0.2946
       },
       "raw_state": {
         "user_input": "Show a histogram.",
@@ -164,15 +514,15 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "import plotly.express as px\npx.histogram(df, x='sepal_length', nbins=20)",
+        "generated_code": "fig = px.histogram(df, x='sepal_length', nbins=20, title='Histogram of Sepal Length')",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1286,
-          "generate_code_sec": 0.3822
+          "decide_action_sec": 0.1243,
+          "generate_code_sec": 0.2946
         }
       },
       "benchmark_file": "iris_code_benchmark_en.json"
@@ -186,8 +536,8 @@
       "generated_code": "df.describe(include='all')",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1272,
-        "generate_code_sec": 0.1173
+        "decide_action_sec": 0.1268,
+        "generate_code_sec": 0.1231
       },
       "raw_state": {
         "user_input": "Напиши код, который выводит статистику по датасету.",
@@ -206,8 +556,8 @@
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1272,
-          "generate_code_sec": 0.1173
+          "decide_action_sec": 0.1268,
+          "generate_code_sec": 0.1231
         }
       },
       "benchmark_file": "iris_code_benchmark_ru.json"
@@ -218,11 +568,11 @@
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')\nfig.update_traces(diagonal_visible=False)\nfig.show()",
+      "generated_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')\nfig.show()",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1278,
-        "generate_code_sec": 0.5429
+        "decide_action_sec": 0.1352,
+        "generate_code_sec": 0.4381
       },
       "raw_state": {
         "user_input": "Построй pairplot всех признаков.",
@@ -234,15 +584,15 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')\nfig.update_traces(diagonal_visible=False)\nfig.show()",
+        "generated_code": "import plotly.express as px\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')\nfig.show()",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1278,
-          "generate_code_sec": 0.5429
+          "decide_action_sec": 0.1352,
+          "generate_code_sec": 0.4381
         }
       },
       "benchmark_file": "iris_code_benchmark_ru.json"
@@ -253,11 +603,11 @@
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X_train, y_train)\n\ny_pred = model.predict(X_test)\naccuracy_score(y_test, y_pred)",
+      "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nclassifier = LogisticRegression(max_iter=200)\nclassifier.fit(X_train, y_train)\n\ny_pred = classifier.predict(X_test)\naccuracy_score(y_test, y_pred)",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1265,
-        "generate_code_sec": 1.2017
+        "decide_action_sec": 0.1289,
+        "generate_code_sec": 1.1214
       },
       "raw_state": {
         "user_input": "Напиши код, который обучает простой классификатор на этих данных.",
@@ -269,30 +619,380 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nmodel = LogisticRegression(max_iter=200)\nmodel.fit(X_train, y_train)\n\ny_pred = model.predict(X_test)\naccuracy_score(y_test, y_pred)",
+        "generated_code": "from sklearn.model_selection import train_test_split\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\n\nX = df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']]\ny = df['species']\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nclassifier = LogisticRegression(max_iter=200)\nclassifier.fit(X_train, y_train)\n\ny_pred = classifier.predict(X_test)\naccuracy_score(y_test, y_pred)",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1265,
-          "generate_code_sec": 1.2017
+          "decide_action_sec": 0.1289,
+          "generate_code_sec": 1.1214
         }
       },
       "benchmark_file": "iris_code_benchmark_ru.json"
     },
     {
-      "benchmark_id": "code_004_show_all_plots",
+      "benchmark_id": "code_004_missing_check",
       "expected_decision": "code_generation",
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "import plotly.express as px\n\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species', title='Scatter Matrix of Iris Features')\nfig.show()",
+      "generated_code": "df.isnull().sum()",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1314,
-        "generate_code_sec": 0.5833
+        "decide_action_sec": 0.1423,
+        "generate_code_sec": 0.132
+      },
+      "raw_state": {
+        "user_input": "Проверь, есть ли в датасете пропущенные значения.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "df.isnull().sum()",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1423,
+          "generate_code_sec": 0.132
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_005_fill_missing",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "df.fillna(df.mean(numeric_only=True), inplace=True)",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1392,
+        "generate_code_sec": 0.1869
+      },
+      "raw_state": {
+        "user_input": "Заполни пропущенные значения средним значением по столбцам.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "df.fillna(df.mean(numeric_only=True), inplace=True)",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1392,
+          "generate_code_sec": 0.1869
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_006_boxplot",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "import plotly.express as px\npx.box(df, x='species', y='sepal_length', color='species')\npx.box(df, x='species', y='sepal_width', color='species')\npx.box(df, x='species', y='petal_length', color='species')\npx.box(df, x='species', y='petal_width', color='species')",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1426,
+        "generate_code_sec": 0.78
+      },
+      "raw_state": {
+        "user_input": "Построй boxplot для всех числовых признаков.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "import plotly.express as px\npx.box(df, x='species', y='sepal_length', color='species')\npx.box(df, x='species', y='sepal_width', color='species')\npx.box(df, x='species', y='petal_length', color='species')\npx.box(df, x='species', y='petal_width', color='species')",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1426,
+          "generate_code_sec": 0.78
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_007_standardize",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1405,
+        "generate_code_sec": 0.5922
+      },
+      "raw_state": {
+        "user_input": "Стандартизируй все признаки датасета.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1405,
+          "generate_code_sec": 0.5922
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_008_normalize",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.preprocessing import MinMaxScaler\n\nscaler = MinMaxScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1383,
+        "generate_code_sec": 0.6189
+      },
+      "raw_state": {
+        "user_input": "Нормализуй признаки в диапазон от 0 до 1.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.preprocessing import MinMaxScaler\n\nscaler = MinMaxScaler()\ndf[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']] = scaler.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1383,
+          "generate_code_sec": 0.6189
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_009_pca",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.decomposition import PCA\nimport pandas as pd\n\npca = PCA(n_components=2)\ndf_pca = pd.DataFrame(pca.fit_transform(df.select_dtypes(include=[float])), columns=['PC1', 'PC2'])\ndf_pca['species'] = df['species']",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1394,
+        "generate_code_sec": 0.5904
+      },
+      "raw_state": {
+        "user_input": "Снизь размерность датасета до двух компонент с помощью PCA.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.decomposition import PCA\nimport pandas as pd\n\npca = PCA(n_components=2)\ndf_pca = pd.DataFrame(pca.fit_transform(df.select_dtypes(include=[float])), columns=['PC1', 'PC2'])\ndf_pca['species'] = df['species']",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1394,
+          "generate_code_sec": 0.5904
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_010_pca_plot",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "import pandas as pd\nfrom sklearn.decomposition import PCA\nimport plotly.express as px\n\npca = PCA(n_components=2)\nprincipal_components = pca.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])\ndf_pca = pd.DataFrame(data=principal_components, columns=['PC1', 'PC2'])\ndf_pca['species'] = df['species']\n\npx.scatter(df_pca, x='PC1', y='PC2', color='species', title='Scatter plot of first two PCA components')",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1366,
+        "generate_code_sec": 1.1112
+      },
+      "raw_state": {
+        "user_input": "Построй scatter plot первых двух PCA-компонент с раскраской по видам.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "import pandas as pd\nfrom sklearn.decomposition import PCA\nimport plotly.express as px\n\npca = PCA(n_components=2)\nprincipal_components = pca.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])\ndf_pca = pd.DataFrame(data=principal_components, columns=['PC1', 'PC2'])\ndf_pca['species'] = df['species']\n\npx.scatter(df_pca, x='PC1', y='PC2', color='species', title='Scatter plot of first two PCA components')",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1366,
+          "generate_code_sec": 1.1112
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_012_kmeans",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.cluster import KMeans\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1446,
+        "generate_code_sec": 0.5927
+      },
+      "raw_state": {
+        "user_input": "Выполни кластеризацию KMeans на три кластера.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.cluster import KMeans\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1446,
+          "generate_code_sec": 0.5927
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_012_cluster_plot",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "import plotly.express as px\nfrom sklearn.cluster import KMeans\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width']])\n\nfig = px.scatter(df, x='sepal_length', y='sepal_width', color='cluster', symbol='species', title='KMeans Clusters on First Two Features')\nfig.show()",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1394,
+        "generate_code_sec": 0.9265
+      },
+      "raw_state": {
+        "user_input": "Построй scatter plot кластеров KMeans по первым двум признакам.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "import plotly.express as px\nfrom sklearn.cluster import KMeans\nimport pandas as pd\n\nkmeans = KMeans(n_clusters=3, random_state=42)\ndf['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width']])\n\nfig = px.scatter(df, x='sepal_length', y='sepal_width', color='cluster', symbol='species', title='KMeans Clusters on First Two Features')\nfig.show()",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1394,
+          "generate_code_sec": 0.9265
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_013_train_test_split",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "from sklearn.model_selection import train_test_split\n\nX = df.drop('species', axis=1)\ny = df['species']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1355,
+        "generate_code_sec": 0.6157
+      },
+      "raw_state": {
+        "user_input": "Раздели датасет на обучающую и тестовую выборки.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": "from sklearn.model_selection import train_test_split\n\nX = df.drop('species', axis=1)\ny = df['species']\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)",
+        "response_message": "Here's the generated code:",
+        "response_audio": null,
+        "decision": {
+          "action": "code_generation"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1355,
+          "generate_code_sec": 0.6157
+        }
+      },
+      "benchmark_file": "iris_code_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "code_014_show_all_plots",
+      "expected_decision": "code_generation",
+      "model_decision": {
+        "action": "code_generation"
+      },
+      "generated_code": "import plotly.express as px\n\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species', title='Scatter Matrix of Iris Dataset')\nfig.show()",
+      "response_message": "Here's the generated code:",
+      "timing_info": {
+        "decide_action_sec": 0.1276,
+        "generate_code_sec": 0.525
       },
       "raw_state": {
         "user_input": "Отобрази все графики.",
@@ -304,21 +1004,21 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "import plotly.express as px\n\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species', title='Scatter Matrix of Iris Features')\nfig.show()",
+        "generated_code": "import plotly.express as px\n\nfig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species', title='Scatter Matrix of Iris Dataset')\nfig.show()",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1314,
-          "generate_code_sec": 0.5833
+          "decide_action_sec": 0.1276,
+          "generate_code_sec": 0.525
         }
       },
       "benchmark_file": "iris_code_benchmark_ru.json"
     },
     {
-      "benchmark_id": "code_005_histogram",
+      "benchmark_id": "code_015_histogram",
       "expected_decision": "code_generation",
       "model_decision": {
         "action": "code_generation"
@@ -326,8 +1026,8 @@
       "generated_code": "import plotly.express as px\npx.histogram(df, x='sepal_length', nbins=20, title='Histogram of Sepal Length')",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1323,
-        "generate_code_sec": 0.3767
+        "decide_action_sec": 0.1282,
+        "generate_code_sec": 0.35
       },
       "raw_state": {
         "user_input": "Отобрази график Histogram",
@@ -346,8 +1046,8 @@
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1323,
-          "generate_code_sec": 0.3767
+          "decide_action_sec": 0.1282,
+          "generate_code_sec": 0.35
         }
       },
       "benchmark_file": "iris_code_benchmark_ru.json"
@@ -359,10 +1059,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "This dataset contains measurements of flower parts, specifically:\n\n- **Sepal length**: The length of the sepal in centimeters.\n- **Sepal width**: The width of the sepal in centimeters.\n- **Petal length**: The length of the petal in centimeters.\n- **Petal width**: The width of the petal in centimeters.\n- **Species**: The type of flower, such as setosa, versicolor, or virginica.\n\nThese measurements are commonly used to classify different species of iris flowers.",
+      "response_message": "This dataset contains measurements of flowers from three different species.\n\nEach row represents one flower, and each column shows a specific measurement:\n\n- **sepal_length**: The length of the sepal in centimeters.\n- **sepal_width**: The width of the sepal in centimeters.\n- **petal_length**: The length of the petal in centimeters.\n- **petal_width**: The width of the petal in centimeters.\n- **species**: The type of flower, such as setosa, versicolor, or virginica.\n\nThese measurements help scientists and students identify and classify flowers based on their physical features.",
       "timing_info": {
-        "decide_action_sec": 0.1316,
-        "generate_chat_response_sec": 1.034
+        "decide_action_sec": 0.1269,
+        "generate_chat_response_sec": 1.1673
       },
       "raw_state": {
         "user_input": "Explain what this dataset represents.",
@@ -375,14 +1075,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "This dataset contains measurements of flower parts, specifically:\n\n- **Sepal length**: The length of the sepal in centimeters.\n- **Sepal width**: The width of the sepal in centimeters.\n- **Petal length**: The length of the petal in centimeters.\n- **Petal width**: The width of the petal in centimeters.\n- **Species**: The type of flower, such as setosa, versicolor, or virginica.\n\nThese measurements are commonly used to classify different species of iris flowers.",
+        "response_message": "This dataset contains measurements of flowers from three different species.\n\nEach row represents one flower, and each column shows a specific measurement:\n\n- **sepal_length**: The length of the sepal in centimeters.\n- **sepal_width**: The width of the sepal in centimeters.\n- **petal_length**: The length of the petal in centimeters.\n- **petal_width**: The width of the petal in centimeters.\n- **species**: The type of flower, such as setosa, versicolor, or virginica.\n\nThese measurements help scientists and students identify and classify flowers based on their physical features.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1316,
-          "generate_chat_response_sec": 1.034
+          "decide_action_sec": 0.1269,
+          "generate_chat_response_sec": 1.1673
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -394,10 +1094,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "The dataset has **three classes**.\n\nThese are the species of flowers:\n- **setosa**\n- **versicolor**\n- **virginica**",
+      "response_message": "This dataset has **three classes**.\n\nThey are the species of flowers:\n- **setosa**\n- **versicolor**\n- **virginica**",
       "timing_info": {
-        "decide_action_sec": 0.1394,
-        "generate_chat_response_sec": 0.4303
+        "decide_action_sec": 0.1286,
+        "generate_chat_response_sec": 0.3401
       },
       "raw_state": {
         "user_input": "How many classes are in this dataset?",
@@ -410,14 +1110,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "The dataset has **three classes**.\n\nThese are the species of flowers:\n- **setosa**\n- **versicolor**\n- **virginica**",
+        "response_message": "This dataset has **three classes**.\n\nThey are the species of flowers:\n- **setosa**\n- **versicolor**\n- **virginica**",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1394,
-          "generate_chat_response_sec": 0.4303
+          "decide_action_sec": 0.1286,
+          "generate_chat_response_sec": 0.3401
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -431,8 +1131,8 @@
       "generated_code": "df.groupby('species').agg(['mean', 'std'])",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1293,
-        "generate_code_sec": 0.2767
+        "decide_action_sec": 0.1285,
+        "generate_code_sec": 0.1752
       },
       "raw_state": {
         "user_input": "Which features best separate the iris species?",
@@ -451,8 +1151,8 @@
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1293,
-          "generate_code_sec": 0.2767
+          "decide_action_sec": 0.1285,
+          "generate_code_sec": 0.1752
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -464,10 +1164,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "The **setosa** species is the easiest to separate from the others.\n\nIt has distinct features:\n- **Smaller petals** compared to the other species.\n- **Shorter sepal length and width** on average.\n\nThese differences make setosa stand out clearly when looking at the data.",
+      "response_message": "The **setosa** species is the easiest to separate from the others.\n\nIt has clearly distinct measurements, especially in petal length and petal width.  \nFor example:\n- Petal length is usually under 2 cm.\n- Petal width is usually under 0.8 cm.\n\nThese values are quite different from the other two species, versicolor and virginica, which overlap more in their measurements.",
       "timing_info": {
-        "decide_action_sec": 0.1312,
-        "generate_chat_response_sec": 0.6854
+        "decide_action_sec": 0.131,
+        "generate_chat_response_sec": 0.7953
       },
       "raw_state": {
         "user_input": "Which iris species is the easiest to separate from the others?",
@@ -480,14 +1180,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "The **setosa** species is the easiest to separate from the others.\n\nIt has distinct features:\n- **Smaller petals** compared to the other species.\n- **Shorter sepal length and width** on average.\n\nThese differences make setosa stand out clearly when looking at the data.",
+        "response_message": "The **setosa** species is the easiest to separate from the others.\n\nIt has clearly distinct measurements, especially in petal length and petal width.  \nFor example:\n- Petal length is usually under 2 cm.\n- Petal width is usually under 0.8 cm.\n\nThese values are quite different from the other two species, versicolor and virginica, which overlap more in their measurements.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1312,
-          "generate_chat_response_sec": 0.6854
+          "decide_action_sec": 0.131,
+          "generate_chat_response_sec": 0.7953
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -499,10 +1199,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "**Overfitting** happens when a machine learning model learns the training data too well — including its noise and outliers — instead of finding the general patterns.\n\nThis means the model performs very well on the training data but poorly on new, unseen data.\n\nThink of it like memorizing answers for a test instead of understanding the material. The model \"remembers\" the training examples but can't apply what it learned to new situations.\n\n**Common signs of overfitting:**\n- High accuracy on training data\n- Low accuracy on test or validation data\n\nTo prevent overfitting, you can use techniques like:\n- Simplifying the model\n- Using more training data\n- Applying regularization\n- Using cross-validation\n\nThe goal is to build a model that generalizes well to new data.",
+      "response_message": "**Overfitting** happens when a machine learning model learns the training data too well — so well that it starts memorizing the details and noise, instead of finding general patterns.\n\nThis means the model performs very well on the training data but poorly on new, unseen data.\n\nFor example, imagine a model trying to classify flowers. If it memorizes every flower in the training set, it might fail when seeing a slightly different flower.\n\n**Key signs of overfitting:**\n- High accuracy on training data\n- Low accuracy on test or validation data\n\nTo avoid overfitting, we use techniques like:\n- Simplifying the model\n- Using more training data\n- Applying regularization\n- Using cross-validation\n\nThe goal is to build a model that generalizes well to new data.",
       "timing_info": {
-        "decide_action_sec": 0.1301,
-        "generate_chat_response_sec": 1.5059
+        "decide_action_sec": 0.1263,
+        "generate_chat_response_sec": 1.4616
       },
       "raw_state": {
         "user_input": "What is overfitting in machine learning?",
@@ -515,14 +1215,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "**Overfitting** happens when a machine learning model learns the training data too well — including its noise and outliers — instead of finding the general patterns.\n\nThis means the model performs very well on the training data but poorly on new, unseen data.\n\nThink of it like memorizing answers for a test instead of understanding the material. The model \"remembers\" the training examples but can't apply what it learned to new situations.\n\n**Common signs of overfitting:**\n- High accuracy on training data\n- Low accuracy on test or validation data\n\nTo prevent overfitting, you can use techniques like:\n- Simplifying the model\n- Using more training data\n- Applying regularization\n- Using cross-validation\n\nThe goal is to build a model that generalizes well to new data.",
+        "response_message": "**Overfitting** happens when a machine learning model learns the training data too well — so well that it starts memorizing the details and noise, instead of finding general patterns.\n\nThis means the model performs very well on the training data but poorly on new, unseen data.\n\nFor example, imagine a model trying to classify flowers. If it memorizes every flower in the training set, it might fail when seeing a slightly different flower.\n\n**Key signs of overfitting:**\n- High accuracy on training data\n- Low accuracy on test or validation data\n\nTo avoid overfitting, we use techniques like:\n- Simplifying the model\n- Using more training data\n- Applying regularization\n- Using cross-validation\n\nThe goal is to build a model that generalizes well to new data.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1301,
-          "generate_chat_response_sec": 1.5059
+          "decide_action_sec": 0.1263,
+          "generate_chat_response_sec": 1.4616
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -534,10 +1234,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "A **train-test split** is used to check how well a model will work on new, unseen data.\n\nHere’s why:\n\n- The model learns from the **training data**.\n- Then, it is tested on the **test data**, which it hasn’t seen before.\n- This helps us see if the model is truly learning patterns or just memorizing the training data.\n\nIf a model does well on training data but poorly on test data, it might be **overfitting**.\n\nUsing a train-test split gives a more honest estimate of the model’s real-world performance.",
+      "response_message": "A **train-test split** is used to check how well a model will perform on new, unseen data.\n\nHere’s why it’s important:\n\n- We train the model on part of the data, called the **training set**.\n- Then we test the model on a separate part, called the **test set**.\n- This helps us see if the model learns patterns well or just memorizes the training data.\n\nIf a model works well on the test set, it’s likely to work well in real-world situations.\n\nIt’s like studying for a test using practice questions, then taking the real test to see how well you really understand the material.",
       "timing_info": {
-        "decide_action_sec": 0.1318,
-        "generate_chat_response_sec": 1.1975
+        "decide_action_sec": 0.1319,
+        "generate_chat_response_sec": 1.22
       },
       "raw_state": {
         "user_input": "Why is a train-test split used?",
@@ -550,14 +1250,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "A **train-test split** is used to check how well a model will work on new, unseen data.\n\nHere’s why:\n\n- The model learns from the **training data**.\n- Then, it is tested on the **test data**, which it hasn’t seen before.\n- This helps us see if the model is truly learning patterns or just memorizing the training data.\n\nIf a model does well on training data but poorly on test data, it might be **overfitting**.\n\nUsing a train-test split gives a more honest estimate of the model’s real-world performance.",
+        "response_message": "A **train-test split** is used to check how well a model will perform on new, unseen data.\n\nHere’s why it’s important:\n\n- We train the model on part of the data, called the **training set**.\n- Then we test the model on a separate part, called the **test set**.\n- This helps us see if the model learns patterns well or just memorizes the training data.\n\nIf a model works well on the test set, it’s likely to work well in real-world situations.\n\nIt’s like studying for a test using practice questions, then taking the real test to see how well you really understand the material.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1318,
-          "generate_chat_response_sec": 1.1975
+          "decide_action_sec": 0.1319,
+          "generate_chat_response_sec": 1.22
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -569,10 +1269,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "**Regularization** is a technique used in machine learning to prevent a model from becoming too complex.\n\nIt works by adding a penalty to the size of the coefficients in the model.\n\nThis helps reduce overfitting, which happens when a model learns the training data too well — including its noise and outliers — and performs poorly on new data.\n\nCommon types of regularization include:\n- **L1 regularization** (Lasso): Adds the absolute value of coefficients as a penalty.\n- **L2 regularization** (Ridge): Adds the squared value of coefficients as a penalty.\n\nRegularization improves a model's ability to generalize to unseen data.\n\nIt is especially useful when there are many features or when features are highly correlated.",
+      "response_message": "**Regularization** is a technique used in machine learning to prevent a model from becoming too complex.\n\nIt works by adding a penalty to the size of the model's coefficients. This helps the model avoid overfitting, which happens when it learns the training data too well — including its noise and outliers — and performs poorly on new data.\n\nThink of it like a rule that keeps the model simple and general.\n\nCommon types include:\n- **L1 regularization** (Lasso): Adds the absolute value of coefficients to the loss.\n- **L2 regularization** (Ridge): Adds the squared value of coefficients to the loss.\n\nRegularization is used to improve a model's ability to make accurate predictions on unseen data.",
       "timing_info": {
-        "decide_action_sec": 0.1419,
-        "generate_chat_response_sec": 1.3909
+        "decide_action_sec": 0.1335,
+        "generate_chat_response_sec": 1.3386
       },
       "raw_state": {
         "user_input": "What is regularization and why is it used?",
@@ -585,14 +1285,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "**Regularization** is a technique used in machine learning to prevent a model from becoming too complex.\n\nIt works by adding a penalty to the size of the coefficients in the model.\n\nThis helps reduce overfitting, which happens when a model learns the training data too well — including its noise and outliers — and performs poorly on new data.\n\nCommon types of regularization include:\n- **L1 regularization** (Lasso): Adds the absolute value of coefficients as a penalty.\n- **L2 regularization** (Ridge): Adds the squared value of coefficients as a penalty.\n\nRegularization improves a model's ability to generalize to unseen data.\n\nIt is especially useful when there are many features or when features are highly correlated.",
+        "response_message": "**Regularization** is a technique used in machine learning to prevent a model from becoming too complex.\n\nIt works by adding a penalty to the size of the model's coefficients. This helps the model avoid overfitting, which happens when it learns the training data too well — including its noise and outliers — and performs poorly on new data.\n\nThink of it like a rule that keeps the model simple and general.\n\nCommon types include:\n- **L1 regularization** (Lasso): Adds the absolute value of coefficients to the loss.\n- **L2 regularization** (Ridge): Adds the squared value of coefficients to the loss.\n\nRegularization is used to improve a model's ability to make accurate predictions on unseen data.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1419,
-          "generate_chat_response_sec": 1.3909
+          "decide_action_sec": 0.1335,
+          "generate_chat_response_sec": 1.3386
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -604,10 +1304,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "The **bias-variance tradeoff** is a key concept in machine learning that helps us understand how well a model will perform on new data.\n\n- **Bias** is the error from incorrect assumptions in the model. High bias means the model is too simple and doesn't capture the patterns in the data. This leads to **underfitting**.\n\n- **Variance** is the error from too much sensitivity to small changes in the training data. High variance means the model is too complex and learns noise instead of the true pattern. This leads to **overfitting**.\n\n- A good model balances both:\n  - Low bias: The model fits the training data well.\n  - Low variance: The model generalizes well to new data.\n\nThink of it like aiming at a target:\n- High bias: All shots are far from the center, but close to each other.\n- High variance: Shots are scattered all over, even if some are close.\n- Low bias and low variance: Shots are close to the center and close to each other.\n\nThe goal is to find the sweet spot where the model is accurate and stable.",
+      "response_message": "The **bias-variance tradeoff** is a key concept in machine learning that helps us understand how well a model will perform on new data.\n\n**Bias** is the error from incorrect assumptions in the learning algorithm. High bias means the model is too simple. It might miss important patterns in the data. This leads to **underfitting**.\n\n**Variance** is the error from sensitivity to small fluctuations in the training data. High variance means the model is too complex. It learns the training data too well, including noise. This leads to **overfitting**.\n\nA good model balances both:\n- Low bias: It captures the true relationship in the data.\n- Low variance: It performs consistently on new data.\n\nIf you reduce bias, variance often increases — and vice versa. The goal is to find the sweet spot where the model generalizes well.\n\nThink of it like aiming at a target:\n- High bias: All shots are far from the center, but close to each other.\n- High variance: Shots are scattered all over, even if some hit the center.\n- Low bias and low variance: Shots are close to the center and close to each other.\n\nThis tradeoff helps guide model selection and tuning.",
       "timing_info": {
-        "decide_action_sec": 0.1316,
-        "generate_chat_response_sec": 2.1147
+        "decide_action_sec": 0.1296,
+        "generate_chat_response_sec": 2.2377
       },
       "raw_state": {
         "user_input": "Explain the bias-variance tradeoff.",
@@ -620,29 +1320,554 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "The **bias-variance tradeoff** is a key concept in machine learning that helps us understand how well a model will perform on new data.\n\n- **Bias** is the error from incorrect assumptions in the model. High bias means the model is too simple and doesn't capture the patterns in the data. This leads to **underfitting**.\n\n- **Variance** is the error from too much sensitivity to small changes in the training data. High variance means the model is too complex and learns noise instead of the true pattern. This leads to **overfitting**.\n\n- A good model balances both:\n  - Low bias: The model fits the training data well.\n  - Low variance: The model generalizes well to new data.\n\nThink of it like aiming at a target:\n- High bias: All shots are far from the center, but close to each other.\n- High variance: Shots are scattered all over, even if some are close.\n- Low bias and low variance: Shots are close to the center and close to each other.\n\nThe goal is to find the sweet spot where the model is accurate and stable.",
+        "response_message": "The **bias-variance tradeoff** is a key concept in machine learning that helps us understand how well a model will perform on new data.\n\n**Bias** is the error from incorrect assumptions in the learning algorithm. High bias means the model is too simple. It might miss important patterns in the data. This leads to **underfitting**.\n\n**Variance** is the error from sensitivity to small fluctuations in the training data. High variance means the model is too complex. It learns the training data too well, including noise. This leads to **overfitting**.\n\nA good model balances both:\n- Low bias: It captures the true relationship in the data.\n- Low variance: It performs consistently on new data.\n\nIf you reduce bias, variance often increases — and vice versa. The goal is to find the sweet spot where the model generalizes well.\n\nThink of it like aiming at a target:\n- High bias: All shots are far from the center, but close to each other.\n- High variance: Shots are scattered all over, even if some hit the center.\n- Low bias and low variance: Shots are close to the center and close to each other.\n\nThis tradeoff helps guide model selection and tuning.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1316,
-          "generate_chat_response_sec": 2.1147
+          "decide_action_sec": 0.1296,
+          "generate_chat_response_sec": 2.2377
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
     },
     {
-      "benchmark_id": "chat_005_what_is_in_data_en",
+      "benchmark_id": "chat_005_feature_count_en",
       "expected_decision": "chat_response",
       "model_decision": {
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "The data contains measurements of iris flowers.\n\nEach entry has five pieces of information:\n\n- **sepal_length**: The length of the sepal in centimeters.\n- **sepal_width**: The width of the sepal in centimeters.\n- **petal_length**: The length of the petal in centimeters.\n- **petal_width**: The width of the petal in centimeters.\n- **species**: The type of iris flower. This is a category, like setosa, versicolor, or virginica.\n\nThese measurements help identify which species the flower belongs to.",
+      "response_message": "This dataset has **five** features.\n\nThey are:\n- **sepal_length**\n- **sepal_width**\n- **petal_length**\n- **petal_width**\n- **species**\n\nEach feature describes a different characteristic of the flowers in the dataset.",
       "timing_info": {
-        "decide_action_sec": 0.1347,
-        "generate_chat_response_sec": 1.1969
+        "decide_action_sec": 0.1421,
+        "generate_chat_response_sec": 0.535
+      },
+      "raw_state": {
+        "user_input": "How many features does this dataset have?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "This dataset has **five** features.\n\nThey are:\n- **sepal_length**\n- **sepal_width**\n- **petal_length**\n- **petal_width**\n- **species**\n\nEach feature describes a different characteristic of the flowers in the dataset.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1421,
+          "generate_chat_response_sec": 0.535
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_006_samples_count_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "The dataset contains **150 samples**.",
+      "timing_info": {
+        "decide_action_sec": 0.1384,
+        "generate_chat_response_sec": 0.1645
+      },
+      "raw_state": {
+        "user_input": "How many samples are in this dataset?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "The dataset contains **150 samples**.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1384,
+          "generate_chat_response_sec": 0.1645
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_007_numeric_only_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "No, not all features are numeric.\n\nThe features **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** are all numeric (float type).\n\nHowever, the **species** feature is a category, which means it contains text labels like \"setosa\", \"versicolor\", or \"virginica\".\n\nSo, only four features are numeric. The **species** feature is categorical.",
+      "timing_info": {
+        "decide_action_sec": 0.1353,
+        "generate_chat_response_sec": 0.8336
+      },
+      "raw_state": {
+        "user_input": "Are all features in this dataset numeric?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "No, not all features are numeric.\n\nThe features **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** are all numeric (float type).\n\nHowever, the **species** feature is a category, which means it contains text labels like \"setosa\", \"versicolor\", or \"virginica\".\n\nSo, only four features are numeric. The **species** feature is categorical.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1353,
+          "generate_chat_response_sec": 0.8336
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_008_need_scaling_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Feature scaling** can be important for this dataset, especially if you're using machine learning models that are sensitive to the scale of input features.\n\nFor example:\n- **Distance-based models** like *k-Nearest Neighbors* or *Support Vector Machines* work better when all features are on a similar scale.\n- **Gradient descent-based models** like *Logistic Regression* or *Neural Networks* also converge faster when features are scaled.\n\nIn this dataset, features like *sepal_length*, *sepal_width*, *petal_length*, and *petal_width* have different ranges and units. Without scaling, features with larger values (like petal_length) might dominate the model's learning process.\n\nSo, yes — **scaling helps improve model performance and stability**.\n\nIf you're planning to use such models, consider using techniques like **StandardScaler** or **MinMaxScaler**.",
+      "timing_info": {
+        "decide_action_sec": 0.1373,
+        "generate_chat_response_sec": 1.6809
+      },
+      "raw_state": {
+        "user_input": "Is feature scaling important for this dataset?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Feature scaling** can be important for this dataset, especially if you're using machine learning models that are sensitive to the scale of input features.\n\nFor example:\n- **Distance-based models** like *k-Nearest Neighbors* or *Support Vector Machines* work better when all features are on a similar scale.\n- **Gradient descent-based models** like *Logistic Regression* or *Neural Networks* also converge faster when features are scaled.\n\nIn this dataset, features like *sepal_length*, *sepal_width*, *petal_length*, and *petal_width* have different ranges and units. Without scaling, features with larger values (like petal_length) might dominate the model's learning process.\n\nSo, yes — **scaling helps improve model performance and stability**.\n\nIf you're planning to use such models, consider using techniques like **StandardScaler** or **MinMaxScaler**.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1373,
+          "generate_chat_response_sec": 1.6809
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_009_linear_separable_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "This dataset contains measurements of flower parts—**sepal length**, **sepal width**, **petal length**, and **petal width**—and the species of the flower.\n\nWhether the data is **linearly separable** depends on how the species are distributed in the feature space.\n\nIn general, for this dataset, **species can be separated with good accuracy using linear methods**, especially when using **petal length** and **petal width**.\n\nFor example:\n- **Setosa** flowers are clearly separated from the other two species.\n- **Versicolor** and **Virginica** overlap more, but still show some separation.\n\nSo, while **perfect linear separation** across all three species is not possible, **two of the species can be separated linearly**.\n\nIf you want to check this yourself, plotting the data with **petal length** and **petal width** often shows clear clusters.\n\nNote: Determining exact linear separability requires a formal analysis or model, which is best done with code.",
+      "timing_info": {
+        "decide_action_sec": 0.1378,
+        "generate_chat_response_sec": 1.8987
+      },
+      "raw_state": {
+        "user_input": "Is this dataset linearly separable?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "This dataset contains measurements of flower parts—**sepal length**, **sepal width**, **petal length**, and **petal width**—and the species of the flower.\n\nWhether the data is **linearly separable** depends on how the species are distributed in the feature space.\n\nIn general, for this dataset, **species can be separated with good accuracy using linear methods**, especially when using **petal length** and **petal width**.\n\nFor example:\n- **Setosa** flowers are clearly separated from the other two species.\n- **Versicolor** and **Virginica** overlap more, but still show some separation.\n\nSo, while **perfect linear separation** across all three species is not possible, **two of the species can be separated linearly**.\n\nIf you want to check this yourself, plotting the data with **petal length** and **petal width** often shows clear clusters.\n\nNote: Determining exact linear separability requires a formal analysis or model, which is best done with code.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1378,
+          "generate_chat_response_sec": 1.8987
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_011_unsupervised_possible_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "Yes, this dataset can be used for unsupervised learning.\n\nIn unsupervised learning, we look for patterns in data without using labels.\n\nHere’s how this dataset can be used:\n\n- **Clustering**: You can group similar flowers together based on their measurements. For example, using *k-means* to find natural groups of flowers.\n- **Dimensionality reduction**: You can use techniques like *PCA* to reduce the four features (sepal length, sepal width, petal length, petal width) into fewer dimensions while keeping the most important information.\n- **Anomaly detection**: You can find unusual flowers that don’t fit the typical patterns in the data.\n\nEven though the dataset includes a *species* column, you can ignore it during unsupervised learning to discover hidden structures on your own.\n\nSo, yes — this dataset works well for unsupervised learning tasks.",
+      "timing_info": {
+        "decide_action_sec": 0.1392,
+        "generate_chat_response_sec": 1.6669
+      },
+      "raw_state": {
+        "user_input": "Can this dataset be used for unsupervised learning?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "Yes, this dataset can be used for unsupervised learning.\n\nIn unsupervised learning, we look for patterns in data without using labels.\n\nHere’s how this dataset can be used:\n\n- **Clustering**: You can group similar flowers together based on their measurements. For example, using *k-means* to find natural groups of flowers.\n- **Dimensionality reduction**: You can use techniques like *PCA* to reduce the four features (sepal length, sepal width, petal length, petal width) into fewer dimensions while keeping the most important information.\n- **Anomaly detection**: You can find unusual flowers that don’t fit the typical patterns in the data.\n\nEven though the dataset includes a *species* column, you can ignore it during unsupervised learning to discover hidden structures on your own.\n\nSo, yes — this dataset works well for unsupervised learning tasks.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1392,
+          "generate_chat_response_sec": 1.6669
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_012_pca_purpose_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "Yes, **PCA** (Principal Component Analysis) is applicable to this dataset.\n\nThe dataset contains numerical features:  \n- **sepal_length**  \n- **sepal_width**  \n- **petal_length**  \n- **petal_width**\n\nThese are all continuous numeric values, which is exactly what PCA needs.\n\nPCA works best when variables are on similar scales and have some correlation. In this case, the measurements are all in centimeters and likely show some relationships — for example, longer petals often go with longer sepals.\n\nSo, PCA can help reduce the number of features while keeping most of the important information.\n\n> **Note**: It's a good idea to **standardize** the data before applying PCA, since the features may have different scales.\n\nIf you'd like, I can help you write code to apply PCA to this dataset.",
+      "timing_info": {
+        "decide_action_sec": 0.1405,
+        "generate_chat_response_sec": 1.5804
+      },
+      "raw_state": {
+        "user_input": "Is PCA applicable to this dataset?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "Yes, **PCA** (Principal Component Analysis) is applicable to this dataset.\n\nThe dataset contains numerical features:  \n- **sepal_length**  \n- **sepal_width**  \n- **petal_length**  \n- **petal_width**\n\nThese are all continuous numeric values, which is exactly what PCA needs.\n\nPCA works best when variables are on similar scales and have some correlation. In this case, the measurements are all in centimeters and likely show some relationships — for example, longer petals often go with longer sepals.\n\nSo, PCA can help reduce the number of features while keeping most of the important information.\n\n> **Note**: It's a good idea to **standardize** the data before applying PCA, since the features may have different scales.\n\nIf you'd like, I can help you write code to apply PCA to this dataset.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1405,
+          "generate_chat_response_sec": 1.5804
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_013_outliers_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "Outliers can be a concern in any dataset, but in this case, the data appears to be from the well-known **Iris dataset**, which is generally clean and well-behaved.\n\nThe features — **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** — are all continuous measurements of flower parts, and they tend to cluster neatly by species.\n\nBecause the dataset is small and carefully collected, extreme values are rare. There might be a few points that stand out slightly, but they are not likely to be major outliers.\n\nIn short: **Outliers are not a major concern** for this dataset.\n\nIf you're doing detailed analysis, you can still check for outliers using tools like box plots or statistical methods. But for most purposes, the data is reliable and doesn’t require special handling for outliers.",
+      "timing_info": {
+        "decide_action_sec": 0.1418,
+        "generate_chat_response_sec": 1.5872
+      },
+      "raw_state": {
+        "user_input": "Are outliers a major concern in this dataset?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "Outliers can be a concern in any dataset, but in this case, the data appears to be from the well-known **Iris dataset**, which is generally clean and well-behaved.\n\nThe features — **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** — are all continuous measurements of flower parts, and they tend to cluster neatly by species.\n\nBecause the dataset is small and carefully collected, extreme values are rare. There might be a few points that stand out slightly, but they are not likely to be major outliers.\n\nIn short: **Outliers are not a major concern** for this dataset.\n\nIf you're doing detailed analysis, you can still check for outliers using tools like box plots or statistical methods. But for most purposes, the data is reliable and doesn’t require special handling for outliers.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1418,
+          "generate_chat_response_sec": 1.5872
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_014_real_world_limitations_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "This dataset has a few key limitations:\n\n- It contains only **four numerical features**: sepal length, sepal width, petal length, and petal width.  \n- The target variable, **species**, is a categorical label with only three classes.  \n- The dataset is small, with just **150 samples** total.  \n- It is a **well-known, preprocessed dataset** (Iris dataset), so it may not reflect real-world complexity or noise.  \n- It does not include missing values, which might make it less realistic for testing data cleaning techniques.  \n- The features are highly correlated, which can affect some machine learning models.\n\nThese limitations mean the dataset is best suited for learning and basic model testing, not for real-world deployment.",
+      "timing_info": {
+        "decide_action_sec": 0.1395,
+        "generate_chat_response_sec": 1.4542
+      },
+      "raw_state": {
+        "user_input": "What are the limitations of this dataset?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "This dataset has a few key limitations:\n\n- It contains only **four numerical features**: sepal length, sepal width, petal length, and petal width.  \n- The target variable, **species**, is a categorical label with only three classes.  \n- The dataset is small, with just **150 samples** total.  \n- It is a **well-known, preprocessed dataset** (Iris dataset), so it may not reflect real-world complexity or noise.  \n- It does not include missing values, which might make it less realistic for testing data cleaning techniques.  \n- The features are highly correlated, which can affect some machine learning models.\n\nThese limitations mean the dataset is best suited for learning and basic model testing, not for real-world deployment.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1395,
+          "generate_chat_response_sec": 1.4542
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "theory_006_classification_vs_regression_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Classification** and **regression** are two types of machine learning tasks.\n\nIn **classification**, the goal is to predict a **category** or **label**.  \nFor example, deciding if a flower is *setosa*, *versicolor*, or *virginica*.\n\nIn **regression**, the goal is to predict a **number** or **continuous value**.  \nFor example, predicting the exact length of a petal in centimeters.\n\nSo, the main difference is:\n- **Classification** predicts **which group** something belongs to.\n- **Regression** predicts **how much** or **how many**.\n\nBoth are used to make predictions based on data.",
+      "timing_info": {
+        "decide_action_sec": 0.1383,
+        "generate_chat_response_sec": 1.305
+      },
+      "raw_state": {
+        "user_input": "What is the difference between classification and regression?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Classification** and **regression** are two types of machine learning tasks.\n\nIn **classification**, the goal is to predict a **category** or **label**.  \nFor example, deciding if a flower is *setosa*, *versicolor*, or *virginica*.\n\nIn **regression**, the goal is to predict a **number** or **continuous value**.  \nFor example, predicting the exact length of a petal in centimeters.\n\nSo, the main difference is:\n- **Classification** predicts **which group** something belongs to.\n- **Regression** predicts **how much** or **how many**.\n\nBoth are used to make predictions based on data.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1383,
+          "generate_chat_response_sec": 1.305
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "theory_007_cross_validation_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Cross-validation** is a method used to check how well a model will work on new, unseen data.\n\nIt helps make sure the model isn't just memorizing the training data, but actually learning patterns.\n\nHere’s how it works in simple steps:\n\n- The data is split into parts, often called *folds*.\n- The model is trained on some of the folds and tested on the remaining one.\n- This process is repeated so that each fold gets a turn being the test set.\n- The results from all the tests are combined to give a better idea of the model’s performance.\n\nA common type is **k-fold cross-validation**, where the data is split into *k* parts.\n\nFor example, with 5-fold cross-validation:\n- The data is divided into 5 groups.\n- The model is trained and tested 5 times.\n- Each time, a different group is used for testing.\n\nThis gives a more reliable estimate of how the model will perform in real use.",
+      "timing_info": {
+        "decide_action_sec": 0.1417,
+        "generate_chat_response_sec": 1.8318
+      },
+      "raw_state": {
+        "user_input": "What is cross-validation?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Cross-validation** is a method used to check how well a model will work on new, unseen data.\n\nIt helps make sure the model isn't just memorizing the training data, but actually learning patterns.\n\nHere’s how it works in simple steps:\n\n- The data is split into parts, often called *folds*.\n- The model is trained on some of the folds and tested on the remaining one.\n- This process is repeated so that each fold gets a turn being the test set.\n- The results from all the tests are combined to give a better idea of the model’s performance.\n\nA common type is **k-fold cross-validation**, where the data is split into *k* parts.\n\nFor example, with 5-fold cross-validation:\n- The data is divided into 5 groups.\n- The model is trained and tested 5 times.\n- Each time, a different group is used for testing.\n\nThis gives a more reliable estimate of how the model will perform in real use.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1417,
+          "generate_chat_response_sec": 1.8318
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "theory_008_feature_engineering_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Feature engineering** is the process of using your knowledge about the data to create new features or improve existing ones.\n\nIt helps machine learning models understand the data better.\n\nFor example, in the iris dataset, you might combine **petal_length** and **petal_width** to create a new feature like **petal_area**.\n\nThis new feature could help the model spot patterns more easily.\n\nFeature engineering is about making the most useful inputs for your model.",
+      "timing_info": {
+        "decide_action_sec": 0.138,
+        "generate_chat_response_sec": 0.8812
+      },
+      "raw_state": {
+        "user_input": "What is feature engineering?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Feature engineering** is the process of using your knowledge about the data to create new features or improve existing ones.\n\nIt helps machine learning models understand the data better.\n\nFor example, in the iris dataset, you might combine **petal_length** and **petal_width** to create a new feature like **petal_area**.\n\nThis new feature could help the model spot patterns more easily.\n\nFeature engineering is about making the most useful inputs for your model.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.138,
+          "generate_chat_response_sec": 0.8812
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "theory_009_data_leakage_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Data leakage** happens when information from outside the training dataset is used to create a model.\n\nThis can make the model seem more accurate than it really is.\n\nFor example, if you accidentally include future data or data that wouldn't be available at prediction time, that’s leakage.\n\nIt can lead to poor performance when the model is used in real situations.\n\nAlways make sure your model only uses data that will be available when making predictions.",
+      "timing_info": {
+        "decide_action_sec": 9.1805,
+        "generate_chat_response_sec": 0.8461
+      },
+      "raw_state": {
+        "user_input": "What is data leakage?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Data leakage** happens when information from outside the training dataset is used to create a model.\n\nThis can make the model seem more accurate than it really is.\n\nFor example, if you accidentally include future data or data that wouldn't be available at prediction time, that’s leakage.\n\nIt can lead to poor performance when the model is used in real situations.\n\nAlways make sure your model only uses data that will be available when making predictions.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 9.1805,
+          "generate_chat_response_sec": 0.8461
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "theory_010_precision_recall_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Precision** and **recall** are two important measures used to evaluate how well a model works, especially in classification tasks.\n\n- **Precision** tells us how many of the items the model predicted as positive are actually positive.  \n  It answers: *Out of all the items the model said were positive, how many were correct?*  \n  High precision means few false positives.\n\n- **Recall** tells us how many of the actual positive items the model correctly identified.  \n  It answers: *Out of all the real positive items, how many did the model catch?*  \n  High recall means few false negatives.\n\nFor example, in a medical test:\n- **High precision** means if the test says someone has a disease, it's very likely true.\n- **High recall** means the test finds most people who actually have the disease.\n\nThey often trade off against each other.  \nImproving one can reduce the other.\n\nA good model tries to balance both.",
+      "timing_info": {
+        "decide_action_sec": 0.131,
+        "generate_chat_response_sec": 1.8208
+      },
+      "raw_state": {
+        "user_input": "Explain precision and recall.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Precision** and **recall** are two important measures used to evaluate how well a model works, especially in classification tasks.\n\n- **Precision** tells us how many of the items the model predicted as positive are actually positive.  \n  It answers: *Out of all the items the model said were positive, how many were correct?*  \n  High precision means few false positives.\n\n- **Recall** tells us how many of the actual positive items the model correctly identified.  \n  It answers: *Out of all the real positive items, how many did the model catch?*  \n  High recall means few false negatives.\n\nFor example, in a medical test:\n- **High precision** means if the test says someone has a disease, it's very likely true.\n- **High recall** means the test finds most people who actually have the disease.\n\nThey often trade off against each other.  \nImproving one can reduce the other.\n\nA good model tries to balance both.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.131,
+          "generate_chat_response_sec": 1.8208
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "theory_011_accuracy_limitations_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Accuracy** is not a universal metric.\n\nIt works well when all classes are balanced — meaning each class has about the same number of samples.\n\nBut in cases where classes are imbalanced — for example, one species of iris appears much more often than others — accuracy can be misleading.\n\nFor instance, if 90% of the data is one species, a model that always predicts that species would have 90% accuracy, even if it fails on the other species.\n\nSo, accuracy is useful in some cases, but not always the best choice.\n\nOther metrics like **precision**, **recall**, or **F1-score** are often better for imbalanced data.\n\nAlways consider the context and data distribution when choosing a metric.",
+      "timing_info": {
+        "decide_action_sec": 0.1562,
+        "generate_chat_response_sec": 1.3625
+      },
+      "raw_state": {
+        "user_input": "Is accuracy a universal metric?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Accuracy** is not a universal metric.\n\nIt works well when all classes are balanced — meaning each class has about the same number of samples.\n\nBut in cases where classes are imbalanced — for example, one species of iris appears much more often than others — accuracy can be misleading.\n\nFor instance, if 90% of the data is one species, a model that always predicts that species would have 90% accuracy, even if it fails on the other species.\n\nSo, accuracy is useful in some cases, but not always the best choice.\n\nOther metrics like **precision**, **recall**, or **F1-score** are often better for imbalanced data.\n\nAlways consider the context and data distribution when choosing a metric.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1562,
+          "generate_chat_response_sec": 1.3625
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_en.json"
+    },
+    {
+      "benchmark_id": "chat_012_what_is_in_data_en",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "The data contains measurements of flower parts and the species of the flowers.\n\n- **sepal_length**: The length of the sepal in centimeters.\n- **sepal_width**: The width of the sepal in centimeters.\n- **petal_length**: The length of the petal in centimeters.\n- **petal_width**: The width of the petal in centimeters.\n- **species**: The type of flower, such as setosa, versicolor, or virginica.\n\nEach row represents one flower with these five pieces of information.",
+      "timing_info": {
+        "decide_action_sec": 0.1258,
+        "generate_chat_response_sec": 1.0404
       },
       "raw_state": {
         "user_input": "What is in the data?",
@@ -655,14 +1880,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "The data contains measurements of iris flowers.\n\nEach entry has five pieces of information:\n\n- **sepal_length**: The length of the sepal in centimeters.\n- **sepal_width**: The width of the sepal in centimeters.\n- **petal_length**: The length of the petal in centimeters.\n- **petal_width**: The width of the petal in centimeters.\n- **species**: The type of iris flower. This is a category, like setosa, versicolor, or virginica.\n\nThese measurements help identify which species the flower belongs to.",
+        "response_message": "The data contains measurements of flower parts and the species of the flowers.\n\n- **sepal_length**: The length of the sepal in centimeters.\n- **sepal_width**: The width of the sepal in centimeters.\n- **petal_length**: The length of the petal in centimeters.\n- **petal_width**: The width of the petal in centimeters.\n- **species**: The type of flower, such as setosa, versicolor, or virginica.\n\nEach row represents one flower with these five pieces of information.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1347,
-          "generate_chat_response_sec": 1.1969
+          "decide_action_sec": 0.1258,
+          "generate_chat_response_sec": 1.0404
         }
       },
       "benchmark_file": "iris_text_benchmark_en.json"
@@ -674,10 +1899,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "Этот датасет содержит данные о цветках ириса.  \nОн состоит из пяти столбцов:\n\n- **sepal_length** — длина чашелистика в сантиметрах  \n- **sepal_width** — ширина чашелистика в сантиметрах  \n- **petal_length** — длина лепестка в сантиметрах  \n- **petal_width** — ширина лепестка в сантиметрах  \n- **species** — вид ириса, например, setosa, versicolor или virginica\n\nКаждая строка — это измерения одного цветка.  \nДанные используются для обучения моделей машинного обучения, чтобы научиться определять вид ириса по его размерам.",
+      "response_message": "Этот датасет содержит измерения цветков ириса.  \nОн состоит из пяти столбцов:\n\n- **sepal_length** — длина чашелистика в сантиметрах  \n- **sepal_width** — ширина чашелистика в сантиметрах  \n- **petal_length** — длина лепестка в сантиметрах  \n- **petal_width** — ширина лепестка в сантиметрах  \n- **species** — вид ириса, категориальная переменная (например, setosa, versicolor, virginica)\n\nДанные используются для задач классификации: по размерам лепестков и чашелистиков определить, к какому виду принадлежит цветок.",
       "timing_info": {
-        "decide_action_sec": 0.144,
-        "generate_chat_response_sec": 1.6948
+        "decide_action_sec": 0.1334,
+        "generate_chat_response_sec": 1.7108
       },
       "raw_state": {
         "user_input": "Поясни, что представляет собой датасет.",
@@ -690,14 +1915,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "Этот датасет содержит данные о цветках ириса.  \nОн состоит из пяти столбцов:\n\n- **sepal_length** — длина чашелистика в сантиметрах  \n- **sepal_width** — ширина чашелистика в сантиметрах  \n- **petal_length** — длина лепестка в сантиметрах  \n- **petal_width** — ширина лепестка в сантиметрах  \n- **species** — вид ириса, например, setosa, versicolor или virginica\n\nКаждая строка — это измерения одного цветка.  \nДанные используются для обучения моделей машинного обучения, чтобы научиться определять вид ириса по его размерам.",
+        "response_message": "Этот датасет содержит измерения цветков ириса.  \nОн состоит из пяти столбцов:\n\n- **sepal_length** — длина чашелистика в сантиметрах  \n- **sepal_width** — ширина чашелистика в сантиметрах  \n- **petal_length** — длина лепестка в сантиметрах  \n- **petal_width** — ширина лепестка в сантиметрах  \n- **species** — вид ириса, категориальная переменная (например, setosa, versicolor, virginica)\n\nДанные используются для задач классификации: по размерам лепестков и чашелистиков определить, к какому виду принадлежит цветок.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.144,
-          "generate_chat_response_sec": 1.6948
+          "decide_action_sec": 0.1334,
+          "generate_chat_response_sec": 1.7108
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
@@ -709,10 +1934,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "В этом датасете **три класса**.\n\nОни соответствуют видам ирисов, указанным в столбце **species**.  \nЭто:  \n- **setosa**  \n- **versicolor**  \n- **virginica**",
+      "response_message": "В этом датасете **три класса**.\n\nОни соответствуют видам цветков в столбце `species`.  \nЭто:  \n- **setosa**  \n- **versicolor**  \n- **virginica**",
       "timing_info": {
-        "decide_action_sec": 0.1398,
-        "generate_chat_response_sec": 0.5758
+        "decide_action_sec": 0.1408,
+        "generate_chat_response_sec": 0.5077
       },
       "raw_state": {
         "user_input": "Сколько классов в этом датасете?",
@@ -725,14 +1950,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "В этом датасете **три класса**.\n\nОни соответствуют видам ирисов, указанным в столбце **species**.  \nЭто:  \n- **setosa**  \n- **versicolor**  \n- **virginica**",
+        "response_message": "В этом датасете **три класса**.\n\nОни соответствуют видам цветков в столбце `species`.  \nЭто:  \n- **setosa**  \n- **versicolor**  \n- **virginica**",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1398,
-          "generate_chat_response_sec": 0.5758
+          "decide_action_sec": 0.1408,
+          "generate_chat_response_sec": 0.5077
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
@@ -743,11 +1968,11 @@
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "df.groupby('species').mean()",
+      "generated_code": "df.groupby('species').agg(['mean', 'std'])",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1268,
-        "generate_code_sec": 0.1306
+        "decide_action_sec": 0.1243,
+        "generate_code_sec": 0.175
       },
       "raw_state": {
         "user_input": "Какие признаки лучше всего разделяют виды ирисов?",
@@ -759,15 +1984,15 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "df.groupby('species').mean()",
+        "generated_code": "df.groupby('species').agg(['mean', 'std'])",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1268,
-          "generate_code_sec": 0.1306
+          "decide_action_sec": 0.1243,
+          "generate_code_sec": 0.175
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
@@ -778,11 +2003,11 @@
       "model_decision": {
         "action": "code_generation"
       },
-      "generated_code": "import plotly.express as px\n\nfig = px.scatter(df, x='sepal_length', y='sepal_width', color='species', title='Sepal Length vs Sepal Width by Species')\nfig.show()\n\nfig = px.scatter(df, x='petal_length', y='petal_width', color='species', title='Petal Length vs Petal Width by Species')\nfig.show()",
+      "generated_code": "import plotly.express as px\n\nfig = px.scatter(df, x='petal_length', y='petal_width', color='species', title='Разделение видов ирисов по длине и ширине лепестка')\nfig.show()",
       "response_message": "Here's the generated code:",
       "timing_info": {
-        "decide_action_sec": 0.1365,
-        "generate_code_sec": 0.7908
+        "decide_action_sec": 0.1339,
+        "generate_code_sec": 0.5679
       },
       "raw_state": {
         "user_input": "Какой вид ириса лучше всего отделяется от остальных?",
@@ -794,15 +2019,15 @@
           "petal_width": "float",
           "species": "category"
         },
-        "generated_code": "import plotly.express as px\n\nfig = px.scatter(df, x='sepal_length', y='sepal_width', color='species', title='Sepal Length vs Sepal Width by Species')\nfig.show()\n\nfig = px.scatter(df, x='petal_length', y='petal_width', color='species', title='Petal Length vs Petal Width by Species')\nfig.show()",
+        "generated_code": "import plotly.express as px\n\nfig = px.scatter(df, x='petal_length', y='petal_width', color='species', title='Разделение видов ирисов по длине и ширине лепестка')\nfig.show()",
         "response_message": "Here's the generated code:",
         "response_audio": null,
         "decision": {
           "action": "code_generation"
         },
         "timing_info": {
-          "decide_action_sec": 0.1365,
-          "generate_code_sec": 0.7908
+          "decide_action_sec": 0.1339,
+          "generate_code_sec": 0.5679
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
@@ -814,10 +2039,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "**Переобучение** — это когда модель машинного обучения слишком хорошо учится на тренировочных данных.  \n\nВот что это означает:  \n- Модель запоминает конкретные примеры из данных, а не учится находить общие закономерности.  \n- На новых, ранее не виденных данных она работает плохо.  \n\nПример:  \nЕсли модель учится на фото цветов, и запоминает каждый отдельный листок, она может не распознать цветок, если он на другом фоне.  \n\nПереобучение — это как учиться на одной карточке, а потом не справиться с другими вопросами.",
+      "response_message": "**Переобучение** — это когда модель машинного обучения слишком хорошо учится на тренировочных данных.  \n\nВот что это означает:\n\n- Модель запоминает конкретные примеры из данных, а не учится находить общие паттерны.\n- Она работает отлично на тренировочных данных, но плохо на новых, не виденных данных.\n- Это как если бы студент выучил ответы на тест, но не понял тему — он не справится с похожими вопросами.\n\nПример:\n```\nТренировочные данные: цветок с длиной лепестка 5 см — это ирис.\nМодель запоминает: \"всегда классифицируй как ирис, если длина лепестка 5 см\".\nНо на новых данных: лепесток 5.1 см — модель может ошибиться.\n```\n\nЧтобы избежать переобучения, используют методы, такие как:\n- Разделение данных на тренировочную и тестовую выборки.\n- Упрощение модели.\n- Использование регуляризации.\n\nКоротко: **переобучение — это когда модель слишком точно \"запоминает\" данные, а не учится обобщать**.",
       "timing_info": {
-        "decide_action_sec": 0.1361,
-        "generate_chat_response_sec": 1.4285
+        "decide_action_sec": 0.1347,
+        "generate_chat_response_sec": 2.6784
       },
       "raw_state": {
         "user_input": "Что такое переобучение в машинном обучении?",
@@ -830,14 +2055,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "**Переобучение** — это когда модель машинного обучения слишком хорошо учится на тренировочных данных.  \n\nВот что это означает:  \n- Модель запоминает конкретные примеры из данных, а не учится находить общие закономерности.  \n- На новых, ранее не виденных данных она работает плохо.  \n\nПример:  \nЕсли модель учится на фото цветов, и запоминает каждый отдельный листок, она может не распознать цветок, если он на другом фоне.  \n\nПереобучение — это как учиться на одной карточке, а потом не справиться с другими вопросами.",
+        "response_message": "**Переобучение** — это когда модель машинного обучения слишком хорошо учится на тренировочных данных.  \n\nВот что это означает:\n\n- Модель запоминает конкретные примеры из данных, а не учится находить общие паттерны.\n- Она работает отлично на тренировочных данных, но плохо на новых, не виденных данных.\n- Это как если бы студент выучил ответы на тест, но не понял тему — он не справится с похожими вопросами.\n\nПример:\n```\nТренировочные данные: цветок с длиной лепестка 5 см — это ирис.\nМодель запоминает: \"всегда классифицируй как ирис, если длина лепестка 5 см\".\nНо на новых данных: лепесток 5.1 см — модель может ошибиться.\n```\n\nЧтобы избежать переобучения, используют методы, такие как:\n- Разделение данных на тренировочную и тестовую выборки.\n- Упрощение модели.\n- Использование регуляризации.\n\nКоротко: **переобучение — это когда модель слишком точно \"запоминает\" данные, а не учится обобщать**.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1361,
-          "generate_chat_response_sec": 1.4285
+          "decide_action_sec": 0.1347,
+          "generate_chat_response_sec": 2.6784
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
@@ -849,10 +2074,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "Разделение на обучающую и тестовую выборки помогает проверить, насколько хорошо модель работает на новых, не виденных данных.\n\n- **Обучающая выборка** — данные, на которых модель учится.\n- **Тестовая выборка** — данные, которые модель не видела, чтобы проверить её точность.\n\nЭто важно, потому что если модель просто запоминает обучающие данные, она может плохо работать на новых примерах.\n\nПример:\n```\nОбучающая выборка: 80% данных\nТестовая выборка: 20% данных\n```\n\nТакое разделение помогает избежать переобучения и показывает реальную эффективность модели.",
+      "response_message": "Разделение на обучающую и тестовую выборки помогает оценить, насколько хорошо модель работает на новых, не виденных данных.\n\n- **Обучающая выборка** — данные, на которых модель учится делать предсказания.\n- **Тестовая выборка** — данные, которые модель никогда не видела. Они показывают, как модель справится с реальными задачами.\n\nЕсли модель работает хорошо только на обучающих данных, но плохо на тестовых, значит, она просто запомнила данные, а не научилась обобщать. Это называется **переобучение**.\n\nТакое разделение помогает избежать переобучения и проверить, насколько модель полезна в реальности.",
       "timing_info": {
-        "decide_action_sec": 0.1345,
-        "generate_chat_response_sec": 1.4967
+        "decide_action_sec": 0.1368,
+        "generate_chat_response_sec": 1.5217
       },
       "raw_state": {
         "user_input": "Зачем используется разделение на обучающую и тестовую выборки?",
@@ -865,14 +2090,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "Разделение на обучающую и тестовую выборки помогает проверить, насколько хорошо модель работает на новых, не виденных данных.\n\n- **Обучающая выборка** — данные, на которых модель учится.\n- **Тестовая выборка** — данные, которые модель не видела, чтобы проверить её точность.\n\nЭто важно, потому что если модель просто запоминает обучающие данные, она может плохо работать на новых примерах.\n\nПример:\n```\nОбучающая выборка: 80% данных\nТестовая выборка: 20% данных\n```\n\nТакое разделение помогает избежать переобучения и показывает реальную эффективность модели.",
+        "response_message": "Разделение на обучающую и тестовую выборки помогает оценить, насколько хорошо модель работает на новых, не виденных данных.\n\n- **Обучающая выборка** — данные, на которых модель учится делать предсказания.\n- **Тестовая выборка** — данные, которые модель никогда не видела. Они показывают, как модель справится с реальными задачами.\n\nЕсли модель работает хорошо только на обучающих данных, но плохо на тестовых, значит, она просто запомнила данные, а не научилась обобщать. Это называется **переобучение**.\n\nТакое разделение помогает избежать переобучения и проверить, насколько модель полезна в реальности.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1345,
-          "generate_chat_response_sec": 1.4967
+          "decide_action_sec": 0.1368,
+          "generate_chat_response_sec": 1.5217
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
@@ -884,10 +2109,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "**Регуляризация** — это техника, используемая при обучении моделей машинного обучения, чтобы предотвратить **переобучение**.\n\nКогда модель слишком хорошо учится на тренировочных данных, она может плохо работать на новых, не виденных данных. Это называется переобучением.\n\n**Регуляризация** помогает решить эту проблему, добавляя штраф за слишком большие значения весов в модели. Это заставляет модель быть проще и лучше обобщать.\n\nПримеры:\n- **L1 регуляризация** (Lasso): может обнулять некоторые веса, что полезно для выбора признаков.\n- **L2 регуляризация** (Ridge): уменьшает веса, но не обнуляет их.\n\nИтог: регуляризация делает модель более устойчивой и точной на новых данных.",
+      "response_message": "**Регуляризация** — это метод, используемый при обучении моделей машинного обучения, чтобы предотвратить **переобучение**.\n\nКогда модель слишком хорошо учится на тренировочных данных, она может плохо работать на новых, не виденных данных. Это называется переобучением.\n\nРегуляризация помогает решить эту проблему, добавляя небольшое ограничение на величину весов модели. Это заставляет модель быть проще и более обобщённой.\n\nПримеры типов регуляризации:\n- **L1 регуляризация** (Lasso): уменьшает некоторые веса до нуля, помогая в отборе признаков.\n- **L2 регуляризация** (Ridge): уменьшает веса, но не до нуля, делая их меньше.\n\nИтог: регуляризация делает модель более надёжной и лучше работает на новых данных.",
       "timing_info": {
-        "decide_action_sec": 0.1395,
-        "generate_chat_response_sec": 1.9984
+        "decide_action_sec": 0.1226,
+        "generate_chat_response_sec": 2.1354
       },
       "raw_state": {
         "user_input": "Что такое регуляризация и зачем она нужна?",
@@ -900,14 +2125,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "**Регуляризация** — это техника, используемая при обучении моделей машинного обучения, чтобы предотвратить **переобучение**.\n\nКогда модель слишком хорошо учится на тренировочных данных, она может плохо работать на новых, не виденных данных. Это называется переобучением.\n\n**Регуляризация** помогает решить эту проблему, добавляя штраф за слишком большие значения весов в модели. Это заставляет модель быть проще и лучше обобщать.\n\nПримеры:\n- **L1 регуляризация** (Lasso): может обнулять некоторые веса, что полезно для выбора признаков.\n- **L2 регуляризация** (Ridge): уменьшает веса, но не обнуляет их.\n\nИтог: регуляризация делает модель более устойчивой и точной на новых данных.",
+        "response_message": "**Регуляризация** — это метод, используемый при обучении моделей машинного обучения, чтобы предотвратить **переобучение**.\n\nКогда модель слишком хорошо учится на тренировочных данных, она может плохо работать на новых, не виденных данных. Это называется переобучением.\n\nРегуляризация помогает решить эту проблему, добавляя небольшое ограничение на величину весов модели. Это заставляет модель быть проще и более обобщённой.\n\nПримеры типов регуляризации:\n- **L1 регуляризация** (Lasso): уменьшает некоторые веса до нуля, помогая в отборе признаков.\n- **L2 регуляризация** (Ridge): уменьшает веса, но не до нуля, делая их меньше.\n\nИтог: регуляризация делает модель более надёжной и лучше работает на новых данных.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1395,
-          "generate_chat_response_sec": 1.9984
+          "decide_action_sec": 0.1226,
+          "generate_chat_response_sec": 2.1354
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
@@ -919,10 +2144,10 @@
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "**Смещение** — это ошибка модели, которая возникает, когда модель систематически предсказывает значения, которые отличаются от истинных.\n\n**Разброс** — это изменчивость предсказаний модели на разных данных. Высокий разброс означает, что модель сильно зависит от выборки данных.\n\nКомпромисс между смещением и разбросом означает, что если вы пытаетесь уменьшить одно, другое может увеличиться.\n\nНапример:\n- Очень простая модель (например, линейная) может иметь **высокое смещение**, потому что не может уловить сложные закономерности.\n- Очень сложная модель (например, глубокая нейросеть) может иметь **высокий разброс**, потому что она \"запоминает\" шум в данных, а не учится на реальных паттернах.\n\nХорошая модель — это та, которая балансирует между низким смещением и низким разбросом.",
+      "response_message": "**Смещение** и **разброс** — это два важных понятия при оценке качества модели в машинном обучении.\n\n- **Смещение** — это ошибка, возникающая из-за упрощённой модели.  \n  Если модель слишком простая, она не может захватить сложные закономерности в данных.  \n  Это приводит к **высокому смещению**.\n\n- **Разброс** — это изменчивость модели при обучении на разных наборах данных.  \n  Если модель слишком сложная, она может \"переобучаться\" на шуме в данных.  \n  Это приводит к **высокому разбросу**.\n\n**Компромисс** означает, что если вы уменьшаете смещение, разброс может увеличиться, и наоборот.  \nХорошая модель — это баланс между ними.  \nНужно найти такую модель, которая хорошо работает на новых данных, а не только на обучающих.",
       "timing_info": {
-        "decide_action_sec": 0.1279,
-        "generate_chat_response_sec": 2.1963
+        "decide_action_sec": 0.1242,
+        "generate_chat_response_sec": 2.1099
       },
       "raw_state": {
         "user_input": "Объясни компромисс между смещением и разбросом.",
@@ -935,29 +2160,554 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "**Смещение** — это ошибка модели, которая возникает, когда модель систематически предсказывает значения, которые отличаются от истинных.\n\n**Разброс** — это изменчивость предсказаний модели на разных данных. Высокий разброс означает, что модель сильно зависит от выборки данных.\n\nКомпромисс между смещением и разбросом означает, что если вы пытаетесь уменьшить одно, другое может увеличиться.\n\nНапример:\n- Очень простая модель (например, линейная) может иметь **высокое смещение**, потому что не может уловить сложные закономерности.\n- Очень сложная модель (например, глубокая нейросеть) может иметь **высокий разброс**, потому что она \"запоминает\" шум в данных, а не учится на реальных паттернах.\n\nХорошая модель — это та, которая балансирует между низким смещением и низким разбросом.",
+        "response_message": "**Смещение** и **разброс** — это два важных понятия при оценке качества модели в машинном обучении.\n\n- **Смещение** — это ошибка, возникающая из-за упрощённой модели.  \n  Если модель слишком простая, она не может захватить сложные закономерности в данных.  \n  Это приводит к **высокому смещению**.\n\n- **Разброс** — это изменчивость модели при обучении на разных наборах данных.  \n  Если модель слишком сложная, она может \"переобучаться\" на шуме в данных.  \n  Это приводит к **высокому разбросу**.\n\n**Компромисс** означает, что если вы уменьшаете смещение, разброс может увеличиться, и наоборот.  \nХорошая модель — это баланс между ними.  \nНужно найти такую модель, которая хорошо работает на новых данных, а не только на обучающих.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1279,
-          "generate_chat_response_sec": 2.1963
+          "decide_action_sec": 0.1242,
+          "generate_chat_response_sec": 2.1099
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"
     },
     {
-      "benchmark_id": "chat_005_what_is_in_data",
+      "benchmark_id": "chat_005_feature_count",
       "expected_decision": "chat_response",
       "model_decision": {
         "action": "chat_response"
       },
       "generated_code": null,
-      "response_message": "В данных есть следующие столбцы:\n\n- **sepal_length** — длина чашелистика (в сантиметрах)  \n- **sepal_width** — ширина чашелистика (в сантиметрах)  \n- **petal_length** — длина лепестка (в сантиметрах)  \n- **petal_width** — ширина лепестка (в сантиметрах)  \n- **species** — вид цветка (категориальный признак, например, setosa, versicolor, virginica)\n\nЭто классический набор данных о цветах ириса.",
+      "response_message": "Этот датасет содержит **5 признаков**.\n\n- **sepal_length** — длина чашелистика\n- **sepal_width** — ширина чашелистика\n- **petal_length** — длина лепестка\n- **petal_width** — ширина лепестка\n- **species** — вид цветка\n\nКаждый признак описывает определённую характеристику цветка.",
       "timing_info": {
-        "decide_action_sec": 0.1229,
-        "generate_chat_response_sec": 1.3988
+        "decide_action_sec": 0.1397,
+        "generate_chat_response_sec": 0.9858
+      },
+      "raw_state": {
+        "user_input": "Сколько признаков содержит этот датасет?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "Этот датасет содержит **5 признаков**.\n\n- **sepal_length** — длина чашелистика\n- **sepal_width** — ширина чашелистика\n- **petal_length** — длина лепестка\n- **petal_width** — ширина лепестка\n- **species** — вид цветка\n\nКаждый признак описывает определённую характеристику цветка.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1397,
+          "generate_chat_response_sec": 0.9858
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_006_samples_count",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "В этом датасете содержится **150 объектов**.",
+      "timing_info": {
+        "decide_action_sec": 0.1367,
+        "generate_chat_response_sec": 0.2158
+      },
+      "raw_state": {
+        "user_input": "Сколько объектов содержится в этом датасете?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "В этом датасете содержится **150 объектов**.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1367,
+          "generate_chat_response_sec": 0.2158
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_007_numeric_only",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "Нет, не все признаки в этом датасете являются числовыми.\n\nВ датасете есть следующие признаки:\n\n- **sepal_length** — числовое значение (float)\n- **sepal_width** — числовое значение (float)\n- **petal_length** — числовое значение (float)\n- **petal_width** — числовое значение (float)\n- **species** — категориальный признак (category)\n\nКатегориальный признак **species** не является числовым. Он описывает вид цветка, например, \"setosa\", \"versicolor\", \"virginica\".\n\nТаким образом, четыре признака — числовые, а один — категориальный.",
+      "timing_info": {
+        "decide_action_sec": 0.138,
+        "generate_chat_response_sec": 1.505
+      },
+      "raw_state": {
+        "user_input": "Все ли признаки в этом датасете являются числовыми?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "Нет, не все признаки в этом датасете являются числовыми.\n\nВ датасете есть следующие признаки:\n\n- **sepal_length** — числовое значение (float)\n- **sepal_width** — числовое значение (float)\n- **petal_length** — числовое значение (float)\n- **petal_width** — числовое значение (float)\n- **species** — категориальный признак (category)\n\nКатегориальный признак **species** не является числовым. Он описывает вид цветка, например, \"setosa\", \"versicolor\", \"virginica\".\n\nТаким образом, четыре признака — числовые, а один — категориальный.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.138,
+          "generate_chat_response_sec": 1.505
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_008_need_scaling",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Масштабирование признаков** может быть важно для этого датасета, особенно если вы используете алгоритмы, чувствительные к масштабу данных.\n\nВот почему:\n\n- Признаки, такие как **sepal_length**, **sepal_width**, **petal_length**, и **petal_width**, измеряются в разных единицах и имеют разные диапазоны значений.\n- Алгоритмы, такие как **логистическая регрессия**, **метод опорных векторов (SVM)** или **многослойные нейронные сети**, могут работать хуже, если признаки не масштабированы.\n- **K-ближайших соседей (KNN)** также сильно зависит от масштаба, потому что он использует расстояния между точками.\n\nОднако, если вы используете **деревья решений** или **случайный лес**, масштабирование не обязательно — они не зависят от масштаба признаков.\n\n> **Вывод:** Масштабирование полезно, если вы используете алгоритмы, основанные на расстояниях или градиентных методах.  \n> Если не уверены — масштабирование безопасно и часто улучшает результаты.",
+      "timing_info": {
+        "decide_action_sec": 0.1381,
+        "generate_chat_response_sec": 2.7999
+      },
+      "raw_state": {
+        "user_input": "Важно ли масштабирование признаков для этого датасета?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Масштабирование признаков** может быть важно для этого датасета, особенно если вы используете алгоритмы, чувствительные к масштабу данных.\n\nВот почему:\n\n- Признаки, такие как **sepal_length**, **sepal_width**, **petal_length**, и **petal_width**, измеряются в разных единицах и имеют разные диапазоны значений.\n- Алгоритмы, такие как **логистическая регрессия**, **метод опорных векторов (SVM)** или **многослойные нейронные сети**, могут работать хуже, если признаки не масштабированы.\n- **K-ближайших соседей (KNN)** также сильно зависит от масштаба, потому что он использует расстояния между точками.\n\nОднако, если вы используете **деревья решений** или **случайный лес**, масштабирование не обязательно — они не зависят от масштаба признаков.\n\n> **Вывод:** Масштабирование полезно, если вы используете алгоритмы, основанные на расстояниях или градиентных методах.  \n> Если не уверены — масштабирование безопасно и часто улучшает результаты.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1381,
+          "generate_chat_response_sec": 2.7999
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_009_linear_separable",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "Этот датасет **не является линейно разделимым**.\n\n**Почему?**  \nДатасет содержит три вида цветков ириса: setosa, versicolor и virginica.  \n- **Setosa** можно отделить от других линиями.  \n- Но **versicolor** и **virginica** перекрываются в признаках, как длина и ширина лепестков.  \n\nЭто означает, что **одна прямая или плоскость не сможет разделить все три класса**.  \nНужны более сложные методы, например, деревья решений или нейросети.\n\nЕсли хочешь, я могу помочь построить визуализацию или выбрать подходящий алгоритм.",
+      "timing_info": {
+        "decide_action_sec": 0.1455,
+        "generate_chat_response_sec": 1.7386
+      },
+      "raw_state": {
+        "user_input": "Является ли этот датасет линейно разделимым?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "Этот датасет **не является линейно разделимым**.\n\n**Почему?**  \nДатасет содержит три вида цветков ириса: setosa, versicolor и virginica.  \n- **Setosa** можно отделить от других линиями.  \n- Но **versicolor** и **virginica** перекрываются в признаках, как длина и ширина лепестков.  \n\nЭто означает, что **одна прямая или плоскость не сможет разделить все три класса**.  \nНужны более сложные методы, например, деревья решений или нейросети.\n\nЕсли хочешь, я могу помочь построить визуализацию или выбрать подходящий алгоритм.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1455,
+          "generate_chat_response_sec": 1.7386
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_011_unsupervised_possible",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Да**, этот датасет можно использовать для обучения без учителя.\n\nВ датасете есть признаки:  \n- **sepal_length** — длина чашелистика  \n- **sepal_width** — ширина чашелистика  \n- **petal_length** — длина лепестка  \n- **petal_width** — ширина лепестка  \n\nЭти признаки — числовые данные, которые подходят для задач кластеризации или снижения размерности, например, с помощью методов, таких как K-средние или t-SNE.\n\n**Обратите внимание**: столбец `species` — это метка класса. Для обучения без учителя его лучше **не использовать**, так как цель — найти скрытые паттерны без знания истинных групп.\n\nТаким образом, вы можете взять только числовые признаки и применить методы без учителя.",
+      "timing_info": {
+        "decide_action_sec": 0.1409,
+        "generate_chat_response_sec": 1.98
+      },
+      "raw_state": {
+        "user_input": "Можно ли использовать этот датасет для обучения без учителя?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Да**, этот датасет можно использовать для обучения без учителя.\n\nВ датасете есть признаки:  \n- **sepal_length** — длина чашелистика  \n- **sepal_width** — ширина чашелистика  \n- **petal_length** — длина лепестка  \n- **petal_width** — ширина лепестка  \n\nЭти признаки — числовые данные, которые подходят для задач кластеризации или снижения размерности, например, с помощью методов, таких как K-средние или t-SNE.\n\n**Обратите внимание**: столбец `species` — это метка класса. Для обучения без учителя его лучше **не использовать**, так как цель — найти скрытые паттерны без знания истинных групп.\n\nТаким образом, вы можете взять только числовые признаки и применить методы без учителя.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1409,
+          "generate_chat_response_sec": 1.98
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_012_pca_purpose",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Да**, метод **PCA** (главные компоненты) можно применить к этому датасету.\n\nВот почему:\n\n- Данные содержат **числовые признаки**: *sepal_length*, *sepal_width*, *petal_length*, *petal_width* — все они числовые и могут быть нормализованы.\n- Признак *species* — это категориальная переменная, но её **не нужно включать в PCA**, так как PCA работает только с числовыми данными.\n- PCA полезен для уменьшения размерности и визуализации, особенно если признаков много.\n\n**Важно**: перед применением PCA нужно:\n- Удалить или не использовать столбец *species*.\n- Нормализовать данные, чтобы все признаки были в одном масштабе.\n\n> Пример: PCA работает только с числовыми столбцами, поэтому используйте только *sepal_length*, *sepal_width*, *petal_length*, *petal_width*.",
+      "timing_info": {
+        "decide_action_sec": 0.1361,
+        "generate_chat_response_sec": 2.0926
+      },
+      "raw_state": {
+        "user_input": "Применим ли метод PCA к этому датасету?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Да**, метод **PCA** (главные компоненты) можно применить к этому датасету.\n\nВот почему:\n\n- Данные содержат **числовые признаки**: *sepal_length*, *sepal_width*, *petal_length*, *petal_width* — все они числовые и могут быть нормализованы.\n- Признак *species* — это категориальная переменная, но её **не нужно включать в PCA**, так как PCA работает только с числовыми данными.\n- PCA полезен для уменьшения размерности и визуализации, особенно если признаков много.\n\n**Важно**: перед применением PCA нужно:\n- Удалить или не использовать столбец *species*.\n- Нормализовать данные, чтобы все признаки были в одном масштабе.\n\n> Пример: PCA работает только с числовыми столбцами, поэтому используйте только *sepal_length*, *sepal_width*, *petal_length*, *petal_width*.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1361,
+          "generate_chat_response_sec": 2.0926
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_013_outliers",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Выбросы** могут быть серьёзной проблемой, если они искажают данные или влияют на анализ.\n\nВ этом датасете есть числовые признаки:  \n- **sepal_length** (длина чашелистика)  \n- **sepal_width** (ширина чашелистика)  \n- **petal_length** (длина лепестка)  \n- **petal_width** (ширина лепестка)\n\nЕсли какие-то значения сильно отклоняются от остальных, они могут повлиять на результаты моделей или статистики.\n\nНо без анализа данных мы не можем точно сказать, есть ли выбросы.\n\nЧтобы проверить, нужно посмотреть данные — например, с помощью графиков или статистик.\n\nЕсли хочешь, я помогу сформулировать запрос для генерации кода, чтобы проверить выбросы.",
+      "timing_info": {
+        "decide_action_sec": 0.1434,
+        "generate_chat_response_sec": 1.9539
+      },
+      "raw_state": {
+        "user_input": "Являются ли выбросы серьёзной проблемой в этом датасете?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Выбросы** могут быть серьёзной проблемой, если они искажают данные или влияют на анализ.\n\nВ этом датасете есть числовые признаки:  \n- **sepal_length** (длина чашелистика)  \n- **sepal_width** (ширина чашелистика)  \n- **petal_length** (длина лепестка)  \n- **petal_width** (ширина лепестка)\n\nЕсли какие-то значения сильно отклоняются от остальных, они могут повлиять на результаты моделей или статистики.\n\nНо без анализа данных мы не можем точно сказать, есть ли выбросы.\n\nЧтобы проверить, нужно посмотреть данные — например, с помощью графиков или статистик.\n\nЕсли хочешь, я помогу сформулировать запрос для генерации кода, чтобы проверить выбросы.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1434,
+          "generate_chat_response_sec": 1.9539
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_014_real_world_limitations",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "Этот датасет имеет несколько ограничений:\n\n- **Только три вида растений**: данные содержат информацию только о трёх видах ирисов — setosa, versicolor и virginica. Это ограничивает обобщение на другие виды растений.\n\n- **Ограниченное количество признаков**: в датасете всего четыре числовых признака — длина и ширина чашелистиков и лепестков. Это не учитывает другие возможные характеристики, например, цвет, текстура или размеры стеблей.\n\n- **Небольшой объём данных**: в датасете всего 150 записей. Это мало для сложных моделей машинного обучения, особенно если нужно обучать на более крупных или разнообразных данных.\n\n- **Данные сбалансированы**: по 50 примеров каждого вида. В реальном мире распределение классов часто несбалансировано, поэтому модель может плохо работать на несбалансированных данных.\n\n- **Данные симулированы или собраны в лаборатории**: вероятно, данные были получены из контролируемых условий. Это может не отражать реальные условия роста растений в природе.\n\n- **Признаки измерены с высокой точностью**: измерения, скорее всего, сделаны с точностью до десятых сантиметра. В реальности измерения могут быть неточными или с разной точностью.\n\nЕсли вы хотите работать с более сложными или реалистичными данными, стоит рассмотреть другие датасеты.",
+      "timing_info": {
+        "decide_action_sec": 0.1432,
+        "generate_chat_response_sec": 3.5418
+      },
+      "raw_state": {
+        "user_input": "Какие ограничения есть у этого датасета?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "Этот датасет имеет несколько ограничений:\n\n- **Только три вида растений**: данные содержат информацию только о трёх видах ирисов — setosa, versicolor и virginica. Это ограничивает обобщение на другие виды растений.\n\n- **Ограниченное количество признаков**: в датасете всего четыре числовых признака — длина и ширина чашелистиков и лепестков. Это не учитывает другие возможные характеристики, например, цвет, текстура или размеры стеблей.\n\n- **Небольшой объём данных**: в датасете всего 150 записей. Это мало для сложных моделей машинного обучения, особенно если нужно обучать на более крупных или разнообразных данных.\n\n- **Данные сбалансированы**: по 50 примеров каждого вида. В реальном мире распределение классов часто несбалансировано, поэтому модель может плохо работать на несбалансированных данных.\n\n- **Данные симулированы или собраны в лаборатории**: вероятно, данные были получены из контролируемых условий. Это может не отражать реальные условия роста растений в природе.\n\n- **Признаки измерены с высокой точностью**: измерения, скорее всего, сделаны с точностью до десятых сантиметра. В реальности измерения могут быть неточными или с разной точностью.\n\nЕсли вы хотите работать с более сложными или реалистичными данными, стоит рассмотреть другие датасеты.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1432,
+          "generate_chat_response_sec": 3.5418
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "theory_006_classification_vs_regression",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Классификация** и **регрессия** — это два типа задач в машинном обучении.\n\n- **Классификация** — это когда модель предсказывает **категорию** или **метку**.  \n  Например, определить, какой вид цветка: ирис-сиреневый, ирис-разноцветный или ирис-пурпурный.\n\n- **Регрессия** — это когда модель предсказывает **числовое значение**.  \n  Например, предсказать длину лепестка в сантиметрах.\n\n**Ключевое отличие:**  \n- Классификация — **категории**.  \n- Регрессия — **числа**.\n\nПример из данных:  \n- Если модель определяет вид ириса — это **классификация**.  \n- Если модель предсказывает длину лепестка — это **регрессия**.",
+      "timing_info": {
+        "decide_action_sec": 0.1389,
+        "generate_chat_response_sec": 1.993
+      },
+      "raw_state": {
+        "user_input": "В чём разница между классификацией и регрессией?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Классификация** и **регрессия** — это два типа задач в машинном обучении.\n\n- **Классификация** — это когда модель предсказывает **категорию** или **метку**.  \n  Например, определить, какой вид цветка: ирис-сиреневый, ирис-разноцветный или ирис-пурпурный.\n\n- **Регрессия** — это когда модель предсказывает **числовое значение**.  \n  Например, предсказать длину лепестка в сантиметрах.\n\n**Ключевое отличие:**  \n- Классификация — **категории**.  \n- Регрессия — **числа**.\n\nПример из данных:  \n- Если модель определяет вид ириса — это **классификация**.  \n- Если модель предсказывает длину лепестка — это **регрессия**.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1389,
+          "generate_chat_response_sec": 1.993
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "theory_007_cross_validation",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Кросс-валидация** — это способ проверки, насколько хорошо модель работает на новых данных.\n\nВот как это работает:\n\n- Данные делятся на части.\n- Модель обучается на одной части и проверяется на другой.\n- Этот процесс повторяется несколько раз, чтобы получить надёжную оценку.\n\nПример:  \nЕсли у нас 1000 примеров, и мы используем **5-кратную кросс-валидацию**, данные делятся на 5 частей.  \nМодель обучается на 4 частях и проверяется на одной.  \nЭто повторяется 5 раз, каждый раз с другой частью в качестве проверки.\n\n**Цель** — избежать переобучения и получить честную оценку производительности модели.",
+      "timing_info": {
+        "decide_action_sec": 0.1355,
+        "generate_chat_response_sec": 1.6654
+      },
+      "raw_state": {
+        "user_input": "Что такое кросс-валидация?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Кросс-валидация** — это способ проверки, насколько хорошо модель работает на новых данных.\n\nВот как это работает:\n\n- Данные делятся на части.\n- Модель обучается на одной части и проверяется на другой.\n- Этот процесс повторяется несколько раз, чтобы получить надёжную оценку.\n\nПример:  \nЕсли у нас 1000 примеров, и мы используем **5-кратную кросс-валидацию**, данные делятся на 5 частей.  \nМодель обучается на 4 частях и проверяется на одной.  \nЭто повторяется 5 раз, каждый раз с другой частью в качестве проверки.\n\n**Цель** — избежать переобучения и получить честную оценку производительности модели.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1355,
+          "generate_chat_response_sec": 1.6654
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "theory_008_feature_engineering",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Feature engineering** — это процесс создания новых признаков или улучшения существующих из исходных данных, чтобы помочь модели машинного обучения лучше понимать информацию.\n\nНапример, в данных о цветах ириса:\n- У нас есть длина и ширина чашелистиков и лепестков.\n- Можно создать новый признак, например, **отношение длины лепестка к ширине**.\n- Это может помочь модели лучше различать виды ирисов.\n\nЦель — сделать данные более полезными для модели.",
+      "timing_info": {
+        "decide_action_sec": 0.1389,
+        "generate_chat_response_sec": 1.2145
+      },
+      "raw_state": {
+        "user_input": "Что такое feature engineering?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Feature engineering** — это процесс создания новых признаков или улучшения существующих из исходных данных, чтобы помочь модели машинного обучения лучше понимать информацию.\n\nНапример, в данных о цветах ириса:\n- У нас есть длина и ширина чашелистиков и лепестков.\n- Можно создать новый признак, например, **отношение длины лепестка к ширине**.\n- Это может помочь модели лучше различать виды ирисов.\n\nЦель — сделать данные более полезными для модели.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1389,
+          "generate_chat_response_sec": 1.2145
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "theory_009_data_leakage",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Утечка данных** — это случай, когда конфиденциальная или личная информация попадает к незаконным лицам.\n\nНапример:\n- Кто-то крадёт пароли или данные кредитных карт.\n- Информация случайно отправляется не тому человеку.\n- Система взломана, и данные оказались в интернете.\n\nТакие утечки могут повредить репутации компании или нанести вред людям.\n\nВажно защищать данные с помощью паролей, шифрования и безопасных систем.",
+      "timing_info": {
+        "decide_action_sec": 0.1401,
+        "generate_chat_response_sec": 1.2415
+      },
+      "raw_state": {
+        "user_input": "Что такое утечка данных?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Утечка данных** — это случай, когда конфиденциальная или личная информация попадает к незаконным лицам.\n\nНапример:\n- Кто-то крадёт пароли или данные кредитных карт.\n- Информация случайно отправляется не тому человеку.\n- Система взломана, и данные оказались в интернете.\n\nТакие утечки могут повредить репутации компании или нанести вред людям.\n\nВажно защищать данные с помощью паролей, шифрования и безопасных систем.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1401,
+          "generate_chat_response_sec": 1.2415
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "theory_010_precision_recall",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Precision** и **recall** — это метрики, которые используются для оценки качества модели в задачах классификации.\n\n- **Precision** (точность) показывает, насколько надёжны предсказания модели.  \n  Она отвечает на вопрос: *«Из всех объектов, которые модель отнесла к классу, сколько действительно принадлежат этому классу?»*  \n  Например, если модель говорит, что цветок — это ирис, то precision покажет, насколько часто она права.\n\n- **Recall** (полнота) показывает, насколько хорошо модель находит все объекты нужного класса.  \n  Она отвечает на вопрос: *«Из всех объектов, которые действительно относятся к классу, сколько модель смогла правильно обнаружить?»*  \n  Например, если есть много ирисов, то recall покажет, сколько из них модель смогла распознать.\n\n**Пример:**\n- Если модель находит 10 ирисов, но только 7 из них — настоящие, то precision = 7 / 10 = 0.7.\n- Если среди всех ирисов в данных 12, а модель нашла только 7, то recall = 7 / 12 ≈ 0.58.\n\nИногда нужно выбирать между precision и recall.  \nВысокий precision — модель не ошибается, но может пропустить много.  \nВысокий recall — модель находит почти всё, но может ошибаться.",
+      "timing_info": {
+        "decide_action_sec": 0.1381,
+        "generate_chat_response_sec": 3.0959
+      },
+      "raw_state": {
+        "user_input": "Поясни, что такое precision и recall.",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Precision** и **recall** — это метрики, которые используются для оценки качества модели в задачах классификации.\n\n- **Precision** (точность) показывает, насколько надёжны предсказания модели.  \n  Она отвечает на вопрос: *«Из всех объектов, которые модель отнесла к классу, сколько действительно принадлежат этому классу?»*  \n  Например, если модель говорит, что цветок — это ирис, то precision покажет, насколько часто она права.\n\n- **Recall** (полнота) показывает, насколько хорошо модель находит все объекты нужного класса.  \n  Она отвечает на вопрос: *«Из всех объектов, которые действительно относятся к классу, сколько модель смогла правильно обнаружить?»*  \n  Например, если есть много ирисов, то recall покажет, сколько из них модель смогла распознать.\n\n**Пример:**\n- Если модель находит 10 ирисов, но только 7 из них — настоящие, то precision = 7 / 10 = 0.7.\n- Если среди всех ирисов в данных 12, а модель нашла только 7, то recall = 7 / 12 ≈ 0.58.\n\nИногда нужно выбирать между precision и recall.  \nВысокий precision — модель не ошибается, но может пропустить много.  \nВысокий recall — модель находит почти всё, но может ошибаться.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1381,
+          "generate_chat_response_sec": 3.0959
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "theory_011_accuracy_limitations",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "**Accuracy** — это метрика, которая показывает, как часто модель даёт правильные предсказания.\n\nНо **accuracy не является универсальной метрикой**.\n\nВот почему:\n\n- Она может быть вводящей в заблуждение, если классы не сбалансированы.\n- Например, если 95% данных — один класс, модель может просто предсказывать этот класс и получить accuracy 95%, хотя и не научится различать другие.\n\n**Лучше использовать** accuracy вместе с другими метриками, такими как **precision**, **recall** или **F1-score**, особенно в задачах с несбалансированными данными.\n\n> Пример: В медицинской диагностике важно не только правильно определить болезнь, но и не пропустить её. Там accuracy может быть не самой важной метрикой.\n\nТак что: **accuracy — полезна, но не универсальна**.",
+      "timing_info": {
+        "decide_action_sec": 0.1398,
+        "generate_chat_response_sec": 1.9467
+      },
+      "raw_state": {
+        "user_input": "Является ли accuracy универсальной метрикой?",
+        "conversation_history": [],
+        "metadata": {
+          "sepal_length": "float",
+          "sepal_width": "float",
+          "petal_length": "float",
+          "petal_width": "float",
+          "species": "category"
+        },
+        "generated_code": null,
+        "response_message": "**Accuracy** — это метрика, которая показывает, как часто модель даёт правильные предсказания.\n\nНо **accuracy не является универсальной метрикой**.\n\nВот почему:\n\n- Она может быть вводящей в заблуждение, если классы не сбалансированы.\n- Например, если 95% данных — один класс, модель может просто предсказывать этот класс и получить accuracy 95%, хотя и не научится различать другие.\n\n**Лучше использовать** accuracy вместе с другими метриками, такими как **precision**, **recall** или **F1-score**, особенно в задачах с несбалансированными данными.\n\n> Пример: В медицинской диагностике важно не только правильно определить болезнь, но и не пропустить её. Там accuracy может быть не самой важной метрикой.\n\nТак что: **accuracy — полезна, но не универсальна**.",
+        "response_audio": null,
+        "decision": {
+          "action": "chat_response"
+        },
+        "timing_info": {
+          "decide_action_sec": 0.1398,
+          "generate_chat_response_sec": 1.9467
+        }
+      },
+      "benchmark_file": "iris_text_benchmark_ru.json"
+    },
+    {
+      "benchmark_id": "chat_012_what_is_in_data",
+      "expected_decision": "chat_response",
+      "model_decision": {
+        "action": "chat_response"
+      },
+      "generated_code": null,
+      "response_message": "В данных есть следующие столбцы:\n\n- **sepal_length** — длина чашелистика (в сантиметрах)\n- **sepal_width** — ширина чашелистика (в сантиметрах)\n- **petal_length** — длина лепестка (в сантиметрах)\n- **petal_width** — ширина лепестка (в сантиметрах)\n- **species** — вид цветка (категория, например, setosa, versicolor, virginica)\n\nЭто данные о цветках ириса.",
+      "timing_info": {
+        "decide_action_sec": 0.1292,
+        "generate_chat_response_sec": 1.2905
       },
       "raw_state": {
         "user_input": "Что в данных",
@@ -970,14 +2720,14 @@
           "species": "category"
         },
         "generated_code": null,
-        "response_message": "В данных есть следующие столбцы:\n\n- **sepal_length** — длина чашелистика (в сантиметрах)  \n- **sepal_width** — ширина чашелистика (в сантиметрах)  \n- **petal_length** — длина лепестка (в сантиметрах)  \n- **petal_width** — ширина лепестка (в сантиметрах)  \n- **species** — вид цветка (категориальный признак, например, setosa, versicolor, virginica)\n\nЭто классический набор данных о цветах ириса.",
+        "response_message": "В данных есть следующие столбцы:\n\n- **sepal_length** — длина чашелистика (в сантиметрах)\n- **sepal_width** — ширина чашелистика (в сантиметрах)\n- **petal_length** — длина лепестка (в сантиметрах)\n- **petal_width** — ширина лепестка (в сантиметрах)\n- **species** — вид цветка (категория, например, setosa, versicolor, virginica)\n\nЭто данные о цветках ириса.",
         "response_audio": null,
         "decision": {
           "action": "chat_response"
         },
         "timing_info": {
-          "decide_action_sec": 0.1229,
-          "generate_chat_response_sec": 1.3988
+          "decide_action_sec": 0.1292,
+          "generate_chat_response_sec": 1.2905
         }
       },
       "benchmark_file": "iris_text_benchmark_ru.json"

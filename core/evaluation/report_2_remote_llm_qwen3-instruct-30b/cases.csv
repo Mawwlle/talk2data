@@ -1,16 +1,61 @@
-id,expected_decision,language,decision_score,semantic_similarity,code_score,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,possible_code_objects,expected_plot_path,model_plot_path,heuristic_score,result_match
-code_001_describe_en,code_generation,en,True,,,Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,,1.0,
+id,expected_decision,language,decision_score,semantic_similarity,code_score,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,possible_code_objects,expected_plot_path,model_plot_path,expected_plot_error,heuristic_score,result_match
+code_001_describe_en,code_generation,en,True,,,Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,,,1.0,
 code_002_pairplot_en,code_generation,en,True,,,Create a pairplot for all features.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_model.png,1.0,
+fig.show()",,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_model.png,,1.0,
 code_003_train_model_en,code_generation,en,True,,,Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,0.852,
-code_004_show_all_plots_en,code_generation,en,True,,,Show all plots.,"['code', 'plots']",hard,,,"import plotly.express as px
+model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,,0.852,
+code_004_missing_check_en,code_generation,en,True,,,Check if there are missing values in the dataset.,"['code', 'missing_values']",easy,,,df.isnull().sum(),,,,,1.0,
+code_005_fill_missing_en,code_generation,en,True,,,Fill missing values with the mean value of column.,"['code', 'missing_values', 'preprocessing']",easy,,,"df.fillna(df.mean(numeric_only=True), inplace=True)",,,,,1.0,
+code_006_boxplot_en,code_generation,en,True,,,Create boxplots for all numeric features.,"['code', 'visualization', 'boxplot']",medium,,,"import plotly.express as px
+
+fig = px.box(df, y=df.select_dtypes(include=""number"").columns)
+fig.show()",,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_en_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_en_model.png,,0.852,
+code_007_standardize_en,code_generation,en,True,,,Standardize all feature columns.,"['code', 'scaling']",medium,,,"from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+code_008_normalize_en,code_generation,en,True,,,Normalize the features in range 0 to 1.,"['code', 'scaling']",medium,,,"from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+X_normalized = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+code_009_pca_en,code_generation,en,True,,,Reduce dimensionality to two components using PCA.,"['code', 'pca', 'dimensionality_reduction']",medium,,,"from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+code_010_pca_plot_en,code_generation,en,True,,,Make scatter plot of first two PCA components colored by species.,"['code', 'pca', 'visualization']",hard,,,"import plotly.express as px
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(df.drop(columns=[""species""]))
+
+df_pca = pd.DataFrame(X_pca, columns=[""PC1"", ""PC2""])
+df_pca[""species""] = df[""species""]
+
+fig = px.scatter(df_pca, x=""PC1"", y=""PC2"", color=""species"")
+fig.show()",,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_en_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_en_model.png,,0.926,
+code_011_kmeans_en,code_generation,en,True,,,Make three clusters using KMeans.,"['code', 'clustering']",medium,,,"from sklearn.cluster import KMeans
+
+kmeans = KMeans(n_clusters=3, random_state=42)
+clusters = kmeans.fit_predict(df.drop(columns=[""species""]))",,,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_011_kmeans_en_model.png,,0.852,
+code_012_cluster_plot_en,code_generation,en,True,,,Make scatter plot of KMeans clusters using the first two features.,"['code', 'clustering', 'visualization']",medium,,,"import plotly.express as px
+
+X = df.drop(columns=[""species""])
+
+fig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))
+fig.show()",,,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_012_cluster_plot_en_model.png,name 'clusters' is not defined,0.778,
+code_013_train_test_split_en,code_generation,en,True,,,Split the dataset into train and test sets.,"['code', 'split']",easy,,,"from sklearn.model_selection import train_test_split
+
+X = df.drop(columns=[""species""])
+y = df[""species""]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",,,,,1.0,
+code_014_show_all_plots_en,code_generation,en,True,,,Show all plots.,"['code', 'plots']",hard,,,"import plotly.express as px
 import plotly.graph_objects as go
 
 # df already exists and represents the iris dataset
@@ -81,8 +126,8 @@ fig_heatmap = px.imshow(
     title=""Correlation Heatmap""
 )
 fig_heatmap.show()
-","['df', 'pd', 'np', 'plt']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_004_show_all_plots_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_004_show_all_plots_en_model.png,0.566,
-code_005_histogram_en,code_generation,en,True,,,Show a histogram.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+","['df', 'pd', 'np', 'px']",core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_en_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_en_model.png,,0.566,
+code_015_histogram_en,code_generation,en,True,,,Show a histogram.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
 
 # df already exists and represents the iris dataset
 
@@ -100,19 +145,64 @@ fig = px.histogram(
 )
 
 fig.show()
-","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_005_histogram_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_005_histogram_en_model.png,0.733,
-code_001_describe,code_generation,ru,True,,,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,,1.0,
+","['df', 'px']",core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_en_expected.png,,,0.511,
+code_001_describe,code_generation,ru,True,,,"Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,,,1.0,
 code_002_pairplot,code_generation,ru,True,,,Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_model.png,1.0,
+fig.show()",,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_model.png,,1.0,
 code_003_train_model,code_generation,ru,True,,,"Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,0.852,
-code_004_show_all_plots,code_generation,ru,True,,,Отобрази все графики.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,,0.852,
+code_004_missing_check,code_generation,ru,True,,,"Проверь, есть ли в датасете пропущенные значения.","['code', 'null', 'count']",easy,,,df.isnull().sum(),,,,,1.0,
+code_005_fill_missing,code_generation,ru,True,,,Заполни пропущенные значения средним значением по столбцам.,"['code', 'null', 'processing']",easy,,,"df.fillna(df.mean(numeric_only=True), inplace=True)",,,,,1.0,
+code_006_boxplot,code_generation,ru,True,,,Построй boxplot для всех числовых признаков.,"['code', 'plot', 'boxplot']",medium,,,"import plotly.express as px
+
+fig = px.box(df, y=df.select_dtypes(include=""number"").columns)
+fig.show()",,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_model.png,,0.852,
+code_007_standardize,code_generation,ru,True,,,Стандартизируй все признаки датасета.,"['code', 'scaling', 'standard']",medium,,,"from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+code_008_normalize,code_generation,ru,True,,,Нормализуй признаки в диапазон от 0 до 1.,"['code', 'scaling']",medium,,,"from sklearn.preprocessing import MinMaxScaler
+
+scaler = MinMaxScaler()
+X_normalized = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+code_009_pca,code_generation,ru,True,,,Снизь размерность датасета до двух компонент с помощью PCA.,"['code', 'pca', 'dimensions']",medium,,,"from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+code_010_pca_plot,code_generation,ru,True,,,Построй scatter plot первых двух PCA-компонент с раскраской по видам.,"['code', 'pca', 'plot']",medium,,,"import plotly.express as px
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(df.drop(columns=[""species""]))
+
+df_pca = pd.DataFrame(X_pca, columns=[""PC1"", ""PC2""])
+df_pca[""species""] = df[""species""]
+
+fig = px.scatter(df_pca, x=""PC1"", y=""PC2"", color=""species"")
+fig.show()",,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_model.png,,0.926,
+code_012_kmeans,code_generation,ru,True,,,Выполни кластеризацию KMeans на три кластера.,"['code', 'clustering']",medium,,,"from sklearn.cluster import KMeans
+
+kmeans = KMeans(n_clusters=3, random_state=42)
+clusters = kmeans.fit_predict(df.drop(columns=[""species""]))",,,,,0.852,
+code_012_cluster_plot,code_generation,ru,True,,,Построй scatter plot кластеров KMeans по первым двум признакам.,"['code', 'clustering', 'plot']",medium,,,"import plotly.express as px
+
+X = df.drop(columns=[""species""])
+
+fig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))
+fig.show()",,,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_012_cluster_plot_model.png,name 'clusters' is not defined,0.778,
+code_013_train_test_split,code_generation,ru,True,,,Раздели датасет на обучающую и тестовую выборки.,"['code', 'split', 'train', 'test']",easy,,,"from sklearn.model_selection import train_test_split
+
+X = df.drop(columns=[""species""])
+y = df[""species""]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",,,,,1.0,
+code_014_show_all_plots,code_generation,ru,True,,,Отобрази все графики.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
 import plotly.graph_objects as go
 
 # df already exists and represents the iris dataset
@@ -183,8 +273,8 @@ fig_heatmap = px.imshow(
     title=""Correlation Heatmap""
 )
 fig_heatmap.show()
-","['df', 'px', 'go']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_004_show_all_plots_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_004_show_all_plots_model.png,0.525,
-code_005_histogram,code_generation,ru,True,,,Отобрази график Histogram,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+","['df', 'px', 'go']",core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_model.png,,0.525,
+code_015_histogram,code_generation,ru,True,,,Отобрази график Histogram,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
 
 # df already exists and represents the iris dataset
 
@@ -202,22 +292,52 @@ fig = px.histogram(
 )
 
 fig.show()
-","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_005_histogram_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_005_histogram_model.png,0.733,
-chat_001_what_is_iris_en,chat_response,en,True,0.656,,Explain what this dataset represents.,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,,,
-chat_002_how_many_classes_en,chat_response,en,True,0.421,,How many classes are in this dataset?,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,,,
-chat_003_best_features_en,chat_response,en,False,0.063,,Which features best separate the iris species?,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,,,
-chat_004_easiest_class_en,chat_response,en,True,0.448,,Which iris species is the easiest to separate from the others?,"['chat', 'analysis']",medium,"['setosa', 'shorter petals', 'wider petals']",[],,,,,,
-theory_001_overfitting_en,chat_response,en,True,0.0,,What is overfitting in machine learning?,"['theory', 'ml']",easy,"['model fits training data too well', 'poor generalization to new data']",['overfitting improves performance on unseen data'],,,,,,
-theory_002_train_test_split_en,chat_response,en,True,0.126,,Why is a train-test split used?,"['theory', 'ml']",easy,"['evaluate model on unseen data', 'prevent data leakage']",['to increase training accuracy'],,,,,,
-theory_003_regularization_en,chat_response,en,True,0.0,,What is regularization and why is it used?,"['theory', 'ml']",medium,"['adds penalty to model complexity', 'reduces overfitting']",['regularization increases model variance'],,,,,,
-theory_004_bias_variance_en,chat_response,en,True,0.521,,Explain the bias-variance tradeoff.,"['theory', 'ml']",medium,"['bias refers to error from simplifying assumptions', 'variance refers to sensitivity to training data', 'tradeoff between bias and variance']",['bias and variance can both be minimized independently'],,,,,,
-chat_005_what_is_in_data_en,chat_response,en,True,0.665,,What is in the data?,"['chat', 'data_description']",easy,"['The data represents the Iris dataset', 'The dataset contains numeric features describing sepal and petal measurements', 'There is a categorical feature indicating the iris species', 'Each row corresponds to a single flower']","['Mentioning specific statistics or numeric values', 'Claims about model performance or training results', 'Assumptions about downstream data processing']",,,,,,
-chat_001_what_is_iris,chat_response,ru,True,0.171,,"Поясни, что представляет собой датасет.","['chat', 'описание ириса']",easy,"['датасет содержит измерения лепестков и чашелистиков', 'три вида ириса']",['животные'],,,,,,
-chat_002_how_many_classes,chat_response,ru,True,0.3,,Сколько классов в этом датасете?,"['chat', 'классы']",easy,['три класса'],[],,,,,,
-chat_003_best_features,chat_response,ru,False,0.052,,Какие признаки лучше всего разделяют виды ирисов?,"['chat', 'анализ']",medium,"['длина лепестка', 'ширина лепестка']",[],,,,,,
-chat_004_easiest_class,chat_response,ru,False,0.051,,Какой вид ириса лучше всего отделяется от остальных?,"['chat', 'анализ']",medium,"['setosa', 'короче лепестки', 'шире лепестки']",[],,,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/chat_004_easiest_class_model.png,,
-theory_001_overfitting,chat_response,ru,True,0.208,,Что такое переобучение в машинном обучении?,"['theory', 'ml']",easy,"['модель слишком хорошо подстраивается под обучающую выборку', 'плохо обобщает на новые данные']",['переобучение улучшает качество на новых данных'],,,,,,
-theory_002_train_test_split,chat_response,ru,True,0.193,,Зачем используется разделение на обучающую и тестовую выборки?,"['theory', 'ml']",easy,"['оценка качества модели на невидимых данных', 'предотвращение утечки данных']",['для увеличения точности на обучающей выборке'],,,,,,
-theory_003_regularization,chat_response,ru,True,0.106,,Что такое регуляризация и зачем она нужна?,"['theory', 'ml']",medium,"['добавляет штраф за сложность модели', 'уменьшает переобучение']",['регуляризация увеличивает разброс модели'],,,,,,
-theory_004_bias_variance,chat_response,ru,True,0.264,,Объясни компромисс между смещением и разбросом.,"['theory', 'ml']",medium,"['смещение связано с упрощающими предположениями модели', 'разброс связан с чувствительностью к обучающим данным', 'существует компромисс между смещением и разбросом']",['смещение и разброс можно минимизировать независимо'],,,,,,
-chat_005_what_is_in_data,chat_response,ru,True,0.273,,Что в данных,"['chat', 'data_description']",easy,"['Данные представляют собой датасет Iris', 'В данных содержатся числовые признаки, описывающие размеры чашелистиков и лепестков', 'В данных есть категориальный признак с видом ириса', 'Каждая строка соответствует одному цветку']","['Упоминание конкретных статистик или числовых значений', 'Утверждения о качестве модели или результатах обучения', 'Предположения о последующей обработке данных']",,,,,,
+","['df', 'px']",core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_expected.png,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_model.png,,0.733,
+chat_001_what_is_iris_en,chat_response,en,True,0.611,,Explain what this dataset represents.,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,,,,
+chat_002_how_many_classes_en,chat_response,en,True,0.43,,How many classes are in this dataset?,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,,,,
+chat_003_best_features_en,chat_response,en,False,0.063,,Which features best separate the iris species?,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,,,,
+chat_004_easiest_class_en,chat_response,en,True,0.352,,Which iris species is the easiest to separate from the others?,"['chat', 'analysis']",medium,"['setosa', 'shorter petals', 'wider petals']",[],,,,,,,
+theory_001_overfitting_en,chat_response,en,True,0.0,,What is overfitting in machine learning?,"['theory', 'ml']",easy,"['model fits training data too well', 'poor generalization to new data']",['overfitting improves performance on unseen data'],,,,,,,
+theory_002_train_test_split_en,chat_response,en,True,0.105,,Why is a train-test split used?,"['theory', 'ml']",easy,"['evaluate model on unseen data', 'prevent data leakage']",['to increase training accuracy'],,,,,,,
+theory_003_regularization_en,chat_response,en,True,0.0,,What is regularization and why is it used?,"['theory', 'ml']",medium,"['adds penalty to model complexity', 'reduces overfitting']",['regularization increases model variance'],,,,,,,
+theory_004_bias_variance_en,chat_response,en,True,0.537,,Explain the bias-variance tradeoff.,"['theory', 'ml']",medium,"['bias refers to error from simplifying assumptions', 'variance refers to sensitivity to training data', 'tradeoff between bias and variance']",['bias and variance can both be minimized independently'],,,,,,,
+chat_005_feature_count_en,chat_response,en,True,0.101,,How many features does this dataset have?,"['chat', 'features']",easy,"['four features', 'sepal length', 'sepal width', 'petal length', 'petal width']","['five features', 'only petal features']",,,,,,,
+chat_006_samples_count_en,chat_response,en,True,0.585,,How many samples are in this dataset?,"['chat', 'dataset size']",easy,"['150 samples', '50 samples per class']","['100 samples', 'imbalanced classes']",,,,,,,
+chat_007_numeric_only_en,chat_response,en,True,0.27,,Are all features in this dataset numeric?,"['chat', 'data types']",easy,"['all features are numeric', 'continuous measurements']","['categorical features', 'text features']",,,,,,,
+chat_008_need_scaling_en,chat_response,en,True,0.212,,Is feature scaling important for this dataset?,"['chat', 'preprocessing']",medium,"['important for distance-based models', 'helps algorithms like kNN or SVM']","['scaling is never useful', 'scaling changes class labels']",,,,,,,
+chat_009_linear_separable_en,chat_response,en,True,0.26,,Is this dataset linearly separable?,"['chat', 'analysis']",medium,"['setosa is linearly separable', 'other classes overlap']","['all classes are perfectly separable', 'no class is separable']",,,,,,,
+chat_011_unsupervised_possible_en,chat_response,en,True,0.239,,Can this dataset be used for unsupervised learning?,"['chat', 'unsupervised']",medium,"['can be used for clustering', 'labels can be ignored']",['unsupervised learning requires labels'],,,,,,,
+chat_012_pca_purpose_en,chat_response,en,True,0.129,,Is PCA applicable to this dataset?,"['chat', 'pca']",medium,"['reduce dimensionality', 'enable visualization', 'capture most variance']",['PCA improves class labels'],,,,,,,
+chat_013_outliers_en,chat_response,en,True,0.269,,Are outliers a major concern in this dataset?,"['chat', 'data quality']",medium,"['dataset is relatively clean', 'few or no strong outliers']",['dataset is heavily corrupted by outliers'],,,,,,,
+chat_014_real_world_limitations_en,chat_response,en,True,0.21,,What are the limitations of this dataset?,"['chat', 'limitations']",hard,"['small size', 'not representative of complex real-world data']",['suitable for deep learning at scale'],,,,,,,
+theory_006_classification_vs_regression_en,chat_response,en,True,0.067,,What is the difference between classification and regression?,"['theory', 'ml basics']",easy,"['classification predicts discrete labels', 'regression predicts continuous values']","['classification predicts numbers only', 'regression predicts categories']",,,,,,,
+theory_007_cross_validation_en,chat_response,en,True,0.28,,What is cross-validation?,"['theory', 'model evaluation']",medium,"['splits data into multiple folds', 'provides more reliable performance estimates', 'reduces dependence on a single train-test split']",['cross-validation guarantees perfect performance'],,,,,,,
+theory_008_feature_engineering_en,chat_response,en,True,0.31,,What is feature engineering?,"['theory', 'features']",medium,"['process of creating or transforming features', 'can improve model performance', 'requires domain knowledge']",['feature engineering is only data cleaning'],,,,,,,
+theory_009_data_leakage_en,chat_response,en,True,0.0,,What is data leakage?,"['theory', 'data issues']",medium,"['information from test data leaks into training', 'leads to overly optimistic evaluation', 'harms generalization']",['data leakage improves real-world performance'],,,,,,,
+theory_010_precision_recall_en,chat_response,en,True,0.177,,Explain precision and recall.,"['theory', 'metrics']",medium,"['precision measures correctness of positive predictions', 'recall measures coverage of actual positives', 'tradeoff between precision and recall']",['precision and recall are always equal'],,,,,,,
+theory_011_accuracy_limitations_en,chat_response,en,True,0.0,,Is accuracy a universal metric?,"['theory', 'metrics']",medium,"['problematic with imbalanced datasets', 'does not reflect class-wise performance']",['accuracy is always the best metric'],,,,,,,
+chat_012_what_is_in_data_en,chat_response,en,True,0.484,,What is in the data?,"['chat', 'data_description']",easy,"['The data represents the Iris dataset', 'The dataset contains numeric features describing sepal and petal measurements', 'There is a categorical feature indicating the iris species', 'Each row corresponds to a single flower']","['Mentioning specific statistics or numeric values', 'Claims about model performance or training results', 'Assumptions about downstream data processing']",,,,,,,
+chat_001_what_is_iris,chat_response,ru,True,0.185,,"Поясни, что представляет собой датасет.","['chat', 'описание ириса']",easy,"['датасет содержит измерения лепестков и чашелистиков', 'три вида ириса']",['животные'],,,,,,,
+chat_002_how_many_classes,chat_response,ru,True,0.288,,Сколько классов в этом датасете?,"['chat', 'классы']",easy,['три класса'],[],,,,,,,
+chat_003_best_features,chat_response,ru,False,0.052,,Какие признаки лучше всего разделяют виды ирисов?,"['chat', 'анализ']",medium,"['длина лепестка', 'ширина лепестка']",[],,,,,,,
+chat_004_easiest_class,chat_response,ru,False,0.051,,Какой вид ириса лучше всего отделяется от остальных?,"['chat', 'анализ']",medium,"['setosa', 'короче лепестки', 'шире лепестки']",[],,,,core/evaluation/report_3_remote_llm_qwen3-instruct-30b/plots/chat_004_easiest_class_model.png,,,
+theory_001_overfitting,chat_response,ru,True,0.171,,Что такое переобучение в машинном обучении?,"['theory', 'ml']",easy,"['модель слишком хорошо подстраивается под обучающую выборку', 'плохо обобщает на новые данные']",['переобучение улучшает качество на новых данных'],,,,,,,
+theory_002_train_test_split,chat_response,ru,True,0.177,,Зачем используется разделение на обучающую и тестовую выборки?,"['theory', 'ml']",easy,"['оценка качества модели на невидимых данных', 'предотвращение утечки данных']",['для увеличения точности на обучающей выборке'],,,,,,,
+theory_003_regularization,chat_response,ru,True,0.091,,Что такое регуляризация и зачем она нужна?,"['theory', 'ml']",medium,"['добавляет штраф за сложность модели', 'уменьшает переобучение']",['регуляризация увеличивает разброс модели'],,,,,,,
+theory_004_bias_variance,chat_response,ru,True,0.283,,Объясни компромисс между смещением и разбросом.,"['theory', 'ml']",medium,"['смещение связано с упрощающими предположениями модели', 'разброс связан с чувствительностью к обучающим данным', 'существует компромисс между смещением и разбросом']",['смещение и разброс можно минимизировать независимо'],,,,,,,
+chat_005_feature_count,chat_response,ru,True,0.322,,Сколько признаков содержит этот датасет?,"['chat', 'признаки']",easy,"['четыре признака', 'длина чашелистика', 'ширина чашелистика', 'длина лепестка', 'ширина лепестка']","['пять признаков', 'только признаки лепестков']",,,,,,,
+chat_006_samples_count,chat_response,ru,True,0.66,,Сколько объектов содержится в этом датасете?,"['chat', 'размер датасета']",easy,"['150 объектов', '50 объектов на класс']","['100 объектов', 'несбалансированные классы']",,,,,,,
+chat_007_numeric_only,chat_response,ru,True,0.217,,Все ли признаки в этом датасете являются числовыми?,"['chat', 'типы данных']",easy,"['все признаки числовые', 'непрерывные измерения']","['категориальные признаки', 'текстовые признаки']",,,,,,,
+chat_008_need_scaling,chat_response,ru,True,0.243,,Важно ли масштабирование признаков для этого датасета?,"['chat', 'предобработка']",medium,"['важно для моделей, основанных на расстоянии', 'помогает алгоритмам вроде kNN или SVM']","['масштабирование никогда не нужно', 'масштабирование меняет метки классов']",,,,,,,
+chat_009_linear_separable,chat_response,ru,True,0.188,,Является ли этот датасет линейно разделимым?,"['chat', 'анализ']",medium,"['класс setosa линейно разделим', 'остальные классы перекрываются']","['все классы идеально разделимы', 'ни один класс не разделим']",,,,,,,
+chat_011_unsupervised_possible,chat_response,ru,True,0.125,,Можно ли использовать этот датасет для обучения без учителя?,"['chat', 'обучение без учителя']",medium,"['можно использовать для кластеризации', 'метки классов можно игнорировать']",['обучение без учителя требует меток'],,,,,,,
+chat_012_pca_purpose,chat_response,ru,True,0.128,,Применим ли метод PCA к этому датасету?,"['chat', 'pca']",medium,"['снижение размерности', 'возможность визуализации', 'сохранение большей части дисперсии']",['PCA улучшает метки классов'],,,,,,,
+chat_013_outliers,chat_response,ru,True,0.18,,Являются ли выбросы серьёзной проблемой в этом датасете?,"['chat', 'качество данных']",medium,"['датасет относительно чистый', 'мало или нет выраженных выбросов']",['датасет сильно искажён выбросами'],,,,,,,
+chat_014_real_world_limitations,chat_response,ru,True,0.167,,Какие ограничения есть у этого датасета?,"['chat', 'ограничения']",hard,"['небольшой размер', 'не отражает сложные реальные данные']",['подходит для масштабного глубокого обучения'],,,,,,,
+theory_006_classification_vs_regression,chat_response,ru,True,0.29,,В чём разница между классификацией и регрессией?,"['theory', 'основы ml']",easy,"['классификация предсказывает дискретные классы', 'регрессия предсказывает непрерывные значения']","['классификация предсказывает только числа', 'регрессия предсказывает категории']",,,,,,,
+theory_007_cross_validation,chat_response,ru,True,0.225,,Что такое кросс-валидация?,"['theory', 'оценка моделей']",medium,"['разбиение данных на несколько фолдов', 'более надёжная оценка качества модели', 'уменьшает зависимость от одного train-test разбиения']",['кросс-валидация гарантирует идеальное качество'],,,,,,,
+theory_008_feature_engineering,chat_response,ru,True,0.236,,Что такое feature engineering?,"['theory', 'признаки']",medium,"['процесс создания или преобразования признаков', 'может улучшить качество модели', 'требует знания предметной области']",['feature engineering — это только очистка данных'],,,,,,,
+theory_009_data_leakage,chat_response,ru,True,0.248,,Что такое утечка данных?,"['theory', 'проблемы данных']",medium,"['информация из тестовой выборки попадает в обучение', 'приводит к завышенной оценке качества', 'ухудшает обобщающую способность']",['утечка данных улучшает качество в реальных условиях'],,,,,,,
+theory_010_precision_recall,chat_response,ru,True,0.272,,"Поясни, что такое precision и recall.","['theory', 'метрики']",medium,"['precision показывает точность положительных предсказаний', 'recall показывает полноту выявления положительных объектов', 'существует компромисс между precision и recall']",['precision и recall всегда равны'],,,,,,,
+theory_011_accuracy_limitations,chat_response,ru,True,0.088,,Является ли accuracy универсальной метрикой?,"['theory', 'метрики']",medium,"['проблематична при несбалансированных данных', 'не отражает качество по отдельным классам']",['accuracy всегда лучшая метрика'],,,,,,,
+chat_012_what_is_in_data,chat_response,ru,True,0.283,,Что в данных,"['chat', 'data_description']",easy,"['Данные представляют собой датасет Iris', 'В данных содержатся числовые признаки, описывающие размеры чашелистиков и лепестков', 'В данных есть категориальный признак с видом ириса', 'Каждая строка соответствует одному цветку']","['Упоминание конкретных статистик или числовых значений', 'Утверждения о качестве модели или результатах обучения', 'Предположения о последующей обработке данных']",,,,,,,

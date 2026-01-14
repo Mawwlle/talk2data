@@ -103,6 +103,8 @@
     "expected_code": "import plotly.express as px\nfrom sklearn.decomposition import PCA\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(df.drop(columns=[\"species\"]))\n\ndf_pca = pd.DataFrame(X_pca, columns=[\"PC1\", \"PC2\"])\ndf_pca[\"species\"] = df[\"species\"]\n\nfig = px.scatter(df_pca, x=\"PC1\", y=\"PC2\", color=\"species\")\nfig.show()",
     "metadata": {
       "tags": ["code", "pca", "plot"],
+      "difficulty": "medium"
+      }
   },
   {
     "id": "code_012_kmeans",
@@ -132,6 +134,7 @@
     "metadata": {
       "tags": ["code", "split", "train", "test"],
       "difficulty": "easy"
+    }
    },
    {
     "id": "code_014_show_all_plots",

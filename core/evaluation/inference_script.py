@@ -92,7 +92,7 @@ def main() -> None:
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅ Eval finished. Results saved to {output_path}")
+    print(f"\n✅ Inference finished. Results saved to {output_path}")
 
 
 if __name__ == "__main__":
