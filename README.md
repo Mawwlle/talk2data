@@ -1,6 +1,17 @@
 
 # Talk2Data
 
+## About this fork
+
+This project is a fork of https://github.com/mohammad-nour-alawad/talk2data.
+
+In this fork, I:
+- redesigned the LLM agent interaction flow;
+- added structured output validation and backend-side checks;
+- implemented caching and performance optimizations;
+- extended the project to better reflect production-oriented use cases;
+- added report generation for LLM evaluation
+
 ## 🚀 Quick start (local, upd for SMILE)
 
 ### 1. Клонируем и устанавливаем среду
