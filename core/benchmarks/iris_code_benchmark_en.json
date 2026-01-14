@@ -37,7 +37,106 @@
     }
   },
   {
-    "id": "code_004_show_all_plots_en",
+    "id": "code_004_missing_check_en",
+    "user_input": "Check if there are missing values in the dataset.",
+    "expected_decision": "code_generation",
+    "expected_code": "df.isnull().sum()",
+    "metadata": {
+      "tags": ["code", "missing_values"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "code_005_fill_missing_en",
+    "user_input": "Fill missing values with the mean value of column.",
+    "expected_decision": "code_generation",
+    "expected_code": "df.fillna(df.mean(numeric_only=True), inplace=True)",
+    "metadata": {
+      "tags": ["code", "missing_values", "preprocessing"],
+      "difficulty": "easy"
+    }
+  },
+  {
+    "id": "code_006_boxplot_en",
+    "user_input": "Create boxplots for all numeric features.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\nfig = px.box(df, y=df.select_dtypes(include=\"number\").columns)\nfig.show()",
+    "metadata": {
+      "tags": ["code", "visualization", "boxplot"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_007_standardize_en",
+    "user_input": "Standardize all feature columns.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.preprocessing import StandardScaler\n\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "scaling"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_008_normalize_en",
+    "user_input": "Normalize the features in range 0 to 1.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.preprocessing import MinMaxScaler\n\nscaler = MinMaxScaler()\nX_normalized = scaler.fit_transform(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "scaling"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_009_pca_en",
+    "user_input": "Reduce dimensionality to two components using PCA.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.decomposition import PCA\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "pca", "dimensionality_reduction"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_010_pca_plot_en",
+    "user_input": "Make scatter plot of first two PCA components colored by species.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\nfrom sklearn.decomposition import PCA\n\npca = PCA(n_components=2)\nX_pca = pca.fit_transform(df.drop(columns=[\"species\"]))\n\ndf_pca = pd.DataFrame(X_pca, columns=[\"PC1\", \"PC2\"])\ndf_pca[\"species\"] = df[\"species\"]\n\nfig = px.scatter(df_pca, x=\"PC1\", y=\"PC2\", color=\"species\")\nfig.show()",
+    "metadata": {
+      "tags": ["code", "pca", "visualization"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "code_011_kmeans_en",
+    "user_input": "Make three clusters using KMeans.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.cluster import KMeans\n\nkmeans = KMeans(n_clusters=3, random_state=42)\nclusters = kmeans.fit_predict(df.drop(columns=[\"species\"]))",
+    "metadata": {
+      "tags": ["code", "clustering"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_012_cluster_plot_en",
+    "user_input": "Make scatter plot of KMeans clusters using the first two features.",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\nX = df.drop(columns=[\"species\"])\n\nfig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))\nfig.show()",
+    "metadata": {
+      "tags": ["code", "clustering", "visualization"],
+      "difficulty": "medium"
+    }
+  },
+  {
+    "id": "code_013_train_test_split_en",
+    "user_input": "Split the dataset into train and test sets.",
+    "expected_decision": "code_generation",
+    "expected_code": "from sklearn.model_selection import train_test_split\n\nX = df.drop(columns=[\"species\"])\ny = df[\"species\"]\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",
+    "metadata": {
+      "tags": ["code", "split"],
+      "difficulty": "easy"
+  },
+  {
+    "id": "code_014_show_all_plots_en",
     "user_input": "Show all plots.",
     "expected_decision": "code_generation",
     "expected_code": "import plotly.express as px\nimport plotly.graph_objects as go\n\n# df already exists and represents the iris dataset\n\n# Select numeric columns\nnum_cols = df.select_dtypes(include=[\"number\"]).columns.tolist()\n\n# Try to infer target column\ncandidate_targets = [\"species\", \"target\", \"label\", \"class\"]\ntarget_col = next((c for c in candidate_targets if c in df.columns), None)\n\nif not num_cols:\n    raise ValueError(\"No numeric columns found in df to build plots.\")\n\n# 1) Histograms for all numeric features\nfig_hist = px.histogram(\n    df,\n    x=num_cols,\n    color=target_col if target_col else None,\n    barmode=\"overlay\",\n    title=\"Distributions (Histograms)\"\n)\nfig_hist.show()\n\n# 2) Box plots by class (if target exists)\nif target_col:\n    for col in num_cols:\n        fig_box = px.box(\n            df,\n            x=target_col,\n            y=col,\n            title=f\"Boxplot: {col} by {target_col}\"\n        )\n        fig_box.show()\n\n# 3) Scatter plots for common Iris feature pairs\nscatter_pairs = [\n    (\"sepal_length\", \"sepal_width\"),\n    (\"petal_length\", \"petal_width\")\n]\n\nfor x, y in scatter_pairs:\n    if x in df.columns and y in df.columns:\n        fig_scatter = px.scatter(\n            df,\n            x=x,\n            y=y,\n            color=target_col if target_col else None,\n            title=f\"Scatter: {x} vs {y}\"\n        )\n        fig_scatter.show()\n\n# 4) Scatter matrix (pairwise relationships)\nfig_matrix = px.scatter_matrix(\n    df,\n    dimensions=num_cols,\n    color=target_col if target_col else None,\n    title=\"Scatter Matrix\"\n)\nfig_matrix.show()\n\n# 5) Correlation heatmap\ncorr = df[num_cols].corr(numeric_only=True)\n\nfig_heatmap = px.imshow(\n    corr,\n    text_auto=True,\n    title=\"Correlation Heatmap\"\n)\nfig_heatmap.show()\n",
@@ -48,7 +147,7 @@
     }
   },
   {
-    "id": "code_005_histogram_en",
+    "id": "code_015_histogram_en",
     "user_input": "Show a histogram.",
     "expected_decision": "code_generation",
     "expected_code": "import plotly.express as px\n\n# df already exists and represents the iris dataset\n\nnum_cols = df.select_dtypes(include=[\"number\"]).columns.tolist()\n\nif not num_cols:\n    raise ValueError(\"В df не найдено числовых колонок для построения histogram.\")\n\n# Строим histogram по всем числовым признакам\nfig = px.histogram(\n    df,\n    x=num_cols,\n    barmode=\"overlay\",\n    title=\"Histogram\"\n)\n\nfig.show()\n",
