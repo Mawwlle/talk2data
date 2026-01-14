@@ -317,5 +317,26 @@
       "tags": ["theory", "metrics"],
       "difficulty": "medium"
     }
+  },
+  {
+    "id": "chat_012_what_is_in_data_en",
+    "user_input": "What is in the data?",
+    "expected_decision": "chat_response",
+    "expected_facts": [
+      "The data represents the Iris dataset",
+      "The dataset contains numeric features describing sepal and petal measurements",
+      "There is a categorical feature indicating the iris species",
+      "Each row corresponds to a single flower"
+    ],
+    "forbidden_facts": [
+      "Mentioning specific statistics or numeric values",
+      "Claims about model performance or training results",
+      "Assumptions about downstream data processing"
+    ],
+    "max_tokens": 80,
+    "metadata": {
+      "tags": ["chat", "data_description"],
+      "difficulty": "easy"
+    }
   }
 ]

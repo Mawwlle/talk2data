@@ -1,12 +1,14 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any, TypedDict
 
 from core.evaluation.constants import RESULT_ID
-from core.workflow import create_workflow, llm_init, init_tokenizer_only
-from core.config import settings
+from core.evaluation.io_utils import BENCHMARKS_DIR, load_json
+from core.evaluation.ports import WorkflowRunner
+from core.models import ModelLoader
+from core.workflow import WorkflowEngine
 
-BENCHMARKS_DIR = Path("core/benchmarks")
 RESULTS_DIR = Path("core/evaluation/inference_results")
 RESULTS_DIR.mkdir(exist_ok=True)
 METADATA = {
@@ -18,12 +20,15 @@ METADATA = {
 }
 
 
-def load_json(path: Path) -> list[dict]:
-    text = path.read_text(encoding="utf-8").strip()
-    return json.loads(text)
+class InferenceResults(TypedDict):
+    run_id: str
+    timestamp: str
+    results: list[dict[str, Any]]
 
 
-def run_single_case(workflow, benchmark: dict) -> dict:
+def run_single_case(
+    workflow: WorkflowRunner, benchmark: dict[str, Any]
+) -> dict[str, Any]:
     initial_state = {
         "user_input": benchmark["user_input"],
         "metadata": METADATA,
@@ -48,12 +53,14 @@ def run_single_case(workflow, benchmark: dict) -> dict:
     }
 
 
-def main():
-    llm_init()
-    workflow = create_workflow()
+def main() -> None:
+    loader = ModelLoader()
+    workflow_engine = WorkflowEngine(loader.get_llm(), loader.get_tokenizer())
+    workflow = workflow_engine.create_workflow()
+
     infer_result_path = f"infer_{RESULT_ID}"
 
-    all_results = {
+    all_results: InferenceResults = {
         "run_id": infer_result_path,
         "timestamp": datetime.utcnow().isoformat(),
         "results": [],

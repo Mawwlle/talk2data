@@ -1,0 +1,454 @@
+# Детальный отчёт по кейсам (ru)
+
+## Методика расчёта метрик
+### Semantic similarity (только для chat_response)
+Формула:
+```text
+semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty
+```
+Где доли:
+ - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;
+ - forbidden_penalty — доля запрещённых фактов,
+попавших в ответ (штраф).
+ - similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый
+референс) и ответом модели.
+
+
+Факт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55
+(или высокая токеновая схожесть), что позволяет засчитывать перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,
+давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1]).
+
+### Code score (только для code_generation)
+- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).
+- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.
+
+## Кейсы
+### code_001_describe (code_generation, language: ru, difficulty: easy)
+
+**User input:** Напиши код, который выводит статистику по датасету.
+
+
+**Ground truth:**
+- expected_code:
+```python
+df.describe()
+```
+- expected_result:
+
+```python
+       sepal_length  sepal_width  petal_length  petal_width
+count    150.000000   150.000000    150.000000   150.000000
+mean       5.843333     3.057333      3.758000     1.199333
+std        0.828066     0.435866      1.765298     0.762238
+min        4.300000     2.000000      1.000000     0.100000
+25%        5.100000     2.800000      1.600000     0.300000
+50%        5.800000     3.000000      4.350000     1.300000
+75%        6.400000     3.300000      5.100000     1.800000
+max        7.900000     4.400000      6.900000     2.500000
+```
+- expected_error:
+
+```python
+None
+```
+
+
+**Model output:**
+> Here's the generated code:
+```python
+df.describe()
+```
+- model_result:
+
+```python
+       sepal_length  sepal_width  petal_length  petal_width
+count    150.000000   150.000000    150.000000   150.000000
+mean       5.843333     3.057333      3.758000     1.199333
+std        0.828066     0.435866      1.765298     0.762238
+min        4.300000     2.000000      1.000000     0.100000
+25%        5.100000     2.800000      1.600000     0.300000
+50%        5.800000     3.000000      4.350000     1.300000
+75%        6.400000     3.300000      5.100000     1.800000
+max        7.900000     4.400000      6.900000     2.500000
+```
+- model_error:
+
+```python
+None
+```
+
+
+**Метрики:**
+- decision_score: True
+  - heuristic_score: 1.0
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.222 | expected:  | model:  | matched:
+    - calls_score: 0.444 | expected: describe | model: describe | matched: describe
+
+### code_002_pairplot (code_generation, language: ru, difficulty: medium)
+
+**User input:** Построй pairplot всех признаков.
+
+
+**Ground truth:**
+- expected_code:
+```python
+import plotly.express as px
+fig = px.scatter_matrix(df, dimensions=df.columns, color="species")
+fig.show()
+```
+- expected_result:
+
+```python
+None
+```
+- expected_output: Интерактивный график (Plotly)
+- expected_error:
+
+```python
+execution_timeout: sandbox_timeout
+```
+- expected_plot:
+
+ ![expected plot](plots/code_002_pairplot_expected.png)
+
+
+**Model output:**
+> Here's the generated code:
+```python
+import plotly.express as px
+fig = px.scatter_matrix(df, dimensions=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species')
+fig
+```
+- model_result:
+
+```python
+Figure({
+    'data': [{'dimensions': [{'axis': {'matches': True},
+                              'label': 'sepal_length',
+                              'values': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'ZmZhJAMzMzMzMzFUAAAAAAAAAUQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'sepal_width',
+                              'values': {'bdata': ('AAAAAAAADEAAAAAAAAAIQJqZmZmZmQ' ... 'mZmQlAmpmZmZmZDUBmZmZmZmYKQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'petal_length',
+                              'values': {'bdata': ('ZmZmZmZm9j9mZmZmZmb2P83MzMzMzP' ... 'ZmZvY/AAAAAAAA+D9mZmZmZmb2Pw=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'petal_width',
+                              'values': {'bdata': ('mpmZmZmZyT+amZmZmZnJP5qZmZmZmc' ... 'mZmck/mpmZmZmZyT+amZmZmZnJPw=='),
+                                         'dtype': 'f8'}}],
+              'hovertemplate': ('species=setosa<br>%{xaxis.titl' ... 'itle.text}=%{y}<extra></extra>'),
+              'legendgroup': 'setosa',
+              'marker': {'color': '#636efa', 'symbol': 'circle'},
+              'name': 'setosa',
+              'showlegend': True,
+              'type': 'splom'},
+             {'dimensions': [{'axis': {'matches': True},
+                              'label': 'sepal_length',
+                              'values': {'bdata': ('AAAAAAAAHECamZmZmZkZQJqZmZmZmR' ... 'zMzBhAZmZmZmZmFEDNzMzMzMwWQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'sepal_width',
+                              'values': {'bdata': ('mpmZmZmZCUCamZmZmZkJQM3MzMzMzA' ... 'MzMwdAAAAAAAAABEBmZmZmZmYGQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'petal_length',
+                              'values': {'bdata': ('zczMzMzMEkAAAAAAAAASQJqZmZmZmR' ... 'MzMxFAAAAAAAAACEBmZmZmZmYQQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'petal_width',
+                              'values': {'bdata': ('ZmZmZmZm9j8AAAAAAAD4PwAAAAAAAP' ... 'zMzPQ/mpmZmZmZ8T/NzMzMzMz0Pw=='),
+                                         'dtype': 'f8'}}],
+              'hovertemplate': ('species=versicolor<br>%{xaxis.' ... 'itle.text}=%{y}<extra></extra>'),
+              'legendgroup': 'versicolor',
+              'marker': {'color': '#EF553B', 'symbol': 'circle'},
+              'name': 'versicolor',
+              'showlegend': True,
+              'type': 'splom'},
+             {'dimensions': [{'axis': {'matches': True},
+                              'label': 'sepal_length',
+                              'values': {'bdata': ('MzMzMzMzGUAzMzMzMzMXQGZmZmZmZh' ... 'AAABpAzczMzMzMGECamZmZmZkXQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'sepal_width',
+                              'values': {'bdata': ('ZmZmZmZmCkCamZmZmZkFQAAAAAAAAA' ... 'AAAAhAMzMzMzMzC0AAAAAAAAAIQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'petal_length',
+                              'values': {'bdata': ('AAAAAAAAGEBmZmZmZmYUQJqZmZmZmR' ... 'zMzBRAmpmZmZmZFUBmZmZmZmYUQA=='),
+                                         'dtype': 'f8'}},
+                             {'axis': {'matches': True},
+                              'label': 'petal_width',
+                              'values': {'bdata': ('AAAAAAAABEBmZmZmZmb+P83MzMzMzA' ... 'AAAABAZmZmZmZmAkDNzMzMzMz8Pw=='),
+                                         'dtype': 'f8'}}],
+              'hovertemplate': ('species=virginica<br>%{xaxis.t' ... 'itle.text}=%{y}<extra></extra>'),
+              'legendgroup': 'virginica',
+              'marker': {'color': '#00cc96', 'symbol': 'circle'},
+              'name': 'virginica',
+              'showlegend': True,
+              'type': 'splom'}],
+    'layout': {'dragmode': 'select',
+               'legend': {'title': {'text': 'species'}, 'tracegroupgap': 0},
+               'margin': {'t': 60},
+               'template': '...'}
+})
+```
+- model_error:
+
+```python
+None
+```
+- model_plot:
+
+ ![model plot](plots/code_002_pairplot_model.png)
+
+
+**Метрики:**
+- decision_score: True
+  - heuristic_score: 1.0
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.222 | expected: plotly.express | model: plotly.express | matched: plotly.express
+    - calls_score: 0.444 | expected: scatter_matrix, show | model: scatter_matrix, show | matched: scatter_matrix, show
+
+### code_003_train_model (code_generation, language: ru, difficulty: medium)
+
+**User input:** Напиши код, который обучает простой классификатор на этих данных.
+
+
+**Ground truth:**
+- expected_code:
+```python
+from sklearn.linear_model import LogisticRegression
+
+X = df.drop(columns=["species"])
+y = df["species"]
+
+model = LogisticRegression(max_iter=200)
+model.fit(X, y)
+```
+- possible_code_objects: RandomForestClassifier, DecisionTreeClassifier, SVC, KNeighborsClassifier, GaussianNB
+- expected_result:
+
+```python
+LogisticRegression(max_iter=200)
+```
+- expected_error:
+
+```python
+None
+```
+
+
+**Model output:**
+> Here's the generated code:
+```python
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.ensemble import RandomForestClassifier
+
+X = df.drop(columns=['species'])
+y = df['species']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+clf = make_pipeline(StandardScaler(), RandomForestClassifier(n_estimators=100, random_state=42))
+clf.fit(X_train, y_train)
+clf
+```
+- model_result:
+
+```python
+Pipeline(steps=[('standardscaler', StandardScaler()),
+                ('randomforestclassifier',
+                 RandomForestClassifier(random_state=42))])
+```
+- model_error:
+
+```python
+None
+```
+
+
+**Метрики:**
+- decision_score: True
+  - heuristic_score: 0.63
+    - syntax_check: 0.333 (ok=True)
+    - imports_score: 0.0 | expected: sklearn.linear_model | model: sklearn.ensemble, sklearn.model_selection, sklearn.pipeline, sklearn.preprocessing | matched:
+    - calls_score: 0.296 | expected: LogisticRegression, drop, fit | model: RandomForestClassifier, StandardScaler, drop, fit, make_pipeline, train_test_split | matched: drop, fit
+
+### chat_001_what_is_iris (chat_response, language: ru, difficulty: easy)
+
+**User input:** Поясни, что представляет собой датасет.
+
+
+**Ground truth:**
+- expected_facts: датасет содержит измерения лепестков и чашелистиков; три вида ириса
+- forbidden_facts: животные
+
+
+**Model output:**
+> **Датасет** – это набор строк, каждая из которых представляет собой одну наблюдаемую ирисовую цветок.  - В столбцах **sepal_length** и **sepal_width** записаны длина и ширина чашелистиков (sepal) в сантиметрах.   - В столбцах **petal_length** и **petal_width** – длина и ширина лепестков (petal) в сантиметрах.   - Столбец **species** содержит название вида ириса: *setosa*, *versicolor* или *virginica*.  Таким образом, каждая строка описывает одну конкретную цветок (высота и ширина ее частей) и указывает, к какому виду она принадлежит.
+
+
+**Метрики:**
+- decision_score: True
+- semantic_similarity: 0.183
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+
+### chat_002_how_many_classes (chat_response, language: ru, difficulty: easy)
+
+**User input:** Сколько классов в этом датасете?
+
+
+**Ground truth:**
+- expected_facts: три класса
+
+
+**Model output:**
+> I’m not sure how many species are in the data without seeing the actual values.   Could you share the list of species that appear in the dataset?
+
+
+**Метрики:**
+- decision_score: True
+- semantic_similarity: 0.033
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+
+### chat_003_best_features (chat_response, language: ru, difficulty: medium)
+
+**User input:** Какие признаки лучше всего разделяют виды ирисов?
+
+
+**Ground truth:**
+- expected_facts: длина лепестка; ширина лепестка
+
+
+**Model output:**
+> **Ответ:**   В наборе данных о ирисах характерные признаки можно разделить на два группы.  - **Петалия** – longest and widest petal gives the strongest separation.     - `petal_length`     - `petal_width`    - **Лепестковый слой** – sepal width adds a little more detail, while sepal length is less useful.     - `sepal_width`     - `sepal_length` (least informative)  - **Вид** – `species` is the target category we want to distinguish.  So, if you want to quickly tell species apart, look first at the petal length and width, then at the sepal width. The sepal length is not very helpful for this task.
+
+
+**Метрики:**
+- decision_score: True
+- semantic_similarity: 0.141
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+
+### chat_004_easiest_class (chat_response, language: ru, difficulty: medium)
+
+**User input:** Какой вид ириса лучше всего отделяется от остальных?
+
+
+**Ground truth:**
+- expected_facts: setosa; короче лепестки; шире лепестки
+
+
+**Model output:**
+> Here's the generated code:
+```python
+import numpy as np
+features = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
+centroids = df.groupby('species')[features].mean()
+within_var = df.groupby('species')[features].var().mean(axis=1)
+dist = np.zeros((len(centroids), len(centroids)))
+for i, sp_i in enumerate(centroids.index):
+    for j, sp_j in enumerate(centroids.index):
+        if i != j:
+            dist[i, j] = np.linalg.norm(centroids.loc[sp_i] - centroids.loc[sp_j])
+between_dist = dist.mean(axis=1)
+separation = between_dist / within_var
+best_species = separation.idxmax()
+```
+- model_result:
+
+```python
+None
+```
+- model_error:
+
+```python
+None
+```
+
+
+**Метрики:**
+- decision_score: False
+- semantic_similarity: 0.051
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+
+### theory_001_overfitting (chat_response, language: ru, difficulty: easy)
+
+**User input:** Что такое переобучение в машинном обучении?
+
+
+**Ground truth:**
+- expected_facts: модель слишком хорошо подстраивается под обучающую выборку; плохо обобщает на новые данные
+- forbidden_facts: переобучение улучшает качество на новых данных
+
+
+**Model output:**
+> **Переобучение** – это когда модель слишком хорошо «запоминает» данные, которые ей давали для обучения, но при этом плохо справляется с новыми, не виданными ранее данными.  - Модель видит много примеров и учится запоминать детали, случайные шумы и ошибки. - На тестовых данных, которые ей не видели, точность падает. - Это противоположность тому, чтобы модель *обобщала* – находила закономерности, которые работают и на новых данных.  Как избежать переобучения:  - Делить данные на обучающую и тестовую части. - Ограничивать сложность модели. - Использовать регуляризацию, которая накладывает штраф за слишком большие параметры. - Кросс‑валидацию – проверять модель на разных подмножестве данных. - Уменьшать количество признаков, если они не важны.  Если модель только корректно учится на тренировочных данных, но при тесте даёт плохие результаты, значит вероятно произошёл переобучение.
+
+
+**Метрики:**
+- decision_score: True
+- semantic_similarity: 0.194
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+
+### theory_002_train_test_split (chat_response, language: ru, difficulty: easy)
+
+**User input:** Зачем используется разделение на обучающую и тестовую выборки?
+
+
+**Ground truth:**
+- expected_facts: оценка качества модели на невидимых данных; предотвращение утечки данных
+- forbidden_facts: для увеличения точности на обучающей выборке
+
+
+**Model output:**
+> Разделение выборки на **обучающую** и **тестовую** части помогает понять, насколько хорошо модель будет работать на новых, невиданных данных.  - **Обучающая выборка**     На ней модель «учится» – подбирает параметры, основываясь на известных примерах.  - **Тестовая выборка**     Проверяет, как модель справляется с данными, которые она раньше не видела. Это позволяет оценить её реальную точность и избежать переобучения.  Таким образом, такое разделение обеспечивает более надёжную оценку качества модели.
+
+
+**Метрики:**
+- decision_score: True
+- semantic_similarity: 0.174
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+
+### theory_003_regularization (chat_response, language: ru, difficulty: medium)
+
+**User input:** Что такое регуляризация и зачем она нужна?
+
+
+**Ground truth:**
+- expected_facts: добавляет штраф за сложность модели; уменьшает переобучение
+- forbidden_facts: регуляризация увеличивает разброс модели
+
+
+**Model output:**
+> **Регуляризация** — это способ сделать модель более надёжной, добавляя к ошибке штраф за сложность модели.   Когда модель слишком «похожит» на обучающий набор, она запоминает шум и плохо работает на новых данных. Регуляризация помогает ограничить такие ошибки.  **Почему это важно**  - **Профилактика переобучения** – модель не запоминает случайные колебания данных, а учит общие закономерности. - **Стабильность** – небольшие изменения в данных не приводят к резким скачкам в предсказаниях. - **Сжатие модели** – лишние признаки или коэффициенты выводятся к нулю, что упрощает модель.  **Коротко как это работает**  - **L1‑регуляризация (Lasso)** добавляет к ошибке сумму абсолютных значений коэффициентов.     При достаточном штрафе некоторые коэффициенты становятся нулевыми, и модель автоматически выбирает важные признаки.  - **L2‑регуляризация (Ridge)** добавляет к ошибке сумму квадратов коэффициентов.     Это делает веса более «смягчёнными», но обычно они не обнуляются полностью.  Выбор вида регуляризации зависит от задачи и того, какие свойства модели важнее: отбрасывание лишних признаков (L1) или сглаживание весов (L2).  Таким образом, регуляризация – это инструмент, который делает модель проще, точнее и надёжнее при предсказании новых наблюдений.
+
+
+**Метрики:**
+- decision_score: True
+- semantic_similarity: 0.184
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0
+
+### theory_004_bias_variance (chat_response, language: ru, difficulty: medium)
+
+**User input:** Объясни компромисс между смещением и разбросом.
+
+
+**Ground truth:**
+- expected_facts: смещение связано с упрощающими предположениями модели; разброс связан с чувствительностью к обучающим данным; существует компромисс между смещением и разбросом
+- forbidden_facts: смещение и разброс можно минимизировать независимо
+
+
+**Model output:**
+> **Компромисс между смещением и разбросом**   (или «bias–variance trade‑off») — это фундаментальная идея в машинном обучении.  - **Смещение (bias)** – насколько средняя ошибка модели отклоняется от истинного значения. Большое смещение указывает на то, что модель слишком упрощена и не может уловить сложную зависимость в данных.   - **Разброс (variance)** – насколько сильно предсказания модели меняются при работе с разными выборками данных. Большой разброс говорит о том, что модель слишком чувствительна к шуму и может переобучиться.  | Что происходит, когда… | Больше… | Меньше… | | **...смещения** | Модель слишком простая, прогноза неточные. | Модель почти всегда отстоит от правды. | | **...разброса** | Модель очень чувствительна к деталям и может «обучаться» случайным шумам. | Прогнозы стабильные, но могут быть неполными. |  **Идея компромиса**   Нужно найти баланс: слишком большое смещение делает модель*плохой* для всех данных, а слишком большой разброс делает модель*плохой* для конкретной выборки. На практике ставкой является так называемый «средний квадратичный отклик» – сумма квадрата смещения и разброса. Задача — минимизировать эту сумму, выбирая модель, которая не слишком проста и не слишком сложна.  - **Упрощённые модели** (линейная регрессия, простые деревья) имеют низкий разброс, но высокий смещение.   - **Сложные модели** (глубокие нейросети, случайные леса) уменьшают смещение, но часто увеличивают разброс.  **Практический подход**   - Проводим *кросс‑валидацию* – оценивать модель на разных подвыборках данных.   - **Регуляризация** (L1, L2) снижает разброс, но может добавить смещение.   - Находим такой размер модели, при котором средняя ошибка (смещение + разброс) минимальна.  Таким образом, компромисс между смещением и разбросом – это поиск модели, которая дает достаточно точные, но при этом устойчивые к вариациям данные предсказания.
+
+
+**Метрики:**
+- decision_score: True
+- semantic_similarity: 0.252
+  - expected_coverage: 0.0 | forbidden_penalty: 0.0

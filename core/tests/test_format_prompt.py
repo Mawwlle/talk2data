@@ -1,11 +1,29 @@
+import pytest
+
+from core.config import settings
 from core.prompts import CODE_GENERATION_PROMPT
 from core.tests.tools import TEST_INITIAL_STATES
-from core.workflow import format_prompt, init_tokenizer_only
+from core.workflow import WorkflowEngine
 
-# Пока сырой тест, в SD-1515 и SD-1516 будет доработано
 
-prompt = "Plot a histogram of sepal_length with 25 bins and add a title."
-init_tokenizer_only()
-result = format_prompt(CODE_GENERATION_PROMPT, TEST_INITIAL_STATES[0])
+class _DummyLLM:
+    def generate(self, prompts, sampling_params):  # pragma: no cover - not used here
+        return []
 
-print("result: ", result)
+
+class _DummyTokenizer:
+    def apply_chat_template(self, messages, tokenize=False, add_generation_prompt=True):
+        return " ".join(message["content"] for message in messages)
+
+
+@pytest.fixture
+def engine(monkeypatch):
+    monkeypatch.setattr(settings, "REMOTE_LLM", False)
+    return WorkflowEngine(_DummyLLM(), _DummyTokenizer())
+
+
+def test_format_prompt_includes_user_input(engine):
+    result = engine._format_prompt(CODE_GENERATION_PROMPT, TEST_INITIAL_STATES[0])
+
+    assert isinstance(result, str)
+    assert TEST_INITIAL_STATES[0]["user_input"] in result
