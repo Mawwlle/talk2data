@@ -1,4 +1,4 @@
-id,expected_decision,language,decision_score,code_details,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,possible_code_objects,expected_plot_path,model_plot_path,expected_plot_error,heuristic_score,result_match
+id,expected_decision,language,decision_score,code_details,user_input,tags,difficulty,expected_facts,forbidden_facts,expected_code,possible_code_objects,expected_plot_path,model_plot_path,expected_plot_error,model_plot_error,heuristic_score,result_match
 code_001_describe_en,code_generation,en,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['describe'], 'model': ['describe'], 'matched': ['describe']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected':        sepal_length  sepal_width  petal_length  petal_width
 count    150.000000   150.000000    150.000000   150.000000
 mean       5.843333     3.057333      3.758000     1.199333
@@ -18,17 +18,17 @@ min         4.300000     2.000000      1.000000     0.100000     NaN
 25%         5.100000     2.800000      1.600000     0.300000     NaN
 50%         5.800000     3.000000      4.350000     1.300000     NaN
 75%         6.400000     3.300000      5.100000     1.800000     NaN
-max         7.900000     4.400000      6.900000     2.500000     NaN}}",Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,,,1.0,
+max         7.900000     4.400000      6.900000     2.500000     NaN}}",Write code that outputs statistics for the dataset.,"['code', 'describe']",easy,,,df.describe(),,,,,,1.0,
 code_002_pairplot_en,code_generation,en,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.444, 'expected': ['scatter_matrix', 'show'], 'model': ['scatter_matrix', 'show'], 'matched': ['scatter_matrix', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Create a pairplot for all features.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_model.png,,1.0,
+fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_en_model.png,,,1.0,
 code_003_train_model_en,code_generation,en,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.linear_model'], 'model': ['sklearn.linear_model', 'sklearn.metrics', 'sklearn.model_selection'], 'matched': ['sklearn.linear_model']}, 'calls': {'score': 0.296, 'expected': ['LogisticRegression', 'drop', 'fit'], 'model': ['LogisticRegression', 'accuracy_score', 'fit', 'predict', 'train_test_split'], 'matched': ['LogisticRegression', 'fit']}, 'objects': {'score': 0.0, 'possible': ['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB'], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': LogisticRegression(max_iter=200), 'model': 1.0}}",Write code that trains a simple classifier on this data.,"['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,,0.852,
+model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,,,0.852,
 code_004_missing_check_en,code_generation,en,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['isnull', 'sum'], 'model': ['isnull', 'sum'], 'matched': ['isnull', 'sum']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': sepal_length    0
 sepal_width     0
 petal_length    0
@@ -39,25 +39,73 @@ sepal_width     0
 petal_length    0
 petal_width     0
 species         0
-dtype: int64}}",Check if there are missing values in the dataset.,"['code', 'missing_values']",easy,,,df.isnull().sum(),,,,,1.0,
-code_005_fill_missing_en,code_generation,en,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['fillna', 'mean'], 'model': ['fillna', 'mean'], 'matched': ['fillna', 'mean']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Fill missing values with the mean value of column.,"['code', 'missing_values', 'preprocessing']",easy,,,"df.fillna(df.mean(numeric_only=True), inplace=True)",,,,,1.0,
+dtype: int64}}",Check if there are missing values in the dataset.,"['code', 'missing_values']",easy,,,df.isnull().sum(),,,,,,1.0,
+code_005_fill_missing_en,code_generation,en,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['fillna', 'mean'], 'model': ['fillna', 'mean'], 'matched': ['fillna', 'mean']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Fill missing values with the mean value of column.,"['code', 'missing_values', 'preprocessing']",easy,,,"df.fillna(df.mean(numeric_only=True), inplace=True)",,,,,,1.0,
 code_006_boxplot_en,code_generation,en,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.296, 'expected': ['box', 'select_dtypes', 'show'], 'model': ['box', 'show'], 'matched': ['box', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Create boxplots for all numeric features.,"['code', 'visualization', 'boxplot']",medium,,,"import plotly.express as px
 
 fig = px.box(df, y=df.select_dtypes(include=""number"").columns)
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_en_model.png,,0.852,
+fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_en_model.png,,,0.852,
 code_007_standardize_en,code_generation,en,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.preprocessing'], 'model': ['sklearn.preprocessing'], 'matched': ['sklearn.preprocessing']}, 'calls': {'score': 0.296, 'expected': ['StandardScaler', 'drop', 'fit_transform'], 'model': ['StandardScaler', 'fit_transform'], 'matched': ['StandardScaler', 'fit_transform']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Standardize all feature columns.,"['code', 'scaling']",medium,,,"from sklearn.preprocessing import StandardScaler
 
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+X_scaled = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,,0.852,
 code_008_normalize_en,code_generation,en,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.preprocessing'], 'model': ['sklearn.preprocessing'], 'matched': ['sklearn.preprocessing']}, 'calls': {'score': 0.296, 'expected': ['MinMaxScaler', 'drop', 'fit_transform'], 'model': ['MinMaxScaler', 'fit_transform'], 'matched': ['MinMaxScaler', 'fit_transform']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Normalize the features in range 0 to 1.,"['code', 'scaling']",medium,,,"from sklearn.preprocessing import MinMaxScaler
 
 scaler = MinMaxScaler()
-X_normalized = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+X_normalized = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,,0.852,
 code_009_pca_en,code_generation,en,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.decomposition'], 'model': ['pandas', 'sklearn.decomposition'], 'matched': ['sklearn.decomposition']}, 'calls': {'score': 0.296, 'expected': ['PCA', 'drop', 'fit_transform'], 'model': ['DataFrame', 'PCA', 'fit_transform'], 'matched': ['PCA', 'fit_transform']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Reduce dimensionality to two components using PCA.,"['code', 'pca', 'dimensionality_reduction']",medium,,,"from sklearn.decomposition import PCA
 
 pca = PCA(n_components=2)
-X_pca = pca.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
-code_010_pca_plot_en,code_generation,en,True,"{'heuristic_score': 0.926, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express', 'sklearn.decomposition'], 'model': ['pandas', 'plotly.express', 'sklearn.decomposition'], 'matched': ['plotly.express', 'sklearn.decomposition']}, 'calls': {'score': 0.37, 'expected': ['DataFrame', 'PCA', 'drop', 'fit_transform', 'scatter', 'show'], 'model': ['DataFrame', 'PCA', 'fit_transform', 'mean', 'scatter', 'show', 'std'], 'matched': ['DataFrame', 'PCA', 'fit_transform', 'scatter', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Make scatter plot of first two PCA components colored by species.,"['code', 'pca', 'visualization']",hard,,,"import plotly.express as px
+X_pca = pca.fit_transform(df.drop(columns=[""species""]))",,,,,,0.852,
+code_010_pca_plot_en,code_generation,en,True,"{'heuristic_score': 0.926, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express', 'sklearn.decomposition'], 'model': ['pandas', 'plotly.express', 'sklearn.decomposition'], 'matched': ['plotly.express', 'sklearn.decomposition']}, 'calls': {'score': 0.37, 'expected': ['DataFrame', 'PCA', 'drop', 'fit_transform', 'scatter', 'show'], 'model': ['DataFrame', 'PCA', 'fit_transform', 'scatter', 'show'], 'matched': ['DataFrame', 'PCA', 'fit_transform', 'scatter', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': None}, 'results': {'expected': None, 'model': Figure({
+    'data': [{'hovertemplate': 'species=setosa<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
+              'legendgroup': 'setosa',
+              'marker': {'color': '#636efa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'setosa',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('TCgv2xZ5BcBwHb3qj7YFwCt/ZBanHA' ... 'A3twbAs49zVz1YBMACnPMXe6AFwA=='),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'y': {'bdata': ('EP0gJgFx1D9gqoDk+afGvwBETuqzjc' ... 'dSLc2/4OGs4oaK4j+ATOo1oJK7Pw=='),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'species=versicolor<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
+              'legendgroup': 'versicolor',
+              'marker': {'color': '#EF553B', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'versicolor',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('EFGrYaWO9D94pcUw8tbtP/SOhkXIbf' ... '/7j+Q/CHkYF80B7b9w9VVt1CLTPw=='),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'y': {'bdata': ('sGilptXs5T8ggGMNlF/UP9DwisXrIu' ... 'n1KZI/cH1It+ox6L/AaxZ3V1TWvw=='),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'species=virginica<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
+              'legendgroup': 'virginica',
+              'marker': {'color': '#00cc96', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'virginica',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('JFEO+eE/BEBEG+lfzqT2P7hux9Xz7g' ... 'PCOvw//MYKwUFq/j+wRhWtNj72Pw=='),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ACyJGcUrhL+Qu9T3tmXivwBDAF2CAt' ... 'kYMLQ/AMWbc1TbvT+wqiHnHRfSvw=='),
+                    'dtype': 'f8'},
+              'yaxis': 'y'}],
+    'layout': {'legend': {'title': {'text': 'species'}, 'tracegroupgap': 0},
+               'template': '...',
+               'title': {'text': 'Scatter Plot of First Two PCA Components Colored by Species'},
+               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'PC1'}},
+               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'PC2'}}}
+})}}",Make scatter plot of first two PCA components colored by species.,"['code', 'pca', 'visualization']",hard,,,"import plotly.express as px
 from sklearn.decomposition import PCA
 
 pca = PCA(n_components=2)
@@ -67,81 +115,12 @@ df_pca = pd.DataFrame(X_pca, columns=[""PC1"", ""PC2""])
 df_pca[""species""] = df[""species""]
 
 fig = px.scatter(df_pca, x=""PC1"", y=""PC2"", color=""species"")
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_en_model.png,,0.926,
-code_011_kmeans_en,code_generation,en,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.cluster'], 'model': ['pandas', 'plotly.express', 'sklearn.cluster'], 'matched': ['sklearn.cluster']}, 'calls': {'score': 0.296, 'expected': ['KMeans', 'drop', 'fit_predict'], 'model': ['KMeans', 'fit_predict', 'scatter_3d'], 'matched': ['KMeans', 'fit_predict']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': Figure({
-    'data': [{'hovertemplate': ('species=setosa<br>sepal_length' ... '%{marker.color}<extra></extra>'),
-              'legendgroup': 'setosa',
-              'marker': {'color': {'bdata': ('AQAAAAEAAAABAAAAAQAAAAEAAAABAA' ... 'AAAQAAAAEAAAABAAAAAQAAAAEAAAA='),
-                                   'dtype': 'i4'},
-                         'coloraxis': 'coloraxis',
-                         'symbol': 'circle'},
-              'mode': 'markers',
-              'name': 'setosa',
-              'scene': 'scene',
-              'showlegend': True,
-              'type': 'scatter3d',
-              'x': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'ZmZhJAMzMzMzMzFUAAAAAAAAAUQA=='),
-                    'dtype': 'f8'},
-              'y': {'bdata': ('AAAAAAAADEAAAAAAAAAIQJqZmZmZmQ' ... 'mZmQlAmpmZmZmZDUBmZmZmZmYKQA=='),
-                    'dtype': 'f8'},
-              'z': {'bdata': ('ZmZmZmZm9j9mZmZmZmb2P83MzMzMzP' ... 'ZmZvY/AAAAAAAA+D9mZmZmZmb2Pw=='),
-                    'dtype': 'f8'}},
-             {'hovertemplate': ('species=versicolor<br>sepal_le' ... '%{marker.color}<extra></extra>'),
-              'legendgroup': 'versicolor',
-              'marker': {'color': {'bdata': ('AAAAAAIAAAAAAAAAAgAAAAIAAAACAA' ... 'AAAgAAAAIAAAACAAAAAgAAAAIAAAA='),
-                                   'dtype': 'i4'},
-                         'coloraxis': 'coloraxis',
-                         'symbol': 'diamond'},
-              'mode': 'markers',
-              'name': 'versicolor',
-              'scene': 'scene',
-              'showlegend': True,
-              'type': 'scatter3d',
-              'x': {'bdata': ('AAAAAAAAHECamZmZmZkZQJqZmZmZmR' ... 'zMzBhAZmZmZmZmFEDNzMzMzMwWQA=='),
-                    'dtype': 'f8'},
-              'y': {'bdata': ('mpmZmZmZCUCamZmZmZkJQM3MzMzMzA' ... 'MzMwdAAAAAAAAABEBmZmZmZmYGQA=='),
-                    'dtype': 'f8'},
-              'z': {'bdata': ('zczMzMzMEkAAAAAAAAASQJqZmZmZmR' ... 'MzMxFAAAAAAAAACEBmZmZmZmYQQA=='),
-                    'dtype': 'f8'}},
-             {'hovertemplate': ('species=virginica<br>sepal_len' ... '%{marker.color}<extra></extra>'),
-              'legendgroup': 'virginica',
-              'marker': {'color': {'bdata': ('AAAAAAIAAAAAAAAAAAAAAAAAAAAAAA' ... 'AAAAAAAAIAAAAAAAAAAAAAAAIAAAA='),
-                                   'dtype': 'i4'},
-                         'coloraxis': 'coloraxis',
-                         'symbol': 'square'},
-              'mode': 'markers',
-              'name': 'virginica',
-              'scene': 'scene',
-              'showlegend': True,
-              'type': 'scatter3d',
-              'x': {'bdata': ('MzMzMzMzGUAzMzMzMzMXQGZmZmZmZh' ... 'AAABpAzczMzMzMGECamZmZmZkXQA=='),
-                    'dtype': 'f8'},
-              'y': {'bdata': ('ZmZmZmZmCkCamZmZmZkFQAAAAAAAAA' ... 'AAAAhAMzMzMzMzC0AAAAAAAAAIQA=='),
-                    'dtype': 'f8'},
-              'z': {'bdata': ('AAAAAAAAGEBmZmZmZmYUQJqZmZmZmR' ... 'zMzBRAmpmZmZmZFUBmZmZmZmYUQA=='),
-                    'dtype': 'f8'}}],
-    'layout': {'coloraxis': {'colorbar': {'title': {'text': 'cluster'}},
-                             'colorscale': [[0.0, '#0d0887'], [0.1111111111111111,
-                                            '#46039f'], [0.2222222222222222,
-                                            '#7201a8'], [0.3333333333333333,
-                                            '#9c179e'], [0.4444444444444444,
-                                            '#bd3786'], [0.5555555555555556,
-                                            '#d8576b'], [0.6666666666666666,
-                                            '#ed7953'], [0.7777777777777778,
-                                            '#fb9f3a'], [0.8888888888888888,
-                                            '#fdca26'], [1.0, '#f0f921']]},
-               'legend': {'title': {'text': 'species'}, 'tracegroupgap': 0},
-               'scene': {'domain': {'x': [0.0, 1.0], 'y': [0.0, 1.0]},
-                         'xaxis': {'title': {'text': 'sepal_length'}},
-                         'yaxis': {'title': {'text': 'sepal_width'}},
-                         'zaxis': {'title': {'text': 'petal_length'}}},
-               'template': '...',
-               'title': {'text': 'KMeans Clustering (3 Clusters)'}}
-})}}",Make three clusters using KMeans.,"['code', 'clustering']",medium,,,"from sklearn.cluster import KMeans
+fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_en_model.png,,,0.926,
+code_011_kmeans_en,code_generation,en,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.cluster'], 'model': ['pandas', 'sklearn.cluster'], 'matched': ['sklearn.cluster']}, 'calls': {'score': 0.296, 'expected': ['KMeans', 'drop', 'fit_predict'], 'model': ['KMeans', 'fit_predict'], 'matched': ['KMeans', 'fit_predict']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Make three clusters using KMeans.,"['code', 'clustering']",medium,,,"from sklearn.cluster import KMeans
 
 kmeans = KMeans(n_clusters=3, random_state=42)
-clusters = kmeans.fit_predict(df.drop(columns=[""species""]))",,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_011_kmeans_en_model.png,,0.852,
-code_012_cluster_plot_en,code_generation,en,True,"{'heuristic_score': 0.778, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['pandas', 'plotly.express', 'sklearn.cluster'], 'matched': ['plotly.express']}, 'calls': {'score': 0.222, 'expected': ['astype', 'drop', 'scatter', 'show'], 'model': ['KMeans', 'fit_predict', 'scatter', 'show'], 'matched': ['scatter', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': ""execution_error: name 'clusters' is not defined"", 'model': None}, 'results': {'expected': None, 'model': Figure({
+clusters = kmeans.fit_predict(df.drop(columns=[""species""]))",,,,,,0.852,
+code_012_cluster_plot_en,code_generation,en,True,"{'heuristic_score': 0.778, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express', 'sklearn.cluster'], 'matched': ['plotly.express']}, 'calls': {'score': 0.222, 'expected': ['astype', 'drop', 'scatter', 'show'], 'model': ['KMeans', 'fit_predict', 'scatter', 'show'], 'matched': ['scatter', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': ""execution_error: name 'clusters' is not defined"", 'model': None}, 'results': {'expected': None, 'model': Figure({
     'data': [{'hovertemplate': ('species=setosa<br>sepal_length' ... '%{marker.color}<extra></extra>'),
               'legendgroup': 'setosa',
               'marker': {'color': {'bdata': ('AgAAAAIAAAACAAAAAgAAAAIAAAACAA' ... 'AAAgAAAAIAAAACAAAAAgAAAAIAAAA='),
@@ -213,13 +192,13 @@ code_012_cluster_plot_en,code_generation,en,True,"{'heuristic_score': 0.778, 'he
 X = df.drop(columns=[""species""])
 
 fig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))
-fig.show()",,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_012_cluster_plot_en_model.png,name 'clusters' is not defined,0.778,
+fig.show()",,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_012_cluster_plot_en_model.png,name 'clusters' is not defined,,0.778,
 code_013_train_test_split_en,code_generation,en,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.model_selection'], 'model': ['sklearn.model_selection'], 'matched': ['sklearn.model_selection']}, 'calls': {'score': 0.444, 'expected': ['drop', 'train_test_split'], 'model': ['drop', 'train_test_split'], 'matched': ['drop', 'train_test_split']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Split the dataset into train and test sets.,"['code', 'split']",easy,,,"from sklearn.model_selection import train_test_split
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",,,,,1.0,
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",,,,,,1.0,
 code_014_show_all_plots_en,code_generation,en,True,"{'heuristic_score': 0.566, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.111, 'expected': ['plotly.express', 'plotly.graph_objects'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.121, 'expected': ['ValueError', 'box', 'corr', 'histogram', 'imshow', 'next', 'scatter', 'scatter_matrix', 'select_dtypes', 'show', 'tolist'], 'model': ['box', 'scatter', 'show'], 'matched': ['box', 'scatter', 'show']}, 'objects': {'score': 0.444, 'possible': ['df', 'pd', 'np', 'px'], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Show all plots.,"['code', 'plots']",hard,,,"import plotly.express as px
 import plotly.graph_objects as go
 
@@ -291,8 +270,28 @@ fig_heatmap = px.imshow(
     title=""Correlation Heatmap""
 )
 fig_heatmap.show()
-","['df', 'pd', 'np', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_en_model.png,,0.566,
-code_015_histogram_en,code_generation,en,True,"{'heuristic_score': 0.511, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.0, 'expected': ['plotly.express'], 'model': [], 'matched': []}, 'calls': {'score': 0.178, 'expected': ['ValueError', 'histogram', 'select_dtypes', 'show', 'tolist'], 'model': ['histogram', 'show'], 'matched': ['histogram', 'show']}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': ""execution_error: name 'px' is not defined""}, 'results': {'expected': None, 'model': None}}",Show a histogram.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+","['df', 'pd', 'np', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_en_model.png,,,0.566,
+code_015_histogram_en,code_generation,en,True,"{'heuristic_score': 0.733, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.178, 'expected': ['ValueError', 'histogram', 'select_dtypes', 'show', 'tolist'], 'model': ['histogram', 'show'], 'matched': ['histogram', 'show']}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': None}, 'results': {'expected': None, 'model': Figure({
+    'data': [{'bingroup': 'x',
+              'hovertemplate': 'sepal_length=%{x}<br>count=%{y}<extra></extra>',
+              'legendgroup': '',
+              'marker': {'color': '#636efa', 'pattern': {'shape': ''}},
+              'name': '',
+              'nbinsx': 20,
+              'orientation': 'v',
+              'showlegend': False,
+              'type': 'histogram',
+              'x': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'AAAAAAGkDNzMzMzMwYQJqZmZmZmRdA'),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'yaxis': 'y'}],
+    'layout': {'barmode': 'relative',
+               'legend': {'tracegroupgap': 0},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'sepal_length'}},
+               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'count'}}}
+})}}",Show a histogram.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
 
 # df already exists and represents the iris dataset
 
@@ -310,7 +309,124 @@ fig = px.histogram(
 )
 
 fig.show()
-","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_en_expected.png,,,0.511,
+","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_en_model.png,,,0.733,
+code_016_index_to_value_en,code_generation,en,True,"{'heuristic_score': 0.333, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.0, 'expected': ['plotly.express'], 'model': [], 'matched': []}, 'calls': {'score': 0.0, 'expected': ['rename', 'reset_index', 'scatter'], 'model': ['plot', 'to_series'], 'matched': []}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': Figure({
+    'data': [{'hovertemplate': 'variable=sepal_length<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'sepal_length',
+              'marker': {'color': '#636efa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'sepal_length',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'AAAAAAGkDNzMzMzMwYQJqZmZmZmRdA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=sepal_width<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'sepal_width',
+              'marker': {'color': '#EF553B', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'sepal_width',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('AAAAAAAADEAAAAAAAAAIQJqZmZmZmQ' ... 'AAAAAACEAzMzMzMzMLQAAAAAAAAAhA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=petal_length<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'petal_length',
+              'marker': {'color': '#00cc96', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'petal_length',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ZmZmZmZm9j9mZmZmZmb2P83MzMzMzP' ... 'zMzMzMFECamZmZmZkVQGZmZmZmZhRA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=petal_width<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'petal_width',
+              'marker': {'color': '#ab63fa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'petal_width',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('mpmZmZmZyT+amZmZmZnJP5qZmZmZmc' ... 'AAAAAAAEBmZmZmZmYCQM3MzMzMzPw/'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'}],
+    'layout': {'legend': {'title': {'text': 'variable'}, 'tracegroupgap': 0},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'index'}},
+               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'value'}}}
+}), 'model': <Axes: >}}",Display the Index to Values plot,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+
+df_reset = df.reset_index().rename(columns={""index"": ""index""})
+fig = px.scatter(
+    df_reset,
+    x=""index"",
+    y=[""sepal_length"", ""sepal_width"", ""petal_length"", ""petal_width""],
+)
+fig","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_016_index_to_value_en_expected.png,,,,0.333,
+code_017_corr_matrix_en,code_generation,en,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['numpy', 'plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.444, 'expected': ['corr', 'imshow'], 'model': ['corr', 'imshow', 'select_dtypes', 'show'], 'matched': ['corr', 'imshow']}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': None, 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': Figure({
+    'data': [{'coloraxis': 'coloraxis',
+              'hovertemplate': 'x: %{x}<br>y: %{y}<br>color: %{z}<extra></extra>',
+              'name': '0',
+              'texttemplate': '%{z}',
+              'type': 'heatmap',
+              'x': array(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
+                         dtype=object),
+              'xaxis': 'x',
+              'y': array(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
+                         dtype=object),
+              'yaxis': 'y',
+              'z': {'bdata': ('AAAAAAAA8D9HWdmpDRm+v9Mdsyxo5e' ... '12m27Xv7hdSirLz+4/AAAAAAAA8D8='),
+                    'dtype': 'f8',
+                    'shape': '4, 4'}}],
+    'layout': {'coloraxis': {'colorscale': [[0.0, '#0d0887'], [0.1111111111111111,
+                                            '#46039f'], [0.2222222222222222,
+                                            '#7201a8'], [0.3333333333333333,
+                                            '#9c179e'], [0.4444444444444444,
+                                            '#bd3786'], [0.5555555555555556,
+                                            '#d8576b'], [0.6666666666666666,
+                                            '#ed7953'], [0.7777777777777778,
+                                            '#fb9f3a'], [0.8888888888888888,
+                                            '#fdca26'], [1.0, '#f0f921']]},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'constrain': 'domain', 'domain': [0.0, 1.0], 'scaleanchor': 'y'},
+               'yaxis': {'anchor': 'x', 'autorange': 'reversed', 'constrain': 'domain', 'domain': [0.0, 1.0]}}
+}), 'model': None}}",Display the correlation matrix plot,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+
+corr = df[[""sepal_length"", ""sepal_width"", ""petal_length"", ""petal_width""]].corr()
+fig = px.imshow(corr, text_auto=True)
+fig","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_017_corr_matrix_en_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_017_corr_matrix_en_model.png,,,1.0,
+code_018_radar_en,code_generation,en,True,"{'heuristic_score': 0.667, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.111, 'expected': ['groupby', 'line_polar', 'mean', 'reset_index'], 'model': ['line_polar', 'show'], 'matched': ['line_polar']}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': ""execution_error: Value of 'r' is not the name of a column in 'data_frame'. Expected one of ['species', 'sepal_length', 'sepal_width', 'petal_length', 'petal_width'] but received: value"", 'model': ""execution_error: All arguments should have the same length. The length of column argument `df[color]` is 150, whereas the length of previously-processed arguments ['r', 'theta'] is 4""}, 'results': {'expected': None, 'model': None}}",Display the Radar chart,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+
+cols = [""sepal_length"", ""sepal_width"", ""petal_length"", ""petal_width""]
+df_radar = df.groupby(""species"", observed=True)[cols].mean().reset_index()
+fig = px.line_polar(
+    df_radar,
+    r=""value"",
+    theta=""variable"",
+    color=""species"",
+    line_close=True,
+    template=""plotly""
+)
+fig","['df', 'px']",,,"Value of 'r' is not the name of a column in 'data_frame'. Expected one of ['species', 'sepal_length', 'sepal_width', 'petal_length', 'petal_width'] but received: value","All arguments should have the same length. The length of column argument `df[color]` is 150, whereas the length of previously-processed arguments ['r', 'theta'] is 4",0.667,
 code_001_describe,code_generation,ru,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['describe'], 'model': ['describe'], 'matched': ['describe']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected':        sepal_length  sepal_width  petal_length  petal_width
 count    150.000000   150.000000    150.000000   150.000000
 mean       5.843333     3.057333      3.758000     1.199333
@@ -330,17 +446,17 @@ min         4.300000     2.000000      1.000000     0.100000     NaN
 25%         5.100000     2.800000      1.600000     0.300000     NaN
 50%         5.800000     3.000000      4.350000     1.300000     NaN
 75%         6.400000     3.300000      5.100000     1.800000     NaN
-max         7.900000     4.400000      6.900000     2.500000     NaN}}","Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,,,1.0,
+max         7.900000     4.400000      6.900000     2.500000     NaN}}","Напиши код, который выводит статистику по датасету.","['code', 'describe']",easy,,,df.describe(),,,,,,1.0,
 code_002_pairplot,code_generation,ru,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.444, 'expected': ['scatter_matrix', 'show'], 'model': ['scatter_matrix', 'show'], 'matched': ['scatter_matrix', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Построй pairplot всех признаков.,"['code', 'plot']",medium,,,"import plotly.express as px
 fig = px.scatter_matrix(df, dimensions=df.columns, color=""species"")
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_model.png,,1.0,
-code_003_train_model,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.linear_model'], 'model': ['sklearn.linear_model', 'sklearn.metrics', 'sklearn.model_selection'], 'matched': ['sklearn.linear_model']}, 'calls': {'score': 0.296, 'expected': ['LogisticRegression', 'drop', 'fit'], 'model': ['LogisticRegression', 'accuracy_score', 'fit', 'predict', 'train_test_split'], 'matched': ['LogisticRegression', 'fit']}, 'objects': {'score': 0.0, 'possible': ['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB'], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': LogisticRegression(max_iter=200), 'model': 1.0}}","Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
+fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_002_pairplot_model.png,,,1.0,
+code_003_train_model,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.linear_model'], 'model': ['sklearn.linear_model', 'sklearn.metrics', 'sklearn.model_selection', 'sklearn.preprocessing'], 'matched': ['sklearn.linear_model']}, 'calls': {'score': 0.296, 'expected': ['LogisticRegression', 'drop', 'fit'], 'model': ['LogisticRegression', 'StandardScaler', 'accuracy_score', 'fit', 'fit_transform', 'predict', 'train_test_split', 'transform'], 'matched': ['LogisticRegression', 'fit']}, 'objects': {'score': 0.0, 'possible': ['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB'], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': LogisticRegression(max_iter=200), 'model': 1.0}}","Напиши код, который обучает простой классификатор на этих данных.","['code', 'model']",medium,,,"from sklearn.linear_model import LogisticRegression
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
 model = LogisticRegression(max_iter=200)
-model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,,0.852,
+model.fit(X, y)","['RandomForestClassifier', 'DecisionTreeClassifier', 'SVC', 'KNeighborsClassifier', 'GaussianNB']",,,,,0.852,
 code_004_missing_check,code_generation,ru,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['isnull', 'sum'], 'model': ['isnull', 'sum'], 'matched': ['isnull', 'sum']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': sepal_length    0
 sepal_width     0
 petal_length    0
@@ -351,162 +467,25 @@ sepal_width     0
 petal_length    0
 petal_width     0
 species         0
-dtype: int64}}","Проверь, есть ли в датасете пропущенные значения.","['code', 'null', 'count']",easy,,,df.isnull().sum(),,,,,1.0,
-code_005_fill_missing,code_generation,ru,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['fillna', 'mean'], 'model': ['fillna', 'mean'], 'matched': ['fillna', 'mean']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Заполни пропущенные значения средним значением по столбцам.,"['code', 'null', 'processing']",easy,,,"df.fillna(df.mean(numeric_only=True), inplace=True)",,,,,1.0,
-code_006_boxplot,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.296, 'expected': ['box', 'select_dtypes', 'show'], 'model': ['box', 'show'], 'matched': ['box', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': None}, 'results': {'expected': None, 'model': Figure({
-    'data': [{'alignmentgroup': 'True',
-              'hovertemplate': 'species=%{x}<br>petal_width=%{y}<extra></extra>',
-              'legendgroup': 'setosa',
-              'marker': {'color': '#636efa'},
-              'name': 'setosa',
-              'notched': False,
-              'offsetgroup': 'setosa',
-              'orientation': 'v',
-              'showlegend': True,
-              'type': 'box',
-              'x': array(['setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa',
-                          'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa',
-                          'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa',
-                          'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa',
-                          'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa',
-                          'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa',
-                          'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa',
-                          'setosa'], dtype=object),
-              'x0': ' ',
-              'xaxis': 'x',
-              'y': {'bdata': ('mpmZmZmZyT+amZmZmZnJP5qZmZmZmc' ... 'mZmck/mpmZmZmZyT+amZmZmZnJPw=='),
-                    'dtype': 'f8'},
-              'y0': ' ',
-              'yaxis': 'y'},
-             {'alignmentgroup': 'True',
-              'hovertemplate': 'species=%{x}<br>petal_width=%{y}<extra></extra>',
-              'legendgroup': 'versicolor',
-              'marker': {'color': '#EF553B'},
-              'name': 'versicolor',
-              'notched': False,
-              'offsetgroup': 'versicolor',
-              'orientation': 'v',
-              'showlegend': True,
-              'type': 'box',
-              'x': array(['versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor',
-                          'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor'],
-                         dtype=object),
-              'x0': ' ',
-              'xaxis': 'x',
-              'y': {'bdata': ('ZmZmZmZm9j8AAAAAAAD4PwAAAAAAAP' ... 'zMzPQ/mpmZmZmZ8T/NzMzMzMz0Pw=='),
-                    'dtype': 'f8'},
-              'y0': ' ',
-              'yaxis': 'y'},
-             {'alignmentgroup': 'True',
-              'hovertemplate': 'species=%{x}<br>petal_width=%{y}<extra></extra>',
-              'legendgroup': 'virginica',
-              'marker': {'color': '#00cc96'},
-              'name': 'virginica',
-              'notched': False,
-              'offsetgroup': 'virginica',
-              'orientation': 'v',
-              'showlegend': True,
-              'type': 'box',
-              'x': array(['virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica',
-                          'virginica', 'virginica', 'virginica', 'virginica', 'virginica'],
-                         dtype=object),
-              'x0': ' ',
-              'xaxis': 'x',
-              'y': {'bdata': ('AAAAAAAABEBmZmZmZmb+P83MzMzMzA' ... 'AAAABAZmZmZmZmAkDNzMzMzMz8Pw=='),
-                    'dtype': 'f8'},
-              'y0': ' ',
-              'yaxis': 'y'}],
-    'layout': {'boxmode': 'overlay',
-               'legend': {'title': {'text': 'species'}, 'tracegroupgap': 0},
-               'margin': {'t': 60},
-               'template': '...',
-               'xaxis': {'anchor': 'y',
-                         'categoryarray': [setosa, versicolor, virginica],
-                         'categoryorder': 'array',
-                         'domain': [0.0, 1.0],
-                         'title': {'text': 'species'}},
-               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'petal_width'}}}
-})}}",Построй boxplot для всех числовых признаков.,"['code', 'plot', 'boxplot']",medium,,,"import plotly.express as px
+dtype: int64}}","Проверь, есть ли в датасете пропущенные значения.","['code', 'null', 'count']",easy,,,df.isnull().sum(),,,,,,1.0,
+code_005_fill_missing,code_generation,ru,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': [], 'model': [], 'matched': []}, 'calls': {'score': 0.444, 'expected': ['fillna', 'mean'], 'model': ['fillna', 'mean'], 'matched': ['fillna', 'mean']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Заполни пропущенные значения средним значением по столбцам.,"['code', 'null', 'processing']",easy,,,"df.fillna(df.mean(numeric_only=True), inplace=True)",,,,,,1.0,
+code_006_boxplot,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.296, 'expected': ['box', 'select_dtypes', 'show'], 'model': ['box', 'show'], 'matched': ['box', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Построй boxplot для всех числовых признаков.,"['code', 'plot', 'boxplot']",medium,,,"import plotly.express as px
 
 fig = px.box(df, y=df.select_dtypes(include=""number"").columns)
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_model.png,,0.852,
+fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_006_boxplot_model.png,,,0.852,
 code_007_standardize,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.preprocessing'], 'model': ['sklearn.preprocessing'], 'matched': ['sklearn.preprocessing']}, 'calls': {'score': 0.296, 'expected': ['StandardScaler', 'drop', 'fit_transform'], 'model': ['StandardScaler', 'fit_transform'], 'matched': ['StandardScaler', 'fit_transform']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Стандартизируй все признаки датасета.,"['code', 'scaling', 'standard']",medium,,,"from sklearn.preprocessing import StandardScaler
 
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+X_scaled = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,,0.852,
 code_008_normalize,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.preprocessing'], 'model': ['sklearn.preprocessing'], 'matched': ['sklearn.preprocessing']}, 'calls': {'score': 0.296, 'expected': ['MinMaxScaler', 'drop', 'fit_transform'], 'model': ['MinMaxScaler', 'fit_transform'], 'matched': ['MinMaxScaler', 'fit_transform']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Нормализуй признаки в диапазон от 0 до 1.,"['code', 'scaling']",medium,,,"from sklearn.preprocessing import MinMaxScaler
 
 scaler = MinMaxScaler()
-X_normalized = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
+X_normalized = scaler.fit_transform(df.drop(columns=[""species""]))",,,,,,0.852,
 code_009_pca,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.decomposition'], 'model': ['pandas', 'sklearn.decomposition'], 'matched': ['sklearn.decomposition']}, 'calls': {'score': 0.296, 'expected': ['PCA', 'drop', 'fit_transform'], 'model': ['DataFrame', 'PCA', 'fit_transform', 'select_dtypes'], 'matched': ['PCA', 'fit_transform']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Снизь размерность датасета до двух компонент с помощью PCA.,"['code', 'pca', 'dimensions']",medium,,,"from sklearn.decomposition import PCA
 
 pca = PCA(n_components=2)
-X_pca = pca.fit_transform(df.drop(columns=[""species""]))",,,,,0.852,
-code_010_pca_plot,code_generation,ru,True,"{'heuristic_score': 0.926, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express', 'sklearn.decomposition'], 'model': ['pandas', 'plotly.express', 'sklearn.decomposition'], 'matched': ['plotly.express', 'sklearn.decomposition']}, 'calls': {'score': 0.37, 'expected': ['DataFrame', 'PCA', 'drop', 'fit_transform', 'scatter', 'show'], 'model': ['DataFrame', 'PCA', 'fit_transform', 'scatter', 'show'], 'matched': ['DataFrame', 'PCA', 'fit_transform', 'scatter', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': None}, 'results': {'expected': None, 'model': Figure({
-    'data': [{'hovertemplate': 'species=setosa<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
-              'legendgroup': 'setosa',
-              'marker': {'color': '#636efa', 'symbol': 'circle'},
-              'mode': 'markers',
-              'name': 'setosa',
-              'orientation': 'v',
-              'showlegend': True,
-              'type': 'scatter',
-              'x': {'bdata': ('TCgv2xZ5BcBwHb3qj7YFwCt/ZBanHA' ... 'A3twbAs49zVz1YBMACnPMXe6AFwA=='),
-                    'dtype': 'f8'},
-              'xaxis': 'x',
-              'y': {'bdata': ('EP0gJgFx1D9gqoDk+afGvwBETuqzjc' ... 'dSLc2/4OGs4oaK4j+ATOo1oJK7Pw=='),
-                    'dtype': 'f8'},
-              'yaxis': 'y'},
-             {'hovertemplate': 'species=versicolor<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
-              'legendgroup': 'versicolor',
-              'marker': {'color': '#EF553B', 'symbol': 'circle'},
-              'mode': 'markers',
-              'name': 'versicolor',
-              'orientation': 'v',
-              'showlegend': True,
-              'type': 'scatter',
-              'x': {'bdata': ('EFGrYaWO9D94pcUw8tbtP/SOhkXIbf' ... '/7j+Q/CHkYF80B7b9w9VVt1CLTPw=='),
-                    'dtype': 'f8'},
-              'xaxis': 'x',
-              'y': {'bdata': ('sGilptXs5T8ggGMNlF/UP9DwisXrIu' ... 'n1KZI/cH1It+ox6L/AaxZ3V1TWvw=='),
-                    'dtype': 'f8'},
-              'yaxis': 'y'},
-             {'hovertemplate': 'species=virginica<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
-              'legendgroup': 'virginica',
-              'marker': {'color': '#00cc96', 'symbol': 'circle'},
-              'mode': 'markers',
-              'name': 'virginica',
-              'orientation': 'v',
-              'showlegend': True,
-              'type': 'scatter',
-              'x': {'bdata': ('JFEO+eE/BEBEG+lfzqT2P7hux9Xz7g' ... 'PCOvw//MYKwUFq/j+wRhWtNj72Pw=='),
-                    'dtype': 'f8'},
-              'xaxis': 'x',
-              'y': {'bdata': ('ACyJGcUrhL+Qu9T3tmXivwBDAF2CAt' ... 'kYMLQ/AMWbc1TbvT+wqiHnHRfSvw=='),
-                    'dtype': 'f8'},
-              'yaxis': 'y'}],
-    'layout': {'legend': {'title': {'text': 'species'}, 'tracegroupgap': 0},
-               'template': '...',
-               'title': {'text': 'Scatter plot of first two PCA components'},
-               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'PC1'}},
-               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'PC2'}}}
-})}}",Построй scatter plot первых двух PCA-компонент с раскраской по видам.,"['code', 'pca', 'plot']",medium,,,"import plotly.express as px
+X_pca = pca.fit_transform(df.drop(columns=[""species""]))",,,,,,0.852,
+code_010_pca_plot,code_generation,ru,True,"{'heuristic_score': 0.926, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express', 'sklearn.decomposition'], 'model': ['pandas', 'plotly.express', 'sklearn.decomposition', 'sklearn.preprocessing'], 'matched': ['plotly.express', 'sklearn.decomposition']}, 'calls': {'score': 0.37, 'expected': ['DataFrame', 'PCA', 'drop', 'fit_transform', 'scatter', 'show'], 'model': ['DataFrame', 'PCA', 'StandardScaler', 'fit_transform', 'scatter', 'show'], 'matched': ['DataFrame', 'PCA', 'fit_transform', 'scatter', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Построй scatter plot первых двух PCA-компонент с раскраской по видам.,"['code', 'pca', 'plot']",medium,,,"import plotly.express as px
 from sklearn.decomposition import PCA
 
 pca = PCA(n_components=2)
@@ -516,24 +495,24 @@ df_pca = pd.DataFrame(X_pca, columns=[""PC1"", ""PC2""])
 df_pca[""species""] = df[""species""]
 
 fig = px.scatter(df_pca, x=""PC1"", y=""PC2"", color=""species"")
-fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_model.png,,0.926,
-code_012_kmeans,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.cluster'], 'model': ['pandas', 'sklearn.cluster'], 'matched': ['sklearn.cluster']}, 'calls': {'score': 0.296, 'expected': ['KMeans', 'drop', 'fit_predict'], 'model': ['KMeans', 'fit_predict'], 'matched': ['KMeans', 'fit_predict']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Выполни кластеризацию KMeans на три кластера.,"['code', 'clustering']",medium,,,"from sklearn.cluster import KMeans
+fig.show()",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_010_pca_plot_model.png,,,0.926,
+code_011_kmeans,code_generation,ru,True,"{'heuristic_score': 0.852, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.cluster'], 'model': ['pandas', 'sklearn.cluster'], 'matched': ['sklearn.cluster']}, 'calls': {'score': 0.296, 'expected': ['KMeans', 'drop', 'fit_predict'], 'model': ['KMeans', 'fit_predict'], 'matched': ['KMeans', 'fit_predict']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Выполни кластеризацию KMeans на три кластера.,"['code', 'clustering']",medium,,,"from sklearn.cluster import KMeans
 
 kmeans = KMeans(n_clusters=3, random_state=42)
-clusters = kmeans.fit_predict(df.drop(columns=[""species""]))",,,,,0.852,
+clusters = kmeans.fit_predict(df.drop(columns=[""species""]))",,,,,,0.852,
 code_012_cluster_plot,code_generation,ru,True,"{'heuristic_score': 0.778, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['pandas', 'plotly.express', 'sklearn.cluster'], 'matched': ['plotly.express']}, 'calls': {'score': 0.222, 'expected': ['astype', 'drop', 'scatter', 'show'], 'model': ['KMeans', 'fit_predict', 'scatter', 'show'], 'matched': ['scatter', 'show']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': ""execution_error: name 'clusters' is not defined"", 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Построй scatter plot кластеров KMeans по первым двум признакам.,"['code', 'clustering', 'plot']",medium,,,"import plotly.express as px
 
 X = df.drop(columns=[""species""])
 
 fig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))
-fig.show()",,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_012_cluster_plot_model.png,name 'clusters' is not defined,0.778,
+fig.show()",,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_012_cluster_plot_model.png,name 'clusters' is not defined,,0.778,
 code_013_train_test_split,code_generation,ru,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['sklearn.model_selection'], 'model': ['sklearn.model_selection'], 'matched': ['sklearn.model_selection']}, 'calls': {'score': 0.444, 'expected': ['drop', 'train_test_split'], 'model': ['drop', 'train_test_split'], 'matched': ['drop', 'train_test_split']}, 'objects': {'score': 0.0, 'possible': [], 'matched': False}}, 'errors': {'expected': None, 'model': None}, 'results': {'expected': None, 'model': None}}",Раздели датасет на обучающую и тестовую выборки.,"['code', 'split', 'train', 'test']",easy,,,"from sklearn.model_selection import train_test_split
 
 X = df.drop(columns=[""species""])
 y = df[""species""]
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",,,,,1.0,
-code_014_show_all_plots,code_generation,ru,True,"{'heuristic_score': 0.525, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.111, 'expected': ['plotly.express', 'plotly.graph_objects'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.081, 'expected': ['ValueError', 'box', 'corr', 'histogram', 'imshow', 'next', 'scatter', 'scatter_matrix', 'select_dtypes', 'show', 'tolist'], 'model': ['scatter_matrix', 'show'], 'matched': ['scatter_matrix', 'show']}, 'objects': {'score': 0.444, 'possible': ['df', 'px', 'go'], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Отобрази все графики.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)",,,,,,1.0,
+code_014_show_all_plots,code_generation,ru,True,"{'heuristic_score': 0.677, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express', 'plotly.graph_objects'], 'model': ['plotly.express', 'plotly.graph_objects', 'plotly.subplots'], 'matched': ['plotly.express', 'plotly.graph_objects']}, 'calls': {'score': 0.121, 'expected': ['ValueError', 'box', 'corr', 'histogram', 'imshow', 'next', 'scatter', 'scatter_matrix', 'select_dtypes', 'show', 'tolist'], 'model': ['Histogram', 'add_trace', 'box', 'make_subplots', 'replace', 'scatter_matrix', 'show', 'title', 'update_layout'], 'matched': ['box', 'scatter_matrix', 'show']}, 'objects': {'score': 0.444, 'possible': ['df', 'px', 'go'], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Отобрази все графики.,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
 import plotly.graph_objects as go
 
 # df already exists and represents the iris dataset
@@ -604,7 +583,7 @@ fig_heatmap = px.imshow(
     title=""Correlation Heatmap""
 )
 fig_heatmap.show()
-","['df', 'px', 'go']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_model.png,,0.525,
+","['df', 'px', 'go']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_014_show_all_plots_model.png,,,0.677,
 code_015_histogram,code_generation,ru,True,"{'heuristic_score': 0.733, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.178, 'expected': ['ValueError', 'histogram', 'select_dtypes', 'show', 'tolist'], 'model': ['histogram', 'show'], 'matched': ['histogram', 'show']}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': 'execution_timeout: sandbox_timeout', 'model': None}, 'results': {'expected': None, 'model': Figure({
     'data': [{'bingroup': 'x',
               'hovertemplate': 'sepal_length=%{x}<br>count=%{y}<extra></extra>',
@@ -643,52 +622,169 @@ fig = px.histogram(
 )
 
 fig.show()
-","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_model.png,,0.733,
-chat_001_what_is_iris_en,chat_response,en,True,,Explain what this dataset represents.,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,,,,
-chat_002_how_many_classes_en,chat_response,en,True,,How many classes are in this dataset?,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,,,,
-chat_003_best_features_en,chat_response,en,False,,Which features best separate the iris species?,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,,,,
-chat_004_easiest_class_en,chat_response,en,True,,Which iris species is the easiest to separate from the others?,"['chat', 'analysis']",medium,"['setosa', 'shorter petals', 'wider petals']",[],,,,,,,
-theory_001_overfitting_en,chat_response,en,True,,What is overfitting in machine learning?,"['theory', 'ml']",easy,"['model fits training data too well', 'poor generalization to new data']",['overfitting improves performance on unseen data'],,,,,,,
-theory_002_train_test_split_en,chat_response,en,True,,Why is a train-test split used?,"['theory', 'ml']",easy,"['evaluate model on unseen data', 'prevent data leakage']",['to increase training accuracy'],,,,,,,
-theory_003_regularization_en,chat_response,en,True,,What is regularization and why is it used?,"['theory', 'ml']",medium,"['adds penalty to model complexity', 'reduces overfitting']",['regularization increases model variance'],,,,,,,
-theory_004_bias_variance_en,chat_response,en,True,,Explain the bias-variance tradeoff.,"['theory', 'ml']",medium,"['bias refers to error from simplifying assumptions', 'variance refers to sensitivity to training data', 'tradeoff between bias and variance']",['bias and variance can both be minimized independently'],,,,,,,
-chat_005_feature_count_en,chat_response,en,True,,How many features does this dataset have?,"['chat', 'features']",easy,"['four features', 'sepal length', 'sepal width', 'petal length', 'petal width']","['five features', 'only petal features']",,,,,,,
-chat_006_samples_count_en,chat_response,en,True,,How many samples are in this dataset?,"['chat', 'dataset size']",easy,"['150 samples', '50 samples per class']","['100 samples', 'imbalanced classes']",,,,,,,
-chat_007_numeric_only_en,chat_response,en,True,,Are all features in this dataset numeric?,"['chat', 'data types']",easy,"['all features are numeric', 'continuous measurements']","['categorical features', 'text features']",,,,,,,
-chat_008_need_scaling_en,chat_response,en,True,,Is feature scaling important for this dataset?,"['chat', 'preprocessing']",medium,"['important for distance-based models', 'helps algorithms like kNN or SVM']","['scaling is never useful', 'scaling changes class labels']",,,,,,,
-chat_009_linear_separable_en,chat_response,en,True,,Is this dataset linearly separable?,"['chat', 'analysis']",medium,"['setosa is linearly separable', 'other classes overlap']","['all classes are perfectly separable', 'no class is separable']",,,,,,,
-chat_011_unsupervised_possible_en,chat_response,en,True,,Can this dataset be used for unsupervised learning?,"['chat', 'unsupervised']",medium,"['can be used for clustering', 'labels can be ignored']",['unsupervised learning requires labels'],,,,,,,
-chat_012_pca_purpose_en,chat_response,en,True,,Is PCA applicable to this dataset?,"['chat', 'pca']",medium,"['reduce dimensionality', 'enable visualization', 'capture most variance']",['PCA improves class labels'],,,,,,,
-chat_013_outliers_en,chat_response,en,True,,Are outliers a major concern in this dataset?,"['chat', 'data quality']",medium,"['dataset is relatively clean', 'few or no strong outliers']",['dataset is heavily corrupted by outliers'],,,,,,,
-chat_014_real_world_limitations_en,chat_response,en,True,,What are the limitations of this dataset?,"['chat', 'limitations']",hard,"['small size', 'not representative of complex real-world data']",['suitable for deep learning at scale'],,,,,,,
-theory_006_classification_vs_regression_en,chat_response,en,True,,What is the difference between classification and regression?,"['theory', 'ml basics']",easy,"['classification predicts discrete labels', 'regression predicts continuous values']","['classification predicts numbers only', 'regression predicts categories']",,,,,,,
-theory_007_cross_validation_en,chat_response,en,True,,What is cross-validation?,"['theory', 'model evaluation']",medium,"['splits data into multiple folds', 'provides more reliable performance estimates', 'reduces dependence on a single train-test split']",['cross-validation guarantees perfect performance'],,,,,,,
-theory_008_feature_engineering_en,chat_response,en,True,,What is feature engineering?,"['theory', 'features']",medium,"['process of creating or transforming features', 'can improve model performance', 'requires domain knowledge']",['feature engineering is only data cleaning'],,,,,,,
-theory_009_data_leakage_en,chat_response,en,True,,What is data leakage?,"['theory', 'data issues']",medium,"['information from test data leaks into training', 'leads to overly optimistic evaluation', 'harms generalization']",['data leakage improves real-world performance'],,,,,,,
-theory_010_precision_recall_en,chat_response,en,True,,Explain precision and recall.,"['theory', 'metrics']",medium,"['precision measures correctness of positive predictions', 'recall measures coverage of actual positives', 'tradeoff between precision and recall']",['precision and recall are always equal'],,,,,,,
-theory_011_accuracy_limitations_en,chat_response,en,True,,Is accuracy a universal metric?,"['theory', 'metrics']",medium,"['problematic with imbalanced datasets', 'does not reflect class-wise performance']",['accuracy is always the best metric'],,,,,,,
-chat_012_what_is_in_data_en,chat_response,en,True,,What is in the data?,"['chat', 'data_description']",easy,"['The data represents the Iris dataset', 'The dataset contains numeric features describing sepal and petal measurements', 'There is a categorical feature indicating the iris species', 'Each row corresponds to a single flower']","['Mentioning specific statistics or numeric values', 'Claims about model performance or training results', 'Assumptions about downstream data processing']",,,,,,,
-chat_001_what_is_iris,chat_response,ru,True,,"Поясни, что представляет собой датасет.","['chat', 'описание ириса']",easy,"['датасет содержит измерения лепестков и чашелистиков', 'три вида ириса']",['животные'],,,,,,,
-chat_002_how_many_classes,chat_response,ru,True,,Сколько классов в этом датасете?,"['chat', 'классы']",easy,['три класса'],[],,,,,,,
-chat_003_best_features,chat_response,ru,False,,Какие признаки лучше всего разделяют виды ирисов?,"['chat', 'анализ']",medium,"['длина лепестка', 'ширина лепестка']",[],,,,,,,
-chat_004_easiest_class,chat_response,ru,False,,Какой вид ириса лучше всего отделяется от остальных?,"['chat', 'анализ']",medium,"['setosa', 'короче лепестки', 'шире лепестки']",[],,,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/chat_004_easiest_class_model.png,,,
-theory_001_overfitting,chat_response,ru,True,,Что такое переобучение в машинном обучении?,"['theory', 'ml']",easy,"['модель слишком хорошо подстраивается под обучающую выборку', 'плохо обобщает на новые данные']",['переобучение улучшает качество на новых данных'],,,,,,,
-theory_002_train_test_split,chat_response,ru,True,,Зачем используется разделение на обучающую и тестовую выборки?,"['theory', 'ml']",easy,"['оценка качества модели на невидимых данных', 'предотвращение утечки данных']",['для увеличения точности на обучающей выборке'],,,,,,,
-theory_003_regularization,chat_response,ru,True,,Что такое регуляризация и зачем она нужна?,"['theory', 'ml']",medium,"['добавляет штраф за сложность модели', 'уменьшает переобучение']",['регуляризация увеличивает разброс модели'],,,,,,,
-theory_004_bias_variance,chat_response,ru,True,,Объясни компромисс между смещением и разбросом.,"['theory', 'ml']",medium,"['смещение связано с упрощающими предположениями модели', 'разброс связан с чувствительностью к обучающим данным', 'существует компромисс между смещением и разбросом']",['смещение и разброс можно минимизировать независимо'],,,,,,,
-chat_005_feature_count,chat_response,ru,True,,Сколько признаков содержит этот датасет?,"['chat', 'признаки']",easy,"['четыре признака', 'длина чашелистика', 'ширина чашелистика', 'длина лепестка', 'ширина лепестка']","['пять признаков', 'только признаки лепестков']",,,,,,,
-chat_006_samples_count,chat_response,ru,True,,Сколько объектов содержится в этом датасете?,"['chat', 'размер датасета']",easy,"['150 объектов', '50 объектов на класс']","['100 объектов', 'несбалансированные классы']",,,,,,,
-chat_007_numeric_only,chat_response,ru,True,,Все ли признаки в этом датасете являются числовыми?,"['chat', 'типы данных']",easy,"['все признаки числовые', 'непрерывные измерения']","['категориальные признаки', 'текстовые признаки']",,,,,,,
-chat_008_need_scaling,chat_response,ru,True,,Важно ли масштабирование признаков для этого датасета?,"['chat', 'предобработка']",medium,"['важно для моделей, основанных на расстоянии', 'помогает алгоритмам вроде kNN или SVM']","['масштабирование никогда не нужно', 'масштабирование меняет метки классов']",,,,,,,
-chat_009_linear_separable,chat_response,ru,True,,Является ли этот датасет линейно разделимым?,"['chat', 'анализ']",medium,"['класс setosa линейно разделим', 'остальные классы перекрываются']","['все классы идеально разделимы', 'ни один класс не разделим']",,,,,,,
-chat_011_unsupervised_possible,chat_response,ru,True,,Можно ли использовать этот датасет для обучения без учителя?,"['chat', 'обучение без учителя']",medium,"['можно использовать для кластеризации', 'метки классов можно игнорировать']",['обучение без учителя требует меток'],,,,,,,
-chat_012_pca_purpose,chat_response,ru,True,,Применим ли метод PCA к этому датасету?,"['chat', 'pca']",medium,"['снижение размерности', 'возможность визуализации', 'сохранение большей части дисперсии']",['PCA улучшает метки классов'],,,,,,,
-chat_013_outliers,chat_response,ru,True,,Являются ли выбросы серьёзной проблемой в этом датасете?,"['chat', 'качество данных']",medium,"['датасет относительно чистый', 'мало или нет выраженных выбросов']",['датасет сильно искажён выбросами'],,,,,,,
-chat_014_real_world_limitations,chat_response,ru,True,,Какие ограничения есть у этого датасета?,"['chat', 'ограничения']",hard,"['небольшой размер', 'не отражает сложные реальные данные']",['подходит для масштабного глубокого обучения'],,,,,,,
-theory_006_classification_vs_regression,chat_response,ru,True,,В чём разница между классификацией и регрессией?,"['theory', 'основы ml']",easy,"['классификация предсказывает дискретные классы', 'регрессия предсказывает непрерывные значения']","['классификация предсказывает только числа', 'регрессия предсказывает категории']",,,,,,,
-theory_007_cross_validation,chat_response,ru,True,,Что такое кросс-валидация?,"['theory', 'оценка моделей']",medium,"['разбиение данных на несколько фолдов', 'более надёжная оценка качества модели', 'уменьшает зависимость от одного train-test разбиения']",['кросс-валидация гарантирует идеальное качество'],,,,,,,
-theory_008_feature_engineering,chat_response,ru,True,,Что такое feature engineering?,"['theory', 'признаки']",medium,"['процесс создания или преобразования признаков', 'может улучшить качество модели', 'требует знания предметной области']",['feature engineering — это только очистка данных'],,,,,,,
-theory_009_data_leakage,chat_response,ru,True,,Что такое утечка данных?,"['theory', 'проблемы данных']",medium,"['информация из тестовой выборки попадает в обучение', 'приводит к завышенной оценке качества', 'ухудшает обобщающую способность']",['утечка данных улучшает качество в реальных условиях'],,,,,,,
-theory_010_precision_recall,chat_response,ru,True,,"Поясни, что такое precision и recall.","['theory', 'метрики']",medium,"['precision показывает точность положительных предсказаний', 'recall показывает полноту выявления положительных объектов', 'существует компромисс между precision и recall']",['precision и recall всегда равны'],,,,,,,
-theory_011_accuracy_limitations,chat_response,ru,True,,Является ли accuracy универсальной метрикой?,"['theory', 'метрики']",medium,"['проблематична при несбалансированных данных', 'не отражает качество по отдельным классам']",['accuracy всегда лучшая метрика'],,,,,,,
-chat_012_what_is_in_data,chat_response,ru,True,,Что в данных,"['chat', 'data_description']",easy,"['Данные представляют собой датасет Iris', 'В данных содержатся числовые признаки, описывающие размеры чашелистиков и лепестков', 'В данных есть категориальный признак с видом ириса', 'Каждая строка соответствует одному цветку']","['Упоминание конкретных статистик или числовых значений', 'Утверждения о качестве модели или результатах обучения', 'Предположения о последующей обработке данных']",,,,,,,
+","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_015_histogram_model.png,,,0.733,
+code_016_index_to_value,code_generation,ru,True,"{'heuristic_score': 0.556, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.0, 'expected': ['rename', 'reset_index', 'scatter'], 'model': ['line', 'show'], 'matched': []}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': None, 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': Figure({
+    'data': [{'hovertemplate': 'variable=sepal_length<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'sepal_length',
+              'marker': {'color': '#636efa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'sepal_length',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'AAAAAAGkDNzMzMzMwYQJqZmZmZmRdA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=sepal_width<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'sepal_width',
+              'marker': {'color': '#EF553B', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'sepal_width',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('AAAAAAAADEAAAAAAAAAIQJqZmZmZmQ' ... 'AAAAAACEAzMzMzMzMLQAAAAAAAAAhA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=petal_length<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'petal_length',
+              'marker': {'color': '#00cc96', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'petal_length',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ZmZmZmZm9j9mZmZmZmb2P83MzMzMzP' ... 'zMzMzMFECamZmZmZkVQGZmZmZmZhRA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=petal_width<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'petal_width',
+              'marker': {'color': '#ab63fa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'petal_width',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('mpmZmZmZyT+amZmZmZnJP5qZmZmZmc' ... 'AAAAAAAEBmZmZmZmYCQM3MzMzMzPw/'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'}],
+    'layout': {'legend': {'title': {'text': 'variable'}, 'tracegroupgap': 0},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'index'}},
+               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'value'}}}
+}), 'model': None}}",Отобрази график Index To Values Plot,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+
+df_reset = df.reset_index().rename(columns={""index"": ""index""})
+fig = px.scatter(
+    df_reset,
+    x=""index"",
+    y=[""sepal_length"", ""sepal_width"", ""petal_length"", ""petal_width""],
+)
+fig","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_016_index_to_value_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_016_index_to_value_model.png,,,0.556,
+code_017_corr_matrix,code_generation,ru,True,"{'heuristic_score': 1.0, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['numpy', 'plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.444, 'expected': ['corr', 'imshow'], 'model': ['corr', 'imshow', 'select_dtypes', 'show'], 'matched': ['corr', 'imshow']}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': None, 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': Figure({
+    'data': [{'coloraxis': 'coloraxis',
+              'hovertemplate': 'x: %{x}<br>y: %{y}<br>color: %{z}<extra></extra>',
+              'name': '0',
+              'texttemplate': '%{z}',
+              'type': 'heatmap',
+              'x': array(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
+                         dtype=object),
+              'xaxis': 'x',
+              'y': array(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
+                         dtype=object),
+              'yaxis': 'y',
+              'z': {'bdata': ('AAAAAAAA8D9HWdmpDRm+v9Mdsyxo5e' ... '12m27Xv7hdSirLz+4/AAAAAAAA8D8='),
+                    'dtype': 'f8',
+                    'shape': '4, 4'}}],
+    'layout': {'coloraxis': {'colorscale': [[0.0, '#0d0887'], [0.1111111111111111,
+                                            '#46039f'], [0.2222222222222222,
+                                            '#7201a8'], [0.3333333333333333,
+                                            '#9c179e'], [0.4444444444444444,
+                                            '#bd3786'], [0.5555555555555556,
+                                            '#d8576b'], [0.6666666666666666,
+                                            '#ed7953'], [0.7777777777777778,
+                                            '#fb9f3a'], [0.8888888888888888,
+                                            '#fdca26'], [1.0, '#f0f921']]},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'constrain': 'domain', 'domain': [0.0, 1.0], 'scaleanchor': 'y'},
+               'yaxis': {'anchor': 'x', 'autorange': 'reversed', 'constrain': 'domain', 'domain': [0.0, 1.0]}}
+}), 'model': None}}",отобрази график correlation matrix,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+
+corr = df[[""sepal_length"", ""sepal_width"", ""petal_length"", ""petal_width""]].corr()
+fig = px.imshow(corr, text_auto=True)
+fig","['df', 'px']",core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_017_corr_matrix_expected.png,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_017_corr_matrix_model.png,,,1.0,
+code_018_radar,code_generation,ru,True,"{'heuristic_score': 0.667, 'heuristic_breakdown': {'syntax': {'score': 0.333, 'ok': True}, 'imports': {'score': 0.222, 'expected': ['plotly.express'], 'model': ['pandas', 'plotly.express'], 'matched': ['plotly.express']}, 'calls': {'score': 0.111, 'expected': ['groupby', 'line_polar', 'mean', 'reset_index'], 'model': ['line_polar', 'melt', 'show'], 'matched': ['line_polar']}, 'objects': {'score': 0.444, 'possible': ['df', 'px'], 'matched': False}}, 'errors': {'expected': ""execution_error: Value of 'r' is not the name of a column in 'data_frame'. Expected one of ['species', 'sepal_length', 'sepal_width', 'petal_length', 'petal_width'] but received: value"", 'model': 'execution_timeout: sandbox_timeout'}, 'results': {'expected': None, 'model': None}}",Отобрази график Radar,"['code', 'plots', 'plotly']",hard,,,"import plotly.express as px
+
+cols = [""sepal_length"", ""sepal_width"", ""petal_length"", ""petal_width""]
+df_radar = df.groupby(""species"", observed=True)[cols].mean().reset_index()
+fig = px.line_polar(
+    df_radar,
+    r=""value"",
+    theta=""variable"",
+    color=""species"",
+    line_close=True,
+    template=""plotly""
+)
+fig","['df', 'px']",,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/code_018_radar_model.png,"Value of 'r' is not the name of a column in 'data_frame'. Expected one of ['species', 'sepal_length', 'sepal_width', 'petal_length', 'petal_width'] but received: value",,0.667,
+chat_001_what_is_iris_en,chat_response,en,True,,Explain what this dataset represents.,"['chat', 'iris description']",easy,"['dataset contains measurements of petals and sepals', 'three iris species']",[],,,,,,,,
+chat_002_how_many_classes_en,chat_response,en,True,,How many classes are in this dataset?,"['chat', 'classes']",easy,"['three classes', 'setosa', 'versicolor', 'virginica']",[],,,,,,,,
+chat_003_best_features_en,chat_response,en,False,,Which features best separate the iris species?,"['chat', 'analysis']",medium,"['petal length', 'petal width']",[],,,,,,,,
+chat_004_easiest_class_en,chat_response,en,True,,Which iris species is the easiest to separate from the others?,"['chat', 'analysis']",medium,"['setosa', 'shorter petals', 'wider petals']",[],,,,,,,,
+theory_001_overfitting_en,chat_response,en,True,,What is overfitting in machine learning?,"['theory', 'ml']",easy,"['model fits training data too well', 'poor generalization to new data']",['overfitting improves performance on unseen data'],,,,,,,,
+theory_002_train_test_split_en,chat_response,en,True,,Why is a train-test split used?,"['theory', 'ml']",easy,"['evaluate model on unseen data', 'prevent data leakage']",['to increase training accuracy'],,,,,,,,
+theory_003_regularization_en,chat_response,en,True,,What is regularization and why is it used?,"['theory', 'ml']",medium,"['adds penalty to model complexity', 'reduces overfitting']",['regularization increases model variance'],,,,,,,,
+theory_004_bias_variance_en,chat_response,en,True,,Explain the bias-variance tradeoff.,"['theory', 'ml']",medium,"['bias refers to error from simplifying assumptions', 'variance refers to sensitivity to training data', 'tradeoff between bias and variance']",['bias and variance can both be minimized independently'],,,,,,,,
+chat_005_feature_count_en,chat_response,en,True,,How many features does this dataset have?,"['chat', 'features']",easy,"['four features', 'sepal length', 'sepal width', 'petal length', 'petal width']","['five features', 'only petal features']",,,,,,,,
+chat_006_samples_count_en,chat_response,en,True,,How many samples are in this dataset?,"['chat', 'dataset size']",easy,"['150 samples', '50 samples per class']","['100 samples', 'imbalanced classes']",,,,,,,,
+chat_007_numeric_only_en,chat_response,en,True,,Are all features in this dataset numeric?,"['chat', 'data types']",easy,"['all features are numeric', 'continuous measurements']","['categorical features', 'text features']",,,,,,,,
+chat_008_need_scaling_en,chat_response,en,True,,Is feature scaling important for this dataset?,"['chat', 'preprocessing']",medium,"['important for distance-based models', 'helps algorithms like kNN or SVM']","['scaling is never useful', 'scaling changes class labels']",,,,,,,,
+chat_009_linear_separable_en,chat_response,en,True,,Is this dataset linearly separable?,"['chat', 'analysis']",medium,"['setosa is linearly separable', 'other classes overlap']","['all classes are perfectly separable', 'no class is separable']",,,,,,,,
+chat_011_unsupervised_possible_en,chat_response,en,True,,Can this dataset be used for unsupervised learning?,"['chat', 'unsupervised']",medium,"['can be used for clustering', 'labels can be ignored']",['unsupervised learning requires labels'],,,,,,,,
+chat_012_pca_purpose_en,chat_response,en,True,,Is PCA applicable to this dataset?,"['chat', 'pca']",medium,"['reduce dimensionality', 'enable visualization', 'capture most variance']",['PCA improves class labels'],,,,,,,,
+chat_013_outliers_en,chat_response,en,True,,Are outliers a major concern in this dataset?,"['chat', 'data quality']",medium,"['dataset is relatively clean', 'few or no strong outliers']",['dataset is heavily corrupted by outliers'],,,,,,,,
+chat_014_real_world_limitations_en,chat_response,en,True,,What are the limitations of this dataset?,"['chat', 'limitations']",hard,"['small size', 'not representative of complex real-world data']",['suitable for deep learning at scale'],,,,,,,,
+theory_006_classification_vs_regression_en,chat_response,en,True,,What is the difference between classification and regression?,"['theory', 'ml basics']",easy,"['classification predicts discrete labels', 'regression predicts continuous values']","['classification predicts numbers only', 'regression predicts categories']",,,,,,,,
+theory_007_cross_validation_en,chat_response,en,True,,What is cross-validation?,"['theory', 'model evaluation']",medium,"['splits data into multiple folds', 'provides more reliable performance estimates', 'reduces dependence on a single train-test split']",['cross-validation guarantees perfect performance'],,,,,,,,
+theory_008_feature_engineering_en,chat_response,en,True,,What is feature engineering?,"['theory', 'features']",medium,"['process of creating or transforming features', 'can improve model performance', 'requires domain knowledge']",['feature engineering is only data cleaning'],,,,,,,,
+theory_009_data_leakage_en,chat_response,en,True,,What is data leakage?,"['theory', 'data issues']",medium,"['information from test data leaks into training', 'leads to overly optimistic evaluation', 'harms generalization']",['data leakage improves real-world performance'],,,,,,,,
+theory_010_precision_recall_en,chat_response,en,True,,Explain precision and recall.,"['theory', 'metrics']",medium,"['precision measures correctness of positive predictions', 'recall measures coverage of actual positives', 'tradeoff between precision and recall']",['precision and recall are always equal'],,,,,,,,
+theory_011_accuracy_limitations_en,chat_response,en,True,,Is accuracy a universal metric?,"['theory', 'metrics']",medium,"['problematic with imbalanced datasets', 'does not reflect class-wise performance']",['accuracy is always the best metric'],,,,,,,,
+chat_012_what_is_in_data_en,chat_response,en,True,,What is in the data?,"['chat', 'data_description']",easy,"['The data represents the Iris dataset', 'The dataset contains numeric features describing sepal and petal measurements', 'There is a categorical feature indicating the iris species', 'Each row corresponds to a single flower']","['Mentioning specific statistics or numeric values', 'Claims about model performance or training results', 'Assumptions about downstream data processing']",,,,,,,,
+chat_001_what_is_iris,chat_response,ru,True,,"Поясни, что представляет собой датасет.","['chat', 'описание ириса']",easy,"['датасет содержит измерения лепестков и чашелистиков', 'три вида ириса']",['животные'],,,,,,,,
+chat_002_how_many_classes,chat_response,ru,True,,Сколько классов в этом датасете?,"['chat', 'классы']",easy,['три класса'],[],,,,,,,,
+chat_003_best_features,chat_response,ru,False,,Какие признаки лучше всего разделяют виды ирисов?,"['chat', 'анализ']",medium,"['длина лепестка', 'ширина лепестка']",[],,,,,,,,
+chat_004_easiest_class,chat_response,ru,False,,Какой вид ириса лучше всего отделяется от остальных?,"['chat', 'анализ']",medium,"['setosa', 'короче лепестки', 'шире лепестки']",[],,,,core/evaluation/report_2_remote_llm_qwen3-instruct-30b/plots/chat_004_easiest_class_model.png,,,,
+theory_001_overfitting,chat_response,ru,True,,Что такое переобучение в машинном обучении?,"['theory', 'ml']",easy,"['модель слишком хорошо подстраивается под обучающую выборку', 'плохо обобщает на новые данные']",['переобучение улучшает качество на новых данных'],,,,,,,,
+theory_002_train_test_split,chat_response,ru,True,,Зачем используется разделение на обучающую и тестовую выборки?,"['theory', 'ml']",easy,"['оценка качества модели на невидимых данных', 'предотвращение утечки данных']",['для увеличения точности на обучающей выборке'],,,,,,,,
+theory_003_regularization,chat_response,ru,True,,Что такое регуляризация и зачем она нужна?,"['theory', 'ml']",medium,"['добавляет штраф за сложность модели', 'уменьшает переобучение']",['регуляризация увеличивает разброс модели'],,,,,,,,
+theory_004_bias_variance,chat_response,ru,True,,Объясни компромисс между смещением и разбросом.,"['theory', 'ml']",medium,"['смещение связано с упрощающими предположениями модели', 'разброс связан с чувствительностью к обучающим данным', 'существует компромисс между смещением и разбросом']",['смещение и разброс можно минимизировать независимо'],,,,,,,,
+chat_005_feature_count,chat_response,ru,True,,Сколько признаков содержит этот датасет?,"['chat', 'признаки']",easy,"['четыре признака', 'длина чашелистика', 'ширина чашелистика', 'длина лепестка', 'ширина лепестка']","['пять признаков', 'только признаки лепестков']",,,,,,,,
+chat_006_samples_count,chat_response,ru,True,,Сколько объектов содержится в этом датасете?,"['chat', 'размер датасета']",easy,"['150 объектов', '50 объектов на класс']","['100 объектов', 'несбалансированные классы']",,,,,,,,
+chat_007_numeric_only,chat_response,ru,True,,Все ли признаки в этом датасете являются числовыми?,"['chat', 'типы данных']",easy,"['все признаки числовые', 'непрерывные измерения']","['категориальные признаки', 'текстовые признаки']",,,,,,,,
+chat_008_need_scaling,chat_response,ru,True,,Важно ли масштабирование признаков для этого датасета?,"['chat', 'предобработка']",medium,"['важно для моделей, основанных на расстоянии', 'помогает алгоритмам вроде kNN или SVM']","['масштабирование никогда не нужно', 'масштабирование меняет метки классов']",,,,,,,,
+chat_009_linear_separable,chat_response,ru,True,,Является ли этот датасет линейно разделимым?,"['chat', 'анализ']",medium,"['класс setosa линейно разделим', 'остальные классы перекрываются']","['все классы идеально разделимы', 'ни один класс не разделим']",,,,,,,,
+chat_011_unsupervised_possible,chat_response,ru,True,,Можно ли использовать этот датасет для обучения без учителя?,"['chat', 'обучение без учителя']",medium,"['можно использовать для кластеризации', 'метки классов можно игнорировать']",['обучение без учителя требует меток'],,,,,,,,
+chat_012_pca_purpose,chat_response,ru,True,,Применим ли метод PCA к этому датасету?,"['chat', 'pca']",medium,"['снижение размерности', 'возможность визуализации', 'сохранение большей части дисперсии']",['PCA улучшает метки классов'],,,,,,,,
+chat_013_outliers,chat_response,ru,True,,Являются ли выбросы серьёзной проблемой в этом датасете?,"['chat', 'качество данных']",medium,"['датасет относительно чистый', 'мало или нет выраженных выбросов']",['датасет сильно искажён выбросами'],,,,,,,,
+chat_014_real_world_limitations,chat_response,ru,True,,Какие ограничения есть у этого датасета?,"['chat', 'ограничения']",hard,"['небольшой размер', 'не отражает сложные реальные данные']",['подходит для масштабного глубокого обучения'],,,,,,,,
+theory_006_classification_vs_regression,chat_response,ru,True,,В чём разница между классификацией и регрессией?,"['theory', 'основы ml']",easy,"['классификация предсказывает дискретные классы', 'регрессия предсказывает непрерывные значения']","['классификация предсказывает только числа', 'регрессия предсказывает категории']",,,,,,,,
+theory_007_cross_validation,chat_response,ru,True,,Что такое кросс-валидация?,"['theory', 'оценка моделей']",medium,"['разбиение данных на несколько фолдов', 'более надёжная оценка качества модели', 'уменьшает зависимость от одного train-test разбиения']",['кросс-валидация гарантирует идеальное качество'],,,,,,,,
+theory_008_feature_engineering,chat_response,ru,True,,Что такое feature engineering?,"['theory', 'признаки']",medium,"['процесс создания или преобразования признаков', 'может улучшить качество модели', 'требует знания предметной области']",['feature engineering — это только очистка данных'],,,,,,,,
+theory_009_data_leakage,chat_response,ru,True,,Что такое утечка данных?,"['theory', 'проблемы данных']",medium,"['информация из тестовой выборки попадает в обучение', 'приводит к завышенной оценке качества', 'ухудшает обобщающую способность']",['утечка данных улучшает качество в реальных условиях'],,,,,,,,
+theory_010_precision_recall,chat_response,ru,True,,"Поясни, что такое precision и recall.","['theory', 'метрики']",medium,"['precision показывает точность положительных предсказаний', 'recall показывает полноту выявления положительных объектов', 'существует компромисс между precision и recall']",['precision и recall всегда равны'],,,,,,,,
+theory_011_accuracy_limitations,chat_response,ru,True,,Является ли accuracy универсальной метрикой?,"['theory', 'метрики']",medium,"['проблематична при несбалансированных данных', 'не отражает качество по отдельным классам']",['accuracy всегда лучшая метрика'],,,,,,,,
+chat_012_what_is_in_data,chat_response,ru,True,,Что в данных,"['chat', 'data_description']",easy,"['Данные представляют собой датасет Iris', 'В данных содержатся числовые признаки, описывающие размеры чашелистиков и лепестков', 'В данных есть категориальный признак с видом ириса', 'Каждая строка соответствует одному цветку']","['Упоминание конкретных статистик или числовых значений', 'Утверждения о качестве модели или результатах обучения', 'Предположения о последующей обработке данных']",,,,,,,,

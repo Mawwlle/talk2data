@@ -1,5 +1,15 @@
 # Детальный отчёт по кейсам (en)
 
+## Evaluation Results
+
+- **Code generation accuracy: 88.9%** (16 / 18)
+
+- **Chat response accuracy: 92.3%** (24 / 26)
+
+- 1 из 2 ошибок обусловлена ошибками классификации `decision`, а не качеством ответа
+
+- **Overall decision accuracy: 0.964**
+
 ## Кейсы
 ### code_001_describe_en (code_generation, language: en, difficulty: easy)
 
@@ -150,10 +160,10 @@ y = df['species']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-clf = LogisticRegression(max_iter=200)
-clf.fit(X_train, y_train)
+model = LogisticRegression(max_iter=200)
+model.fit(X_train, y_train)
 
-y_pred = clf.predict(X_test)
+y_pred = model.predict(X_test)
 accuracy_score(y_test, y_pred)
 ```
 - model_result:
@@ -500,31 +510,70 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import plotly.express as px
 
-# Standardize the features
-features = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
-df_scaled = (df[features] - df[features].mean()) / df[features].std()
-
-# Apply PCA
 pca = PCA(n_components=2)
-pca_components = pca.fit_transform(df_scaled)
+principal_components = pca.fit_transform(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])
+df_pca = pd.DataFrame(data=principal_components, columns=['PC1', 'PC2'])
+df_pca['species'] = df['species']
 
-# Create a DataFrame with PCA components and species
-pca_df = pd.DataFrame(data=pca_components, columns=['PC1', 'PC2'])
-pca_df['species'] = df['species']
-
-# Create scatter plot
-fig = px.scatter(pca_df, x='PC1', y='PC2', color='species', title='Scatter Plot of First Two PCA Components Colored by Species')
-fig.show()
+px.scatter(df_pca, x='PC1', y='PC2', color='species', title='Scatter Plot of First Two PCA Components Colored by Species')
 ```
 - model_result:
 
 ```python
-None
+Figure({
+    'data': [{'hovertemplate': 'species=setosa<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
+              'legendgroup': 'setosa',
+              'marker': {'color': '#636efa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'setosa',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('TCgv2xZ5BcBwHb3qj7YFwCt/ZBanHA' ... 'A3twbAs49zVz1YBMACnPMXe6AFwA=='),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'y': {'bdata': ('EP0gJgFx1D9gqoDk+afGvwBETuqzjc' ... 'dSLc2/4OGs4oaK4j+ATOo1oJK7Pw=='),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'species=versicolor<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
+              'legendgroup': 'versicolor',
+              'marker': {'color': '#EF553B', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'versicolor',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('EFGrYaWO9D94pcUw8tbtP/SOhkXIbf' ... '/7j+Q/CHkYF80B7b9w9VVt1CLTPw=='),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'y': {'bdata': ('sGilptXs5T8ggGMNlF/UP9DwisXrIu' ... 'n1KZI/cH1It+ox6L/AaxZ3V1TWvw=='),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'species=virginica<br>PC1=%{x}<br>PC2=%{y}<extra></extra>',
+              'legendgroup': 'virginica',
+              'marker': {'color': '#00cc96', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'virginica',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('JFEO+eE/BEBEG+lfzqT2P7hux9Xz7g' ... 'PCOvw//MYKwUFq/j+wRhWtNj72Pw=='),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ACyJGcUrhL+Qu9T3tmXivwBDAF2CAt' ... 'kYMLQ/AMWbc1TbvT+wqiHnHRfSvw=='),
+                    'dtype': 'f8'},
+              'yaxis': 'y'}],
+    'layout': {'legend': {'title': {'text': 'species'}, 'tracegroupgap': 0},
+               'template': '...',
+               'title': {'text': 'Scatter Plot of First Two PCA Components Colored by Species'},
+               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'PC1'}},
+               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'PC2'}}}
+})
 ```
 - model_error:
 
 ```python
-execution_timeout: sandbox_timeout
+None
 ```
 - model_plot:
 
@@ -561,96 +610,21 @@ None
 > Here's the generated code:
 ```python
 from sklearn.cluster import KMeans
-import plotly.express as px
 import pandas as pd
 
 kmeans = KMeans(n_clusters=3, random_state=42)
 df['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width', 'petal_length', 'petal_width']])
-
-px.scatter_3d(df, x='sepal_length', y='sepal_width', z='petal_length', color='cluster', symbol='species', title='KMeans Clustering (3 Clusters)')
 ```
 - model_result:
 
 ```python
-Figure({
-    'data': [{'hovertemplate': ('species=setosa<br>sepal_length' ... '%{marker.color}<extra></extra>'),
-              'legendgroup': 'setosa',
-              'marker': {'color': {'bdata': ('AQAAAAEAAAABAAAAAQAAAAEAAAABAA' ... 'AAAQAAAAEAAAABAAAAAQAAAAEAAAA='),
-                                   'dtype': 'i4'},
-                         'coloraxis': 'coloraxis',
-                         'symbol': 'circle'},
-              'mode': 'markers',
-              'name': 'setosa',
-              'scene': 'scene',
-              'showlegend': True,
-              'type': 'scatter3d',
-              'x': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'ZmZhJAMzMzMzMzFUAAAAAAAAAUQA=='),
-                    'dtype': 'f8'},
-              'y': {'bdata': ('AAAAAAAADEAAAAAAAAAIQJqZmZmZmQ' ... 'mZmQlAmpmZmZmZDUBmZmZmZmYKQA=='),
-                    'dtype': 'f8'},
-              'z': {'bdata': ('ZmZmZmZm9j9mZmZmZmb2P83MzMzMzP' ... 'ZmZvY/AAAAAAAA+D9mZmZmZmb2Pw=='),
-                    'dtype': 'f8'}},
-             {'hovertemplate': ('species=versicolor<br>sepal_le' ... '%{marker.color}<extra></extra>'),
-              'legendgroup': 'versicolor',
-              'marker': {'color': {'bdata': ('AAAAAAIAAAAAAAAAAgAAAAIAAAACAA' ... 'AAAgAAAAIAAAACAAAAAgAAAAIAAAA='),
-                                   'dtype': 'i4'},
-                         'coloraxis': 'coloraxis',
-                         'symbol': 'diamond'},
-              'mode': 'markers',
-              'name': 'versicolor',
-              'scene': 'scene',
-              'showlegend': True,
-              'type': 'scatter3d',
-              'x': {'bdata': ('AAAAAAAAHECamZmZmZkZQJqZmZmZmR' ... 'zMzBhAZmZmZmZmFEDNzMzMzMwWQA=='),
-                    'dtype': 'f8'},
-              'y': {'bdata': ('mpmZmZmZCUCamZmZmZkJQM3MzMzMzA' ... 'MzMwdAAAAAAAAABEBmZmZmZmYGQA=='),
-                    'dtype': 'f8'},
-              'z': {'bdata': ('zczMzMzMEkAAAAAAAAASQJqZmZmZmR' ... 'MzMxFAAAAAAAAACEBmZmZmZmYQQA=='),
-                    'dtype': 'f8'}},
-             {'hovertemplate': ('species=virginica<br>sepal_len' ... '%{marker.color}<extra></extra>'),
-              'legendgroup': 'virginica',
-              'marker': {'color': {'bdata': ('AAAAAAIAAAAAAAAAAAAAAAAAAAAAAA' ... 'AAAAAAAAIAAAAAAAAAAAAAAAIAAAA='),
-                                   'dtype': 'i4'},
-                         'coloraxis': 'coloraxis',
-                         'symbol': 'square'},
-              'mode': 'markers',
-              'name': 'virginica',
-              'scene': 'scene',
-              'showlegend': True,
-              'type': 'scatter3d',
-              'x': {'bdata': ('MzMzMzMzGUAzMzMzMzMXQGZmZmZmZh' ... 'AAABpAzczMzMzMGECamZmZmZkXQA=='),
-                    'dtype': 'f8'},
-              'y': {'bdata': ('ZmZmZmZmCkCamZmZmZkFQAAAAAAAAA' ... 'AAAAhAMzMzMzMzC0AAAAAAAAAIQA=='),
-                    'dtype': 'f8'},
-              'z': {'bdata': ('AAAAAAAAGEBmZmZmZmYUQJqZmZmZmR' ... 'zMzBRAmpmZmZmZFUBmZmZmZmYUQA=='),
-                    'dtype': 'f8'}}],
-    'layout': {'coloraxis': {'colorbar': {'title': {'text': 'cluster'}},
-                             'colorscale': [[0.0, '#0d0887'], [0.1111111111111111,
-                                            '#46039f'], [0.2222222222222222,
-                                            '#7201a8'], [0.3333333333333333,
-                                            '#9c179e'], [0.4444444444444444,
-                                            '#bd3786'], [0.5555555555555556,
-                                            '#d8576b'], [0.6666666666666666,
-                                            '#ed7953'], [0.7777777777777778,
-                                            '#fb9f3a'], [0.8888888888888888,
-                                            '#fdca26'], [1.0, '#f0f921']]},
-               'legend': {'title': {'text': 'species'}, 'tracegroupgap': 0},
-               'scene': {'domain': {'x': [0.0, 1.0], 'y': [0.0, 1.0]},
-                         'xaxis': {'title': {'text': 'sepal_length'}},
-                         'yaxis': {'title': {'text': 'sepal_width'}},
-                         'zaxis': {'title': {'text': 'petal_length'}}},
-               'template': '...',
-               'title': {'text': 'KMeans Clustering (3 Clusters)'}}
-})
+None
 ```
 - model_error:
 
 ```python
 None
 ```
-- model_plot:
-
- ![model plot](plots/code_011_kmeans_en_model.png)
 - decision_score: True
 
 ### code_012_cluster_plot_en (code_generation, language: en, difficulty: medium)
@@ -662,11 +636,19 @@ None
 - expected_code:
 ```python
 import plotly.express as px
+from sklearn.cluster import KMeans
 
-X = df.drop(columns=["species"])
+X = df.drop("species", axis=1)
+kmeans = KMeans(n_clusters=3, random_state=42)
+clusters = kmeans.fit_predict(X)
 
-fig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))
-fig.show()
+fig = px.scatter(
+    df,
+    x=df.columns[0],
+    y=df.columns[1],
+    color=clusters.astype(str)
+)
+fig
 ```
 - expected_result:
 
@@ -685,9 +667,8 @@ execution_error: name 'clusters' is not defined
 **Model output:**
 > Here's the generated code:
 ```python
-import plotly.express as px
 from sklearn.cluster import KMeans
-import pandas as pd
+import plotly.express as px
 
 kmeans = KMeans(n_clusters=3, random_state=42)
 df['cluster'] = kmeans.fit_predict(df[['sepal_length', 'sepal_width']])
@@ -811,6 +792,7 @@ from sklearn.model_selection import train_test_split
 
 X = df.drop('species', axis=1)
 y = df['species']
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 ```
 - model_result:
@@ -1005,7 +987,224 @@ execution_timeout: sandbox_timeout
 **Model output:**
 > Here's the generated code:
 ```python
-fig = px.histogram(df, x='sepal_length', nbins=20, title='Histogram of Sepal Length')
+import plotly.express as px
+px.histogram(df, x='sepal_length', nbins=20)
+```
+- model_result:
+
+```python
+Figure({
+    'data': [{'bingroup': 'x',
+              'hovertemplate': 'sepal_length=%{x}<br>count=%{y}<extra></extra>',
+              'legendgroup': '',
+              'marker': {'color': '#636efa', 'pattern': {'shape': ''}},
+              'name': '',
+              'nbinsx': 20,
+              'orientation': 'v',
+              'showlegend': False,
+              'type': 'histogram',
+              'x': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'AAAAAAGkDNzMzMzMwYQJqZmZmZmRdA'),
+                    'dtype': 'f8'},
+              'xaxis': 'x',
+              'yaxis': 'y'}],
+    'layout': {'barmode': 'relative',
+               'legend': {'tracegroupgap': 0},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'sepal_length'}},
+               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'count'}}}
+})
+```
+- model_error:
+
+```python
+None
+```
+- model_plot:
+
+ ![model plot](plots/code_015_histogram_en_model.png)
+- decision_score: True
+
+### code_016_index_to_value_en (code_generation, language: en, difficulty: hard)
+
+**User input:** Display the Index to Values plot
+
+
+**Ground truth:**
+- expected_code:
+```python
+import plotly.express as px
+
+df_reset = df.reset_index().rename(columns={"index": "index"})
+fig = px.scatter(
+    df_reset,
+    x="index",
+    y=["sepal_length", "sepal_width", "petal_length", "petal_width"],
+)
+fig
+```
+- possible_code_objects: df, px
+- expected_result:
+
+```python
+Figure({
+    'data': [{'hovertemplate': 'variable=sepal_length<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'sepal_length',
+              'marker': {'color': '#636efa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'sepal_length',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ZmZmZmZmFECamZmZmZkTQM3MzMzMzB' ... 'AAAAAAGkDNzMzMzMwYQJqZmZmZmRdA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=sepal_width<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'sepal_width',
+              'marker': {'color': '#EF553B', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'sepal_width',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('AAAAAAAADEAAAAAAAAAIQJqZmZmZmQ' ... 'AAAAAACEAzMzMzMzMLQAAAAAAAAAhA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=petal_length<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'petal_length',
+              'marker': {'color': '#00cc96', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'petal_length',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('ZmZmZmZm9j9mZmZmZmb2P83MzMzMzP' ... 'zMzMzMFECamZmZmZkVQGZmZmZmZhRA'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'},
+             {'hovertemplate': 'variable=petal_width<br>index=%{x}<br>value=%{y}<extra></extra>',
+              'legendgroup': 'petal_width',
+              'marker': {'color': '#ab63fa', 'symbol': 'circle'},
+              'mode': 'markers',
+              'name': 'petal_width',
+              'orientation': 'v',
+              'showlegend': True,
+              'type': 'scatter',
+              'x': {'bdata': ('AAABAAIAAwAEAAUABgAHAAgACQAKAA' ... 'CLAIwAjQCOAI8AkACRAJIAkwCUAJUA'),
+                    'dtype': 'i2'},
+              'xaxis': 'x',
+              'y': {'bdata': ('mpmZmZmZyT+amZmZmZnJP5qZmZmZmc' ... 'AAAAAAAEBmZmZmZmYCQM3MzMzMzPw/'),
+                    'dtype': 'f8'},
+              'yaxis': 'y'}],
+    'layout': {'legend': {'title': {'text': 'variable'}, 'tracegroupgap': 0},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'domain': [0.0, 1.0], 'title': {'text': 'index'}},
+               'yaxis': {'anchor': 'x', 'domain': [0.0, 1.0], 'title': {'text': 'value'}}}
+})
+```
+- expected_error:
+
+```python
+None
+```
+- expected_plot:
+
+ ![expected plot](plots/code_016_index_to_value_en_expected.png)
+
+
+**Model output:**
+> Here's the generated code:
+```python
+df.index.to_series().plot(kind='line')
+```
+- model_result:
+
+```python
+Axes(0.125,0.11;0.775x0.77)
+```
+- model_error:
+
+```python
+None
+```
+- decision_score: True
+
+### code_017_corr_matrix_en (code_generation, language: en, difficulty: hard)
+
+**User input:** Display the correlation matrix plot
+
+
+**Ground truth:**
+- expected_code:
+```python
+import plotly.express as px
+
+corr = df[["sepal_length", "sepal_width", "petal_length", "petal_width"]].corr()
+fig = px.imshow(corr, text_auto=True)
+fig
+```
+- possible_code_objects: df, px
+- expected_result:
+
+```python
+Figure({
+    'data': [{'coloraxis': 'coloraxis',
+              'hovertemplate': 'x: %{x}<br>y: %{y}<br>color: %{z}<extra></extra>',
+              'name': '0',
+              'texttemplate': '%{z}',
+              'type': 'heatmap',
+              'x': array(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
+                         dtype=object),
+              'xaxis': 'x',
+              'y': array(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
+                         dtype=object),
+              'yaxis': 'y',
+              'z': {'bdata': ('AAAAAAAA8D9HWdmpDRm+v9Mdsyxo5e' ... '12m27Xv7hdSirLz+4/AAAAAAAA8D8='),
+                    'dtype': 'f8',
+                    'shape': '4, 4'}}],
+    'layout': {'coloraxis': {'colorscale': [[0.0, '#0d0887'], [0.1111111111111111,
+                                            '#46039f'], [0.2222222222222222,
+                                            '#7201a8'], [0.3333333333333333,
+                                            '#9c179e'], [0.4444444444444444,
+                                            '#bd3786'], [0.5555555555555556,
+                                            '#d8576b'], [0.6666666666666666,
+                                            '#ed7953'], [0.7777777777777778,
+                                            '#fb9f3a'], [0.8888888888888888,
+                                            '#fdca26'], [1.0, '#f0f921']]},
+               'margin': {'t': 60},
+               'template': '...',
+               'xaxis': {'anchor': 'y', 'constrain': 'domain', 'domain': [0.0, 1.0], 'scaleanchor': 'y'},
+               'yaxis': {'anchor': 'x', 'autorange': 'reversed', 'constrain': 'domain', 'domain': [0.0, 1.0]}}
+})
+```
+- expected_error:
+
+```python
+None
+```
+- expected_plot:
+
+ ![expected plot](plots/code_017_corr_matrix_en_expected.png)
+
+
+**Model output:**
+> Here's the generated code:
+```python
+import plotly.express as px
+import numpy as np
+
+corr_matrix = df.select_dtypes(include=[np.number]).corr()
+fig = px.imshow(corr_matrix, text_auto=True, aspect="auto", color_continuous_scale="RdBu_r")
+fig.show()
 ```
 - model_result:
 
@@ -1015,8 +1214,63 @@ None
 - model_error:
 
 ```python
-execution_error: name 'px' is not defined
+execution_timeout: sandbox_timeout
 ```
+- model_plot:
+
+ ![model plot](plots/code_017_corr_matrix_en_model.png)
+- decision_score: True
+
+### code_018_radar_en (code_generation, language: en, difficulty: hard)
+
+**User input:** Display the Radar chart
+
+
+**Ground truth:**
+- expected_code:
+```python
+import plotly.express as px
+
+cols = ["sepal_length", "sepal_width", "petal_length", "petal_width"]
+df_mean = df.groupby("species", observed=True)[cols].mean().reset_index()
+df_long = df_mean.melt(id_vars="species", var_name="variable", value_name="value")
+fig = px.line_polar(df_long, r="value", theta="variable", color="species", line_close=True)
+fig
+```
+- possible_code_objects: df, px
+- expected_result:
+
+```python
+None
+```
+- expected_output: Интерактивный график (Plotly)
+- expected_error:
+
+```python
+execution_error: Value of 'r' is not the name of a column in 'data_frame'. Expected one of ['species', 'sepal_length', 'sepal_width', 'petal_length', 'petal_width'] but received: value
+```
+- expected_plot_error: Value of 'r' is not the name of a column in 'data_frame'. Expected one of ['species', 'sepal_length', 'sepal_width', 'petal_length', 'petal_width'] but received: value
+
+
+**Model output:**
+> Here's the generated code:
+```python
+import plotly.express as px
+
+fig = px.line_polar(df, r=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], theta=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'], color='species', line_close=True)
+fig.show()
+```
+- model_result:
+
+```python
+None
+```
+- model_error:
+
+```python
+execution_error: All arguments should have the same length. The length of column argument `df[color]` is 150, whereas the length of previously-processed arguments ['r', 'theta'] is 4
+```
+- model_plot_error: All arguments should have the same length. The length of column argument `df[color]` is 150, whereas the length of previously-processed arguments ['r', 'theta'] is 4
 - decision_score: True
 
 ### chat_001_what_is_iris_en (chat_response, language: en, difficulty: easy)
@@ -1029,7 +1283,7 @@ execution_error: name 'px' is not defined
 
 
 **Model output:**
-> This dataset contains measurements of flowers from three different species.  Each row represents one flower, and each column shows a specific measurement:  - **sepal_length**: The length of the sepal in centimeters. - **sepal_width**: The width of the sepal in centimeters. - **petal_length**: The length of the petal in centimeters. - **petal_width**: The width of the petal in centimeters. - **species**: The type of flower, such as setosa, versicolor, or virginica.  These measurements help scientists and students identify and classify flowers based on their physical features.
+> This dataset contains measurements of flowers from three different species.  Each row represents one flower, and the columns include:  - **sepal_length**: The length of the sepal in centimeters. - **sepal_width**: The width of the sepal in centimeters. - **petal_length**: The length of the petal in centimeters. - **petal_width**: The width of the petal in centimeters. - **species**: The type of flower, such as setosa, versicolor, or virginica.  These measurements are used to study and classify the different species based on their physical features.
 - decision_score: True
 
 ### chat_002_how_many_classes_en (chat_response, language: en, difficulty: easy)
@@ -1042,7 +1296,7 @@ execution_error: name 'px' is not defined
 
 
 **Model output:**
-> This dataset has **three classes**.  They are the species of flowers: - **setosa** - **versicolor** - **virginica**
+> The dataset has **three classes**.  These are the species of flowers: - **setosa** - **versicolor** - **virginica**
 - decision_score: True
 
 ### chat_003_best_features_en (chat_response, language: en, difficulty: medium)
@@ -1057,7 +1311,7 @@ execution_error: name 'px' is not defined
 **Model output:**
 > Here's the generated code:
 ```python
-df.groupby('species').agg(['mean', 'std'])
+df.groupby('species').mean()
 ```
 - model_result:
 
@@ -1081,7 +1335,7 @@ None
 
 
 **Model output:**
-> The **setosa** species is the easiest to separate from the others.  It has clearly distinct measurements, especially in petal length and petal width.   For example: - Petal length is usually under 2 cm. - Petal width is usually under 0.8 cm.  These values are quite different from the other two species, versicolor and virginica, which overlap more in their measurements.
+> The **setosa** species is the easiest to separate from the others.  It has clearly distinct measurements, especially in petal length and petal width.   For example: - **Setosa** petals are usually under 2 centimeters long. - The other two species, **versicolor** and **virginica**, have much longer petals.  This clear difference makes setosa stand out and easy to identify.
 - decision_score: True
 
 ### theory_001_overfitting_en (chat_response, language: en, difficulty: easy)
@@ -1095,7 +1349,7 @@ None
 
 
 **Model output:**
-> **Overfitting** happens when a machine learning model learns the training data too well — so well that it starts memorizing the details and noise, instead of finding general patterns.  This means the model performs very well on the training data but poorly on new, unseen data.  For example, imagine a model trying to classify flowers. If it memorizes every flower in the training set, it might fail when seeing a slightly different flower.  **Key signs of overfitting:** - High accuracy on training data - Low accuracy on test or validation data  To avoid overfitting, we use techniques like: - Simplifying the model - Using more training data - Applying regularization - Using cross-validation  The goal is to build a model that generalizes well to new data.
+> **Overfitting** happens when a machine learning model learns the training data too well — including its noise and outliers — instead of finding the general patterns.  This means the model performs very well on the training data but poorly on new, unseen data.  For example, imagine a model memorizing every detail of a photo instead of learning what the photo is about. When shown a similar but slightly different photo, it might fail to recognize it.  Overfitting often occurs when a model is too complex for the amount of data available.  To prevent overfitting, you can: - Use more training data - Simplify the model - Use techniques like cross-validation or regularization  In short, a good model generalizes well — it works not just on known data, but on new data too.
 - decision_score: True
 
 ### theory_002_train_test_split_en (chat_response, language: en, difficulty: easy)
@@ -1109,7 +1363,7 @@ None
 
 
 **Model output:**
-> A **train-test split** is used to check how well a model will perform on new, unseen data.  Here’s why it’s important:  - We train the model on part of the data, called the **training set**. - Then we test the model on a separate part, called the **test set**. - This helps us see if the model learns patterns well or just memorizes the training data.  If a model works well on the test set, it’s likely to work well in real-world situations.  It’s like studying for a test using practice questions, then taking the real test to see how well you really understand the material.
+> A **train-test split** is used to check how well a model will perform on new, unseen data.  Here’s why it’s important:  - We train the model on part of the data, called the **training set**. - Then, we test the model on a separate part, called the **test set**. - This helps us see if the model learns patterns well or just memorizes the training data.  If a model does well on training data but poorly on test data, it might be **overfitting**.  Using a train-test split gives a more honest estimate of real-world performance.
 - decision_score: True
 
 ### theory_003_regularization_en (chat_response, language: en, difficulty: medium)
@@ -1123,7 +1377,7 @@ None
 
 
 **Model output:**
-> **Regularization** is a technique used in machine learning to prevent a model from becoming too complex.  It works by adding a penalty to the size of the model's coefficients. This helps the model avoid overfitting, which happens when it learns the training data too well — including its noise and outliers — and performs poorly on new data.  Think of it like a rule that keeps the model simple and general.  Common types include: - **L1 regularization** (Lasso): Adds the absolute value of coefficients to the loss. - **L2 regularization** (Ridge): Adds the squared value of coefficients to the loss.  Regularization is used to improve a model's ability to make accurate predictions on unseen data.
+> **Regularization** is a technique used in machine learning to prevent a model from becoming too complex.  It helps stop **overfitting**, which happens when a model learns the training data too well — including its noise and outliers — and then performs poorly on new, unseen data.  By adding a penalty to the size of the model’s coefficients, regularization keeps the model simple and more likely to generalize well.  Common types include: - **L1 regularization** (Lasso): can shrink some coefficients to zero, helping with feature selection. - **L2 regularization** (Ridge): reduces the size of coefficients but doesn’t set them to zero.  In short, regularization makes models more reliable when making predictions on new data.
 - decision_score: True
 
 ### theory_004_bias_variance_en (chat_response, language: en, difficulty: medium)
@@ -1137,7 +1391,7 @@ None
 
 
 **Model output:**
-> The **bias-variance tradeoff** is a key concept in machine learning that helps us understand how well a model will perform on new data.  **Bias** is the error from incorrect assumptions in the learning algorithm. High bias means the model is too simple. It might miss important patterns in the data. This leads to **underfitting**.  **Variance** is the error from sensitivity to small fluctuations in the training data. High variance means the model is too complex. It learns the training data too well, including noise. This leads to **overfitting**.  A good model balances both: - Low bias: It captures the true relationship in the data. - Low variance: It performs consistently on new data.  If you reduce bias, variance often increases — and vice versa. The goal is to find the sweet spot where the model generalizes well.  Think of it like aiming at a target: - High bias: All shots are far from the center, but close to each other. - High variance: Shots are scattered all over, even if some hit the center. - Low bias and low variance: Shots are close to the center and close to each other.  This tradeoff helps guide model selection and tuning.
+> The **bias-variance tradeoff** is a key concept in machine learning that helps us understand how well a model will perform on new data.  **Bias** is the error from incorrect assumptions in the learning algorithm. High bias means the model is too simple. It might not capture the true patterns in the data. This leads to underfitting.  **Variance** is the error from sensitivity to small fluctuations in the training data. High variance means the model is too complex. It learns the training data too well, including noise. This leads to overfitting.  A good model balances both: - Not too simple (low bias) - Not too sensitive to training data (low variance)  If you reduce bias, variance often increases, and vice versa.  So, the tradeoff means we must find a middle ground where the model generalizes well to new data.  Example: - A straight line fit to curved data has **high bias**. - A very wiggly curve that fits every point exactly has **high variance**.  The goal is to find a model that performs well on both training and new data.
 - decision_score: True
 
 ### chat_005_feature_count_en (chat_response, language: en, difficulty: easy)
@@ -1151,7 +1405,7 @@ None
 
 
 **Model output:**
-> This dataset has **five** features.  They are: - **sepal_length** - **sepal_width** - **petal_length** - **petal_width** - **species**  Each feature describes a different characteristic of the flowers in the dataset.
+> This dataset has **five** features.  They are: - **sepal_length** - **sepal_width** - **petal_length** - **petal_width** - **species**  Each feature represents a different measurement or category in the dataset.
 - decision_score: True
 
 ### chat_006_samples_count_en (chat_response, language: en, difficulty: easy)
@@ -1179,7 +1433,7 @@ None
 
 
 **Model output:**
-> No, not all features are numeric.  The features **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** are all numeric (float type).  However, the **species** feature is a category, which means it contains text labels like "setosa", "versicolor", or "virginica".  So, only four features are numeric. The **species** feature is categorical.
+> No, not all features are numeric.  The features **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** are all numeric (float values).  However, the **species** feature is a **category**, which means it contains text labels, like "setosa", "versicolor", or "virginica".  So, only four features are numeric. One feature, **species**, is categorical.
 - decision_score: True
 
 ### chat_008_need_scaling_en (chat_response, language: en, difficulty: medium)
@@ -1193,7 +1447,7 @@ None
 
 
 **Model output:**
-> **Feature scaling** can be important for this dataset, especially if you're using machine learning models that are sensitive to the scale of input features.  For example: - **Distance-based models** like *k-Nearest Neighbors* or *Support Vector Machines* work better when all features are on a similar scale. - **Gradient descent-based models** like *Logistic Regression* or *Neural Networks* also converge faster when features are scaled.  In this dataset, features like *sepal_length*, *sepal_width*, *petal_length*, and *petal_width* have different ranges and units. Without scaling, features with larger values (like petal_length) might dominate the model's learning process.  So, yes — **scaling helps improve model performance and stability**.  If you're planning to use such models, consider using techniques like **StandardScaler** or **MinMaxScaler**.
+> **Feature scaling** can be important for this dataset, especially if you're using machine learning models that are sensitive to the scale of input features.  For example: - **Distance-based models** like K-Nearest Neighbors or Support Vector Machines work better when all features are on a similar scale. - **Gradient descent-based models** like logistic regression or neural networks can converge faster with scaled features.  In this dataset, features like **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** have different ranges and units. Without scaling, features with larger values might dominate the learning process.  So, if you're planning to use certain models, **scaling the features** is a good idea.  But for some models, like decision trees or random forests, scaling isn't necessary.  Always consider your model choice when deciding whether to scale.
 - decision_score: True
 
 ### chat_009_linear_separable_en (chat_response, language: en, difficulty: medium)
@@ -1207,7 +1461,7 @@ None
 
 
 **Model output:**
-> This dataset contains measurements of flower parts—**sepal length**, **sepal width**, **petal length**, and **petal width**—and the species of the flower.  Whether the data is **linearly separable** depends on how the species are distributed in the feature space.  In general, for this dataset, **species can be separated with good accuracy using linear methods**, especially when using **petal length** and **petal width**.  For example: - **Setosa** flowers are clearly separated from the other two species. - **Versicolor** and **Virginica** overlap more, but still show some separation.  So, while **perfect linear separation** across all three species is not possible, **two of the species can be separated linearly**.  If you want to check this yourself, plotting the data with **petal length** and **petal width** often shows clear clusters.  Note: Determining exact linear separability requires a formal analysis or model, which is best done with code.
+> This dataset contains measurements of flower parts—sepal length, sepal width, petal length, and petal width—and the species of the flower.  The species column is a category, meaning it has distinct groups, like setosa, versicolor, and virginica.  To determine if the dataset is linearly separable, we would need to check if a straight line (or plane in higher dimensions) can separate the species using the measurements.  In practice, this dataset—commonly known as the Iris dataset—**is not fully linearly separable**. While some species, like setosa, can be separated easily from the others, the other two species, versicolor and virginica, overlap in the feature space. No single straight line or plane can perfectly separate all three species.  So, **no**, this dataset is not linearly separable.
 - decision_score: True
 
 ### chat_011_unsupervised_possible_en (chat_response, language: en, difficulty: medium)
@@ -1221,7 +1475,7 @@ None
 
 
 **Model output:**
-> Yes, this dataset can be used for unsupervised learning.  In unsupervised learning, we look for patterns in data without using labels.  Here’s how this dataset can be used:  - **Clustering**: You can group similar flowers together based on their measurements. For example, using *k-means* to find natural groups of flowers. - **Dimensionality reduction**: You can use techniques like *PCA* to reduce the four features (sepal length, sepal width, petal length, petal width) into fewer dimensions while keeping the most important information. - **Anomaly detection**: You can find unusual flowers that don’t fit the typical patterns in the data.  Even though the dataset includes a *species* column, you can ignore it during unsupervised learning to discover hidden structures on your own.  So, yes — this dataset works well for unsupervised learning tasks.
+> Yes, this dataset can be used for **unsupervised learning**.  In unsupervised learning, we look for patterns in data without using known labels.  Here’s how this dataset can be used:  - You can group similar flowers together using **clustering**, like K-means. - You can reduce the number of features using **dimensionality reduction**, like PCA. - You can find hidden structures in the data, such as natural groupings based on petal and sepal measurements.  Even though the dataset has a *species* column, you can ignore it during unsupervised learning to discover patterns on your own.  Example:   **Clustering** might group flowers by size, even if you don’t know their species.  So yes — this dataset works well for unsupervised learning tasks.
 - decision_score: True
 
 ### chat_012_pca_purpose_en (chat_response, language: en, difficulty: medium)
@@ -1235,7 +1489,7 @@ None
 
 
 **Model output:**
-> Yes, **PCA** (Principal Component Analysis) is applicable to this dataset.  The dataset contains numerical features:   - **sepal_length**   - **sepal_width**   - **petal_length**   - **petal_width**  These are all continuous numeric values, which is exactly what PCA needs.  PCA works best when variables are on similar scales and have some correlation. In this case, the measurements are all in centimeters and likely show some relationships — for example, longer petals often go with longer sepals.  So, PCA can help reduce the number of features while keeping most of the important information.  > **Note**: It's a good idea to **standardize** the data before applying PCA, since the features may have different scales.  If you'd like, I can help you write code to apply PCA to this dataset.
+> **Yes**, PCA (Principal Component Analysis) is applicable to this dataset.  This dataset has numerical features: *sepal_length*, *sepal_width*, *petal_length*, and *petal_width*. These are all continuous measurements, which are ideal for PCA.  PCA works best when: - The data is numerical. - Features are on similar scales (or properly scaled). - There are correlations between features.  In this case, the features are all measurements in the same units (centimeters), so they are comparable. The species column is categorical and not used in PCA.  So, PCA can help reduce the number of dimensions while keeping most of the important information, especially if the features are correlated.  > Example: PCA might combine sepal and petal measurements into a few new components that explain most of the variation in the data.
 - decision_score: True
 
 ### chat_013_outliers_en (chat_response, language: en, difficulty: medium)
@@ -1249,7 +1503,7 @@ None
 
 
 **Model output:**
-> Outliers can be a concern in any dataset, but in this case, the data appears to be from the well-known **Iris dataset**, which is generally clean and well-behaved.  The features — **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** — are all continuous measurements of flower parts, and they tend to cluster neatly by species.  Because the dataset is small and carefully collected, extreme values are rare. There might be a few points that stand out slightly, but they are not likely to be major outliers.  In short: **Outliers are not a major concern** for this dataset.  If you're doing detailed analysis, you can still check for outliers using tools like box plots or statistical methods. But for most purposes, the data is reliable and doesn’t require special handling for outliers.
+> Outliers can be a concern in any dataset, especially when using models that are sensitive to extreme values.  In this dataset, we have measurements for **sepal length**, **sepal width**, **petal length**, and **petal width**, all of which are numerical. The **species** column is categorical.  To check for outliers, we would typically look at the distribution of each numerical feature. For example, a **petal length** value of 7 centimeters might be unusual if most values are around 1 to 2 centimeters.  However, without seeing the actual data, we can’t say for sure if outliers are a major issue.  **Key points:** - Outliers may affect results if you're doing certain types of analysis or modeling. - This dataset is from the well-known Iris dataset, which is generally clean and has few extreme outliers. - Still, it’s good practice to visually inspect the data using plots like boxplots or histograms.  If you'd like, I can suggest how to check for outliers using Python code.
 - decision_score: True
 
 ### chat_014_real_world_limitations_en (chat_response, language: en, difficulty: hard)
@@ -1263,7 +1517,7 @@ None
 
 
 **Model output:**
-> This dataset has a few key limitations:  - It contains only **four numerical features**: sepal length, sepal width, petal length, and petal width.   - The target variable, **species**, is a categorical label with only three classes.   - The dataset is small, with just **150 samples** total.   - It is a **well-known, preprocessed dataset** (Iris dataset), so it may not reflect real-world complexity or noise.   - It does not include missing values, which might make it less realistic for testing data cleaning techniques.   - The features are highly correlated, which can affect some machine learning models.  These limitations mean the dataset is best suited for learning and basic model testing, not for real-world deployment.
+> This dataset has a few key limitations:  - It contains only **four features**: sepal length, sepal width, petal length, and petal width. These are all physical measurements, so the data is limited to these specific characteristics.  - The **species** column is a category with only three types: setosa, versicolor, and virginica. This means the dataset can only be used to study or classify these three iris species.  - The dataset is **small**, with only 150 samples. This limits its use for training complex models or making generalizations to larger populations.  - It is a **well-known, simple dataset** often used for teaching. It may not represent real-world data complexity, such as noise, missing values, or variation beyond what's in this sample.  - There are **no missing values** or outliers in this dataset, which makes it too clean for real-world scenarios.  Because of these traits, the dataset is great for learning but not ideal for solving real-world problems.
 - decision_score: True
 
 ### theory_006_classification_vs_regression_en (chat_response, language: en, difficulty: easy)
@@ -1277,7 +1531,7 @@ None
 
 
 **Model output:**
-> **Classification** and **regression** are two types of machine learning tasks.  In **classification**, the goal is to predict a **category** or **label**.   For example, deciding if a flower is *setosa*, *versicolor*, or *virginica*.  In **regression**, the goal is to predict a **number** or **continuous value**.   For example, predicting the exact length of a petal in centimeters.  So, the main difference is: - **Classification** predicts **which group** something belongs to. - **Regression** predicts **how much** or **how many**.  Both are used to make predictions based on data.
+> **Classification** and **regression** are two types of machine learning tasks.  In **classification**, the goal is to predict a **category** or **label**.   For example, deciding if a flower is *setosa*, *versicolor*, or *virginica*.  In **regression**, the goal is to predict a **number** or **continuous value**.   For example, predicting the exact length of a petal in centimeters.  So, the main difference is: - **Classification** predicts **which group**. - **Regression** predicts **how much**.  Both are used to make predictions based on data.
 - decision_score: True
 
 ### theory_007_cross_validation_en (chat_response, language: en, difficulty: medium)
@@ -1291,7 +1545,7 @@ None
 
 
 **Model output:**
-> **Cross-validation** is a method used to check how well a model will work on new, unseen data.  It helps make sure the model isn't just memorizing the training data, but actually learning patterns.  Here’s how it works in simple steps:  - The data is split into parts, often called *folds*. - The model is trained on some of the folds and tested on the remaining one. - This process is repeated so that each fold gets a turn being the test set. - The results from all the tests are combined to give a better idea of the model’s performance.  A common type is **k-fold cross-validation**, where the data is split into *k* parts.  For example, with 5-fold cross-validation: - The data is divided into 5 groups. - The model is trained and tested 5 times. - Each time, a different group is used for testing.  This gives a more reliable estimate of how the model will perform in real use.
+> **Cross-validation** is a technique used to check how well a model will work on new, unseen data.  It helps us make sure the model is not just memorizing the training data, but actually learning patterns.  Here’s how it works in simple steps:  - The data is split into parts, often called **folds**. - The model is trained on some of the folds and tested on the remaining one. - This process is repeated so that each fold gets a turn being the test set. - The results from all the tests are combined to give a more reliable estimate of the model’s performance.  For example, in **5-fold cross-validation**, the data is split into 5 parts. The model is trained and tested 5 times, each time using a different part as the test set.  This method helps reduce the risk of getting misleading results from a single train-test split.  It’s especially useful when you have limited data.
 - decision_score: True
 
 ### theory_008_feature_engineering_en (chat_response, language: en, difficulty: medium)
@@ -1305,7 +1559,7 @@ None
 
 
 **Model output:**
-> **Feature engineering** is the process of using your knowledge about the data to create new features or improve existing ones.  It helps machine learning models understand the data better.  For example, in the iris dataset, you might combine **petal_length** and **petal_width** to create a new feature like **petal_area**.  This new feature could help the model spot patterns more easily.  Feature engineering is about making the most useful inputs for your model.
+> **Feature engineering** is the process of using raw data to create new features or modify existing ones to help machine learning models work better.  For example, in the iris dataset, you might combine **sepal_length** and **sepal_width** to create a new feature like "sepal area" by multiplying them.  This can help the model find patterns more easily.  Common techniques include: - Scaling values - Creating ratios (like petal_length divided by petal_width) - Binning continuous values into categories  Good feature engineering can make a big difference in how well a model performs.
 - decision_score: True
 
 ### theory_009_data_leakage_en (chat_response, language: en, difficulty: medium)
@@ -1319,7 +1573,7 @@ None
 
 
 **Model output:**
-> **Data leakage** happens when information from outside the training dataset is used to create a model.  This can make the model seem more accurate than it really is.  For example, if you accidentally include future data or data that wouldn't be available at prediction time, that’s leakage.  It can lead to poor performance when the model is used in real situations.  Always make sure your model only uses data that will be available when making predictions.
+> **Data leakage** happens when information from outside the training dataset is used to create a model.  This can make the model seem more accurate than it really is.  For example, if a model uses future data or data that wouldn’t be available at prediction time, it’s leaking information.  In real-world use, the model should only use data it would have access to.  This can lead to poor performance when the model is used on new data.  Always keep the training and test data completely separate.  Avoid using data that includes outcomes or future details when training.
 - decision_score: True
 
 ### theory_010_precision_recall_en (chat_response, language: en, difficulty: medium)
@@ -1333,7 +1587,7 @@ None
 
 
 **Model output:**
-> **Precision** and **recall** are two important measures used to evaluate how well a model works, especially in classification tasks.  - **Precision** tells us how many of the items the model predicted as positive are actually positive.     It answers: *Out of all the items the model said were positive, how many were correct?*     High precision means few false positives.  - **Recall** tells us how many of the actual positive items the model correctly identified.     It answers: *Out of all the real positive items, how many did the model catch?*     High recall means few false negatives.  For example, in a medical test: - **High precision** means if the test says someone has a disease, it's very likely true. - **High recall** means the test finds most people who actually have the disease.  They often trade off against each other.   Improving one can reduce the other.  A good model tries to balance both.
+> **Precision** and **recall** are two important measures used to evaluate how well a model works, especially in classification tasks.  **Precision** tells us how many of the items the model predicted as positive are actually positive.   It answers: *Out of all the items the model said were positive, how many were correct?*  For example, if a model predicts 10 flowers are of a certain species, and 8 are actually that species, the precision is 8 out of 10, or 80%.  **Recall** tells us how many of the actual positive items the model correctly identified.   It answers: *Out of all the real positive items, how many did the model catch?*  For example, if there are 10 flowers of that species in total, and the model correctly identified 8, the recall is 8 out of 10, or 80%.  In short: - **Precision** = True positives / (True positives + False positives) - **Recall** = True positives / (True positives + False negatives)  A high precision means few wrong predictions.   A high recall means few missed predictions.  Both are important, and sometimes you need to balance them depending on the task.
 - decision_score: True
 
 ### theory_011_accuracy_limitations_en (chat_response, language: en, difficulty: medium)
@@ -1347,7 +1601,7 @@ None
 
 
 **Model output:**
-> **Accuracy** is not a universal metric.  It works well when all classes are balanced — meaning each class has about the same number of samples.  But in cases where classes are imbalanced — for example, one species of iris appears much more often than others — accuracy can be misleading.  For instance, if 90% of the data is one species, a model that always predicts that species would have 90% accuracy, even if it fails on the other species.  So, accuracy is useful in some cases, but not always the best choice.  Other metrics like **precision**, **recall**, or **F1-score** are often better for imbalanced data.  Always consider the context and data distribution when choosing a metric.
+> **Accuracy** is not a universal metric.  It works well when all classes have similar numbers of samples.  But it can be misleading when classes are imbalanced.  For example, if 95% of the data is one class, a model might predict only that class and still have 95% accuracy — but it fails on the minority class.  Other metrics like **precision**, **recall**, and **F1-score** are often better for imbalanced data.  So, **accuracy** is useful in some cases, but not always the best choice.
 - decision_score: True
 
 ### chat_012_what_is_in_data_en (chat_response, language: en, difficulty: easy)
@@ -1361,5 +1615,5 @@ None
 
 
 **Model output:**
-> The data contains measurements of flower parts and the species of the flowers.  - **sepal_length**: The length of the sepal in centimeters. - **sepal_width**: The width of the sepal in centimeters. - **petal_length**: The length of the petal in centimeters. - **petal_width**: The width of the petal in centimeters. - **species**: The type of flower, such as setosa, versicolor, or virginica.  Each row represents one flower with these five pieces of information.
+> The data contains information about flowers, specifically measurements of their petals and sepals, along with the species they belong to.  - **sepal_length**: The length of the sepal in centimeters. - **sepal_width**: The width of the sepal in centimeters. - **petal_length**: The length of the petal in centimeters. - **petal_width**: The width of the petal in centimeters. - **species**: The type of flower, such as setosa, versicolor, or virginica.  This dataset is commonly used to learn about classification in machine learning.
 - decision_score: True

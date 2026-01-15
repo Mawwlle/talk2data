@@ -319,7 +319,7 @@
     }
   },
   {
-    "id": "chat_012_what_is_in_data",
+    "id": "chat_015_what_is_in_data",
     "user_input": "Что в данных",
     "expected_decision": "chat_response",
     "expected_facts": [

@@ -120,7 +120,7 @@
     "id": "code_012_cluster_plot",
     "user_input": "Построй scatter plot кластеров KMeans по первым двум признакам.",
     "expected_decision": "code_generation",
-    "expected_code": "import plotly.express as px\n\nX = df.drop(columns=[\"species\"])\n\nfig = px.scatter(X, x=X.columns[0], y=X.columns[1], color=clusters.astype(str))\nfig.show()",
+    "expected_code": "import plotly.express as px\nfrom sklearn.cluster import KMeans\n\nX = df.drop(columns=[\"species\"])\nkmeans = KMeans(n_clusters=3, random_state=42)\nclusters = kmeans.fit_predict(X)\n\nfig = px.scatter(\n    df,\n    x=\"sepal_length\",\n    y=\"sepal_width\",\n    color=clusters.astype(str)\n)\nfig",
     "metadata": {
       "tags": ["code", "clustering", "plot"],
       "difficulty": "medium"
@@ -184,7 +184,7 @@
     "id": "code_018_radar",
     "user_input": "Отобрази график Radar",
     "expected_decision": "code_generation",
-    "expected_code": "import plotly.express as px\n\ncols = [\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"]\ndf_radar = df.groupby(\"species\", observed=True)[cols].mean().reset_index()\nfig = px.line_polar(\n    df_radar,\n    r=\"value\",\n    theta=\"variable\",\n    color=\"species\",\n    line_close=True,\n    template=\"plotly\"\n)\nfig",
+    "expected_code": "import plotly.express as px\n\ncols = [\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"]\ndf_mean = df.groupby(\"species\", observed=True)[cols].mean().reset_index()\ndf_long = df_mean.melt(id_vars=\"species\", var_name=\"variable\", value_name=\"value\")\nfig = px.line_polar(df_long, r=\"value\", theta=\"variable\", color=\"species\", line_close=True)\nfig",
     "possible_code_objects": ["df", "px"],
     "metadata": {
       "tags": ["code", "plots", "plotly"],
