@@ -162,7 +162,29 @@
     "id": "code_016_index_to_value",
     "user_input": "Отобрази график Index To Values Plot",
     "expected_decision": "code_generation",
-    "expected_code": "import plotly.express as px\n\n# df already exists and represents the iris dataset\n\nnum_cols = df.select_dtypes(include=[\"number\"]).columns.tolist()\n\nif not num_cols:\n    raise ValueError(\"В df не найдено числовых колонок для построения histogram.\")\n\n# Строим histogram по всем числовым признакам\nfig = px.histogram(\n    df,\n    x=num_cols,\n    barmode=\"overlay\",\n    title=\"Histogram\"\n)\n\nfig.show()\n",
+    "expected_code": "import plotly.express as px\n\ndf_reset = df.reset_index().rename(columns={\"index\": \"index\"})\nfig = px.scatter(\n    df_reset,\n    x=\"index\",\n    y=[\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"],\n)\nfig",
+    "possible_code_objects": ["df", "px"],
+    "metadata": {
+      "tags": ["code", "plots", "plotly"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "code_017_corr_matrix",
+    "user_input": "отобрази график correlation matrix",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\ncorr = df[[\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"]].corr()\nfig = px.imshow(corr, text_auto=True)\nfig",
+    "possible_code_objects": ["df", "px"],
+    "metadata": {
+      "tags": ["code", "plots", "plotly"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "code_018_radar",
+    "user_input": "Отобрази график Radar",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\ncols = [\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"]\ndf_radar = df.groupby(\"species\", observed=True)[cols].mean().reset_index()\nfig = px.line_polar(\n    df_radar,\n    r=\"value\",\n    theta=\"variable\",\n    color=\"species\",\n    line_close=True,\n    template=\"plotly\"\n)\nfig",
     "possible_code_objects": ["df", "px"],
     "metadata": {
       "tags": ["code", "plots", "plotly"],

@@ -157,5 +157,38 @@
       "tags": ["code", "plots", "plotly"],
       "difficulty": "hard"
     }
+  },
+  {
+    "id": "code_016_index_to_value",
+    "user_input": "Display the Index to Values plot",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\ndf_reset = df.reset_index().rename(columns={\"index\": \"index\"})\nfig = px.scatter(\n    df_reset,\n    x=\"index\",\n    y=[\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"],\n)\nfig",
+    "possible_code_objects": ["df", "px"],
+    "metadata": {
+      "tags": ["code", "plots", "plotly"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "code_017_corr_matrix",
+    "user_input": "Display the correlation matrix plot",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\ncorr = df[[\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"]].corr()\nfig = px.imshow(corr, text_auto=True)\nfig",
+    "possible_code_objects": ["df", "px"],
+    "metadata": {
+      "tags": ["code", "plots", "plotly"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "code_018_radar",
+    "user_input": "Display the Radar chart",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\ncols = [\"sepal_length\", \"sepal_width\", \"petal_length\", \"petal_width\"]\ndf_radar = df.groupby(\"species\", observed=True)[cols].mean().reset_index()\nfig = px.line_polar(\n    df_radar,\n    r=\"value\",\n    theta=\"variable\",\n    color=\"species\",\n    line_close=True,\n    template=\"plotly\"\n)\nfig",
+    "possible_code_objects": ["df", "px"],
+    "metadata": {
+      "tags": ["code", "plots", "plotly"],
+      "difficulty": "hard"
+    }
   }
 ]
