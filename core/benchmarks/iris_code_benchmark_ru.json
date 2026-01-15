@@ -107,7 +107,7 @@
       }
   },
   {
-    "id": "code_012_kmeans",
+    "id": "code_011_kmeans",
     "user_input": "Выполни кластеризацию KMeans на три кластера.",
     "expected_decision": "code_generation",
     "expected_code": "from sklearn.cluster import KMeans\n\nkmeans = KMeans(n_clusters=3, random_state=42)\nclusters = kmeans.fit_predict(df.drop(columns=[\"species\"]))",
@@ -147,9 +147,20 @@
       "difficulty": "hard"
     }
   },
-   {
+  {
     "id": "code_015_histogram",
     "user_input": "Отобрази график Histogram",
+    "expected_decision": "code_generation",
+    "expected_code": "import plotly.express as px\n\n# df already exists and represents the iris dataset\n\nnum_cols = df.select_dtypes(include=[\"number\"]).columns.tolist()\n\nif not num_cols:\n    raise ValueError(\"В df не найдено числовых колонок для построения histogram.\")\n\n# Строим histogram по всем числовым признакам\nfig = px.histogram(\n    df,\n    x=num_cols,\n    barmode=\"overlay\",\n    title=\"Histogram\"\n)\n\nfig.show()\n",
+    "possible_code_objects": ["df", "px"],
+    "metadata": {
+      "tags": ["code", "plots", "plotly"],
+      "difficulty": "hard"
+    }
+  },
+  {
+    "id": "code_016_index_to_value",
+    "user_input": "Отобрази график Index To Values Plot",
     "expected_decision": "code_generation",
     "expected_code": "import plotly.express as px\n\n# df already exists and represents the iris dataset\n\nnum_cols = df.select_dtypes(include=[\"number\"]).columns.tolist()\n\nif not num_cols:\n    raise ValueError(\"В df не найдено числовых колонок для построения histogram.\")\n\n# Строим histogram по всем числовым признакам\nfig = px.histogram(\n    df,\n    x=num_cols,\n    barmode=\"overlay\",\n    title=\"Histogram\"\n)\n\nfig.show()\n",
     "possible_code_objects": ["df", "px"],

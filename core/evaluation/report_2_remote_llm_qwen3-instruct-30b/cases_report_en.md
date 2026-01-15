@@ -1,27 +1,5 @@
 # Детальный отчёт по кейсам (en)
 
-## Методика расчёта метрик
-### Semantic similarity (только для chat_response)
-Формула:
-```text
-semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage - 0.5 * forbidden_penalty
-```
-Где доли:
- - expected_coverage — доля ожидаемых фактов, упомянутых в ответе;
- - forbidden_penalty — доля запрещённых фактов,
-попавших в ответ (штраф).
- - similarity — embedding-cosine между эталонным ответом (конкатенация expected_facts или базовый
-референс) и ответом модели.
-
-
-Факт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55
-(или высокая токеновая схожесть), что позволяет засчитывать перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и полноту фактов,
-давая штраф за запрещённые факты, чтобы сохранить интерпретируемость (веса суммарно ограничивают метрику в [0, 1]).
-
-### Code score (только для code_generation)
-- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 (совпадение импортов) + до 0.4 (совпадение ключевых вызовов).
-- result_match: бинарный флаг (1.0/0.0), что итоговый результат выполнения совпал с эталоном без ошибок исполнения.
-
 ## Кейсы
 ### code_001_describe_en (code_generation, language: en, difficulty: easy)
 
@@ -79,14 +57,7 @@ max         7.900000     4.400000      6.900000     2.500000     NaN
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 1.0
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected:  | model:  | matched:
-    - calls_score: 0.444 | expected: describe | model: describe | matched: describe
 
 ### code_002_pairplot_en (code_generation, language: en, difficulty: medium)
 
@@ -136,14 +107,7 @@ execution_timeout: sandbox_timeout
 - model_plot:
 
  ![model plot](plots/code_002_pairplot_en_model.png)
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 1.0
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: plotly.express | model: plotly.express | matched: plotly.express
-    - calls_score: 0.444 | expected: scatter_matrix, show | model: scatter_matrix, show | matched: scatter_matrix, show
 
 ### code_003_train_model_en (code_generation, language: en, difficulty: medium)
 
@@ -202,14 +166,7 @@ accuracy_score(y_test, y_pred)
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.852
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: sklearn.linear_model | model: sklearn.linear_model, sklearn.metrics, sklearn.model_selection | matched: sklearn.linear_model
-    - calls_score: 0.296 | expected: LogisticRegression, drop, fit | model: LogisticRegression, accuracy_score, fit, predict, train_test_split | matched: LogisticRegression, fit
 
 ### code_004_missing_check_en (code_generation, language: en, difficulty: easy)
 
@@ -258,14 +215,7 @@ dtype: int64
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 1.0
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected:  | model:  | matched:
-    - calls_score: 0.444 | expected: isnull, sum | model: isnull, sum | matched: isnull, sum
 
 ### code_005_fill_missing_en (code_generation, language: en, difficulty: easy)
 
@@ -305,14 +255,7 @@ None
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 1.0
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected:  | model:  | matched:
-    - calls_score: 0.444 | expected: fillna, mean | model: fillna, mean | matched: fillna, mean
 
 ### code_006_boxplot_en (code_generation, language: en, difficulty: medium)
 
@@ -373,14 +316,7 @@ execution_timeout: sandbox_timeout
 - model_plot:
 
  ![model plot](plots/code_006_boxplot_en_model.png)
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.852
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: plotly.express | model: plotly.express | matched: plotly.express
-    - calls_score: 0.296 | expected: box, select_dtypes, show | model: box, show | matched: box, show
 
 ### code_007_standardize_en (code_generation, language: en, difficulty: medium)
 
@@ -425,14 +361,7 @@ None
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.852
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: sklearn.preprocessing | model: sklearn.preprocessing | matched: sklearn.preprocessing
-    - calls_score: 0.296 | expected: StandardScaler, drop, fit_transform | model: StandardScaler, fit_transform | matched: StandardScaler, fit_transform
 
 ### code_008_normalize_en (code_generation, language: en, difficulty: medium)
 
@@ -478,14 +407,7 @@ None
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.852
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: sklearn.preprocessing | model: sklearn.preprocessing | matched: sklearn.preprocessing
-    - calls_score: 0.296 | expected: MinMaxScaler, drop, fit_transform | model: MinMaxScaler, fit_transform | matched: MinMaxScaler, fit_transform
 
 ### code_009_pca_en (code_generation, language: en, difficulty: medium)
 
@@ -533,14 +455,7 @@ None
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.852
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: sklearn.decomposition | model: pandas, sklearn.decomposition | matched: sklearn.decomposition
-    - calls_score: 0.296 | expected: PCA, drop, fit_transform | model: DataFrame, PCA, fit_transform | matched: PCA, fit_transform
 
 ### code_010_pca_plot_en (code_generation, language: en, difficulty: hard)
 
@@ -614,14 +529,7 @@ execution_timeout: sandbox_timeout
 - model_plot:
 
  ![model plot](plots/code_010_pca_plot_en_model.png)
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.926
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: plotly.express, sklearn.decomposition | model: pandas, plotly.express, sklearn.decomposition | matched: plotly.express, sklearn.decomposition
-    - calls_score: 0.37 | expected: DataFrame, PCA, drop, fit_transform, scatter, show | model: DataFrame, PCA, fit_transform, mean, scatter, show, std | matched: DataFrame, PCA, fit_transform, scatter, show
 
 ### code_011_kmeans_en (code_generation, language: en, difficulty: medium)
 
@@ -743,14 +651,7 @@ None
 - model_plot:
 
  ![model plot](plots/code_011_kmeans_en_model.png)
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.852
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: sklearn.cluster | model: pandas, plotly.express, sklearn.cluster | matched: sklearn.cluster
-    - calls_score: 0.296 | expected: KMeans, drop, fit_predict | model: KMeans, fit_predict, scatter_3d | matched: KMeans, fit_predict
 
 ### code_012_cluster_plot_en (code_generation, language: en, difficulty: medium)
 
@@ -873,14 +774,7 @@ None
 - model_plot:
 
  ![model plot](plots/code_012_cluster_plot_en_model.png)
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.778
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: plotly.express | model: pandas, plotly.express, sklearn.cluster | matched: plotly.express
-    - calls_score: 0.222 | expected: astype, drop, scatter, show | model: KMeans, fit_predict, scatter, show | matched: scatter, show
 
 ### code_013_train_test_split_en (code_generation, language: en, difficulty: easy)
 
@@ -929,14 +823,7 @@ None
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 1.0
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.222 | expected: sklearn.model_selection | model: sklearn.model_selection | matched: sklearn.model_selection
-    - calls_score: 0.444 | expected: drop, train_test_split | model: drop, train_test_split | matched: drop, train_test_split
 
 ### code_014_show_all_plots_en (code_generation, language: en, difficulty: hard)
 
@@ -1068,14 +955,7 @@ execution_timeout: sandbox_timeout
 - model_plot:
 
  ![model plot](plots/code_014_show_all_plots_en_model.png)
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.566
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.111 | expected: plotly.express, plotly.graph_objects | model: plotly.express | matched: plotly.express
-    - calls_score: 0.121 | expected: ValueError, box, corr, histogram, imshow, next, scatter, scatter_matrix, select_dtypes, show, tolist | model: box, scatter, show | matched: box, scatter, show
 
 ### code_015_histogram_en (code_generation, language: en, difficulty: hard)
 
@@ -1137,14 +1017,7 @@ None
 ```python
 execution_error: name 'px' is not defined
 ```
-
-
-**Метрики:**
 - decision_score: True
-  - heuristic_score: 0.511
-    - syntax_check: 0.333 (ok=True)
-    - imports_score: 0.0 | expected: plotly.express | model:  | matched:
-    - calls_score: 0.178 | expected: ValueError, histogram, select_dtypes, show, tolist | model: histogram, show | matched: histogram, show
 
 ### chat_001_what_is_iris_en (chat_response, language: en, difficulty: easy)
 
@@ -1157,13 +1030,7 @@ execution_error: name 'px' is not defined
 
 **Model output:**
 > This dataset contains measurements of flowers from three different species.  Each row represents one flower, and each column shows a specific measurement:  - **sepal_length**: The length of the sepal in centimeters. - **sepal_width**: The width of the sepal in centimeters. - **petal_length**: The length of the petal in centimeters. - **petal_width**: The width of the petal in centimeters. - **species**: The type of flower, such as setosa, versicolor, or virginica.  These measurements help scientists and students identify and classify flowers based on their physical features.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.611
-  - expected_coverage: 0.5 | forbidden_penalty: 0.0
-  - покрытые факты: dataset contains measurements of petals and sepals (score 0.739)
 
 ### chat_002_how_many_classes_en (chat_response, language: en, difficulty: easy)
 
@@ -1176,12 +1043,7 @@ execution_error: name 'px' is not defined
 
 **Model output:**
 > This dataset has **three classes**.  They are the species of flowers: - **setosa** - **versicolor** - **virginica**
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.43
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### chat_003_best_features_en (chat_response, language: en, difficulty: medium)
 
@@ -1207,12 +1069,7 @@ None
 ```python
 None
 ```
-
-
-**Метрики:**
 - decision_score: False
-- semantic_similarity: 0.063
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### chat_004_easiest_class_en (chat_response, language: en, difficulty: medium)
 
@@ -1225,12 +1082,7 @@ None
 
 **Model output:**
 > The **setosa** species is the easiest to separate from the others.  It has clearly distinct measurements, especially in petal length and petal width.   For example: - Petal length is usually under 2 cm. - Petal width is usually under 0.8 cm.  These values are quite different from the other two species, versicolor and virginica, which overlap more in their measurements.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.352
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### theory_001_overfitting_en (chat_response, language: en, difficulty: easy)
 
@@ -1244,13 +1096,7 @@ None
 
 **Model output:**
 > **Overfitting** happens when a machine learning model learns the training data too well — so well that it starts memorizing the details and noise, instead of finding general patterns.  This means the model performs very well on the training data but poorly on new, unseen data.  For example, imagine a model trying to classify flowers. If it memorizes every flower in the training set, it might fail when seeing a slightly different flower.  **Key signs of overfitting:** - High accuracy on training data - Low accuracy on test or validation data  To avoid overfitting, we use techniques like: - Simplifying the model - Using more training data - Applying regularization - Using cross-validation  The goal is to build a model that generalizes well to new data.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.0
-  - expected_coverage: 0.0 | forbidden_penalty: 1.0
-  - упомянутые запрещённые факты: overfitting improves performance on unseen data (score 0.651)
 
 ### theory_002_train_test_split_en (chat_response, language: en, difficulty: easy)
 
@@ -1264,12 +1110,7 @@ None
 
 **Model output:**
 > A **train-test split** is used to check how well a model will perform on new, unseen data.  Here’s why it’s important:  - We train the model on part of the data, called the **training set**. - Then we test the model on a separate part, called the **test set**. - This helps us see if the model learns patterns well or just memorizes the training data.  If a model works well on the test set, it’s likely to work well in real-world situations.  It’s like studying for a test using practice questions, then taking the real test to see how well you really understand the material.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.105
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### theory_003_regularization_en (chat_response, language: en, difficulty: medium)
 
@@ -1283,13 +1124,7 @@ None
 
 **Model output:**
 > **Regularization** is a technique used in machine learning to prevent a model from becoming too complex.  It works by adding a penalty to the size of the model's coefficients. This helps the model avoid overfitting, which happens when it learns the training data too well — including its noise and outliers — and performs poorly on new data.  Think of it like a rule that keeps the model simple and general.  Common types include: - **L1 regularization** (Lasso): Adds the absolute value of coefficients to the loss. - **L2 regularization** (Ridge): Adds the squared value of coefficients to the loss.  Regularization is used to improve a model's ability to make accurate predictions on unseen data.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.0
-  - expected_coverage: 0.0 | forbidden_penalty: 1.0
-  - упомянутые запрещённые факты: regularization increases model variance (score 0.596)
 
 ### theory_004_bias_variance_en (chat_response, language: en, difficulty: medium)
 
@@ -1303,13 +1138,7 @@ None
 
 **Model output:**
 > The **bias-variance tradeoff** is a key concept in machine learning that helps us understand how well a model will perform on new data.  **Bias** is the error from incorrect assumptions in the learning algorithm. High bias means the model is too simple. It might miss important patterns in the data. This leads to **underfitting**.  **Variance** is the error from sensitivity to small fluctuations in the training data. High variance means the model is too complex. It learns the training data too well, including noise. This leads to **overfitting**.  A good model balances both: - Low bias: It captures the true relationship in the data. - Low variance: It performs consistently on new data.  If you reduce bias, variance often increases — and vice versa. The goal is to find the sweet spot where the model generalizes well.  Think of it like aiming at a target: - High bias: All shots are far from the center, but close to each other. - High variance: Shots are scattered all over, even if some hit the center. - Low bias and low variance: Shots are close to the center and close to each other.  This tradeoff helps guide model selection and tuning.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.537
-  - expected_coverage: 0.333 | forbidden_penalty: 0.0
-  - покрытые факты: tradeoff between bias and variance (score 0.629)
 
 ### chat_005_feature_count_en (chat_response, language: en, difficulty: easy)
 
@@ -1323,13 +1152,7 @@ None
 
 **Model output:**
 > This dataset has **five** features.  They are: - **sepal_length** - **sepal_width** - **petal_length** - **petal_width** - **species**  Each feature describes a different characteristic of the flowers in the dataset.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.101
-  - expected_coverage: 0.0 | forbidden_penalty: 0.5
-  - упомянутые запрещённые факты: five features (score 0.565)
 
 ### chat_006_samples_count_en (chat_response, language: en, difficulty: easy)
 
@@ -1343,14 +1166,7 @@ None
 
 **Model output:**
 > The dataset contains **150 samples**.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.585
-  - expected_coverage: 1.0 | forbidden_penalty: 0.5
-  - покрытые факты: 150 samples (score 0.749); 50 samples per class (score 0.633)
-  - упомянутые запрещённые факты: 100 samples (score 0.709)
 
 ### chat_007_numeric_only_en (chat_response, language: en, difficulty: easy)
 
@@ -1364,14 +1180,7 @@ None
 
 **Model output:**
 > No, not all features are numeric.  The features **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** are all numeric (float type).  However, the **species** feature is a category, which means it contains text labels like "setosa", "versicolor", or "virginica".  So, only four features are numeric. The **species** feature is categorical.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.27
-  - expected_coverage: 0.5 | forbidden_penalty: 0.5
-  - покрытые факты: all features are numeric (score 0.751)
-  - упомянутые запрещённые факты: categorical features (score 0.589)
 
 ### chat_008_need_scaling_en (chat_response, language: en, difficulty: medium)
 
@@ -1385,12 +1194,7 @@ None
 
 **Model output:**
 > **Feature scaling** can be important for this dataset, especially if you're using machine learning models that are sensitive to the scale of input features.  For example: - **Distance-based models** like *k-Nearest Neighbors* or *Support Vector Machines* work better when all features are on a similar scale. - **Gradient descent-based models** like *Logistic Regression* or *Neural Networks* also converge faster when features are scaled.  In this dataset, features like *sepal_length*, *sepal_width*, *petal_length*, and *petal_width* have different ranges and units. Without scaling, features with larger values (like petal_length) might dominate the model's learning process.  So, yes — **scaling helps improve model performance and stability**.  If you're planning to use such models, consider using techniques like **StandardScaler** or **MinMaxScaler**.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.212
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### chat_009_linear_separable_en (chat_response, language: en, difficulty: medium)
 
@@ -1404,12 +1208,7 @@ None
 
 **Model output:**
 > This dataset contains measurements of flower parts—**sepal length**, **sepal width**, **petal length**, and **petal width**—and the species of the flower.  Whether the data is **linearly separable** depends on how the species are distributed in the feature space.  In general, for this dataset, **species can be separated with good accuracy using linear methods**, especially when using **petal length** and **petal width**.  For example: - **Setosa** flowers are clearly separated from the other two species. - **Versicolor** and **Virginica** overlap more, but still show some separation.  So, while **perfect linear separation** across all three species is not possible, **two of the species can be separated linearly**.  If you want to check this yourself, plotting the data with **petal length** and **petal width** often shows clear clusters.  Note: Determining exact linear separability requires a formal analysis or model, which is best done with code.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.26
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### chat_011_unsupervised_possible_en (chat_response, language: en, difficulty: medium)
 
@@ -1423,12 +1222,7 @@ None
 
 **Model output:**
 > Yes, this dataset can be used for unsupervised learning.  In unsupervised learning, we look for patterns in data without using labels.  Here’s how this dataset can be used:  - **Clustering**: You can group similar flowers together based on their measurements. For example, using *k-means* to find natural groups of flowers. - **Dimensionality reduction**: You can use techniques like *PCA* to reduce the four features (sepal length, sepal width, petal length, petal width) into fewer dimensions while keeping the most important information. - **Anomaly detection**: You can find unusual flowers that don’t fit the typical patterns in the data.  Even though the dataset includes a *species* column, you can ignore it during unsupervised learning to discover hidden structures on your own.  So, yes — this dataset works well for unsupervised learning tasks.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.239
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### chat_012_pca_purpose_en (chat_response, language: en, difficulty: medium)
 
@@ -1442,12 +1236,7 @@ None
 
 **Model output:**
 > Yes, **PCA** (Principal Component Analysis) is applicable to this dataset.  The dataset contains numerical features:   - **sepal_length**   - **sepal_width**   - **petal_length**   - **petal_width**  These are all continuous numeric values, which is exactly what PCA needs.  PCA works best when variables are on similar scales and have some correlation. In this case, the measurements are all in centimeters and likely show some relationships — for example, longer petals often go with longer sepals.  So, PCA can help reduce the number of features while keeping most of the important information.  > **Note**: It's a good idea to **standardize** the data before applying PCA, since the features may have different scales.  If you'd like, I can help you write code to apply PCA to this dataset.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.129
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### chat_013_outliers_en (chat_response, language: en, difficulty: medium)
 
@@ -1461,12 +1250,7 @@ None
 
 **Model output:**
 > Outliers can be a concern in any dataset, but in this case, the data appears to be from the well-known **Iris dataset**, which is generally clean and well-behaved.  The features — **sepal_length**, **sepal_width**, **petal_length**, and **petal_width** — are all continuous measurements of flower parts, and they tend to cluster neatly by species.  Because the dataset is small and carefully collected, extreme values are rare. There might be a few points that stand out slightly, but they are not likely to be major outliers.  In short: **Outliers are not a major concern** for this dataset.  If you're doing detailed analysis, you can still check for outliers using tools like box plots or statistical methods. But for most purposes, the data is reliable and doesn’t require special handling for outliers.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.269
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### chat_014_real_world_limitations_en (chat_response, language: en, difficulty: hard)
 
@@ -1480,12 +1264,7 @@ None
 
 **Model output:**
 > This dataset has a few key limitations:  - It contains only **four numerical features**: sepal length, sepal width, petal length, and petal width.   - The target variable, **species**, is a categorical label with only three classes.   - The dataset is small, with just **150 samples** total.   - It is a **well-known, preprocessed dataset** (Iris dataset), so it may not reflect real-world complexity or noise.   - It does not include missing values, which might make it less realistic for testing data cleaning techniques.   - The features are highly correlated, which can affect some machine learning models.  These limitations mean the dataset is best suited for learning and basic model testing, not for real-world deployment.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.21
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### theory_006_classification_vs_regression_en (chat_response, language: en, difficulty: easy)
 
@@ -1499,13 +1278,7 @@ None
 
 **Model output:**
 > **Classification** and **regression** are two types of machine learning tasks.  In **classification**, the goal is to predict a **category** or **label**.   For example, deciding if a flower is *setosa*, *versicolor*, or *virginica*.  In **regression**, the goal is to predict a **number** or **continuous value**.   For example, predicting the exact length of a petal in centimeters.  So, the main difference is: - **Classification** predicts **which group** something belongs to. - **Regression** predicts **how much** or **how many**.  Both are used to make predictions based on data.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.067
-  - expected_coverage: 0.0 | forbidden_penalty: 0.5
-  - упомянутые запрещённые факты: regression predicts categories (score 0.576)
 
 ### theory_007_cross_validation_en (chat_response, language: en, difficulty: medium)
 
@@ -1519,12 +1292,7 @@ None
 
 **Model output:**
 > **Cross-validation** is a method used to check how well a model will work on new, unseen data.  It helps make sure the model isn't just memorizing the training data, but actually learning patterns.  Here’s how it works in simple steps:  - The data is split into parts, often called *folds*. - The model is trained on some of the folds and tested on the remaining one. - This process is repeated so that each fold gets a turn being the test set. - The results from all the tests are combined to give a better idea of the model’s performance.  A common type is **k-fold cross-validation**, where the data is split into *k* parts.  For example, with 5-fold cross-validation: - The data is divided into 5 groups. - The model is trained and tested 5 times. - Each time, a different group is used for testing.  This gives a more reliable estimate of how the model will perform in real use.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.28
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### theory_008_feature_engineering_en (chat_response, language: en, difficulty: medium)
 
@@ -1538,12 +1306,7 @@ None
 
 **Model output:**
 > **Feature engineering** is the process of using your knowledge about the data to create new features or improve existing ones.  It helps machine learning models understand the data better.  For example, in the iris dataset, you might combine **petal_length** and **petal_width** to create a new feature like **petal_area**.  This new feature could help the model spot patterns more easily.  Feature engineering is about making the most useful inputs for your model.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.31
-  - expected_coverage: 0.0 | forbidden_penalty: 0.0
 
 ### theory_009_data_leakage_en (chat_response, language: en, difficulty: medium)
 
@@ -1557,14 +1320,7 @@ None
 
 **Model output:**
 > **Data leakage** happens when information from outside the training dataset is used to create a model.  This can make the model seem more accurate than it really is.  For example, if you accidentally include future data or data that wouldn't be available at prediction time, that’s leakage.  It can lead to poor performance when the model is used in real situations.  Always make sure your model only uses data that will be available when making predictions.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.0
-  - expected_coverage: 0.333 | forbidden_penalty: 1.0
-  - покрытые факты: information from test data leaks into training (score 0.644)
-  - упомянутые запрещённые факты: data leakage improves real-world performance (score 0.645)
 
 ### theory_010_precision_recall_en (chat_response, language: en, difficulty: medium)
 
@@ -1578,14 +1334,7 @@ None
 
 **Model output:**
 > **Precision** and **recall** are two important measures used to evaluate how well a model works, especially in classification tasks.  - **Precision** tells us how many of the items the model predicted as positive are actually positive.     It answers: *Out of all the items the model said were positive, how many were correct?*     High precision means few false positives.  - **Recall** tells us how many of the actual positive items the model correctly identified.     It answers: *Out of all the real positive items, how many did the model catch?*     High recall means few false negatives.  For example, in a medical test: - **High precision** means if the test says someone has a disease, it's very likely true. - **High recall** means the test finds most people who actually have the disease.  They often trade off against each other.   Improving one can reduce the other.  A good model tries to balance both.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.177
-  - expected_coverage: 0.667 | forbidden_penalty: 1.0
-  - покрытые факты: recall measures coverage of actual positives (score 0.641); tradeoff between precision and recall (score 0.647)
-  - упомянутые запрещённые факты: precision and recall are always equal (score 0.59)
 
 ### theory_011_accuracy_limitations_en (chat_response, language: en, difficulty: medium)
 
@@ -1599,13 +1348,7 @@ None
 
 **Model output:**
 > **Accuracy** is not a universal metric.  It works well when all classes are balanced — meaning each class has about the same number of samples.  But in cases where classes are imbalanced — for example, one species of iris appears much more often than others — accuracy can be misleading.  For instance, if 90% of the data is one species, a model that always predicts that species would have 90% accuracy, even if it fails on the other species.  So, accuracy is useful in some cases, but not always the best choice.  Other metrics like **precision**, **recall**, or **F1-score** are often better for imbalanced data.  Always consider the context and data distribution when choosing a metric.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.0
-  - expected_coverage: 0.0 | forbidden_penalty: 1.0
-  - упомянутые запрещённые факты: accuracy is always the best metric (score 0.655)
 
 ### chat_012_what_is_in_data_en (chat_response, language: en, difficulty: easy)
 
@@ -1619,10 +1362,4 @@ None
 
 **Model output:**
 > The data contains measurements of flower parts and the species of the flowers.  - **sepal_length**: The length of the sepal in centimeters. - **sepal_width**: The width of the sepal in centimeters. - **petal_length**: The length of the petal in centimeters. - **petal_width**: The width of the petal in centimeters. - **species**: The type of flower, such as setosa, versicolor, or virginica.  Each row represents one flower with these five pieces of information.
-
-
-**Метрики:**
 - decision_score: True
-- semantic_similarity: 0.484
-  - expected_coverage: 0.25 | forbidden_penalty: 0.0
-  - покрытые факты: Each row corresponds to a single flower (score 0.603)

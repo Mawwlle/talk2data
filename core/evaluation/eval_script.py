@@ -417,19 +417,19 @@ def run_eval(
             )
 
         # a - проверяем сгенерённый текст
-        semantic_similarity = None
-        semantic_details = None
-        if case.get("expected_decision") == "chat_response":
-            semantic_details = evaluate_chat_semantics(
-                case.get("expected_facts"),
-                case.get("forbidden_facts"),
-                model_output.get("response_message"),
-            )
-            semantic_similarity = semantic_details.get("score")
+        # semantic_similarity = None
+        # semantic_details = None
+        # if case.get("expected_decision") == "chat_response":
+        #     semantic_details = evaluate_chat_semantics(
+        #         case.get("expected_facts"),
+        #         case.get("forbidden_facts"),
+        #         model_output.get("response_message"),
+        #     )
+        # semantic_similarity = semantic_details.get("score")
 
         # б - проверяем сгенерённый код
         code_score_details = None
-        code_score = None
+        # code_score = None
         if case.get("expected_decision") == "code_generation":
             possible_code_objects = case.get("possible_code_objects")
             code_score_details = evaluate_code(
@@ -437,7 +437,7 @@ def run_eval(
                 case.get("expected_code"),
                 possible_code_objects=possible_code_objects,
             )
-            code_score = code_score_details.get("score")
+            # code_score = code_score_details.get("score")
 
         results.append(
             {
@@ -445,9 +445,9 @@ def run_eval(
                 "expected_decision": case.get("expected_decision"),
                 "language": language,
                 "decision_score": decision_score,
-                "semantic_similarity": semantic_similarity,
-                "semantic_details": semantic_details,
-                "code_score": code_score,
+                # "semantic_similarity": semantic_similarity,
+                # "semantic_details": semantic_details,
+                # "code_score": code_score,
                 "code_details": code_score_details,
                 "model_generated_code": model_output.get("generated_code"),
                 "response_message": model_output.get("response_message"),
@@ -498,16 +498,16 @@ def build_report_data(
             for case in enriched_cases
             if not case.get("error")
         ),
-        "semantic_similarity_avg": _mean(
-            case.get("semantic_similarity")
-            for case in enriched_cases
-            if not case.get("error")
-        ),
-        "code_score_avg": _mean(
-            _extract_heuristic_score(case)
-            for case in enriched_cases
-            if not case.get("error")
-        ),
+        # "semantic_similarity_avg": _mean(
+        #     case.get("semantic_similarity")
+        #     for case in enriched_cases
+        #     if not case.get("error")
+        # ),
+        # "code_score_avg": _mean(
+        #     _extract_heuristic_score(case)
+        #     for case in enriched_cases
+        #     if not case.get("error")
+        # ),
     }
 
     by_difficulty = summarize_by_group(enriched_cases, benchmarks_by_id, "difficulty")
@@ -567,8 +567,8 @@ def generate_report(
         columns=[
             "model_generated_code",
             "response_message",
-            "code_details",
-            "semantic_details",
+            # "code_details",
+            # "semantic_details",
         ],
         errors="ignore",
     )
@@ -581,14 +581,14 @@ def generate_report(
                 "metric": "decision_accuracy",
                 "value": report["summary"].get("decision_accuracy", 0.0),
             },
-            {
-                "metric": "semantic_similarity_avg",
-                "value": report["summary"].get("semantic_similarity_avg", 0.0),
-            },
-            {
-                "metric": "code_score_avg",
-                "value": report["summary"].get("code_score_avg", 0.0),
-            },
+            # {
+            #     "metric": "semantic_similarity_avg",
+            #     "value": report["summary"].get("semantic_similarity_avg", 0.0),
+            # },
+            # {
+            #     "metric": "code_score_avg",
+            #     "value": report["summary"].get("code_score_avg", 0.0),
+            # },
         ]
     )
     summary_df.to_csv(output_dir / "summary.csv", index=False)
