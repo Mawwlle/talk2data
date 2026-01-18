@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["maria <mashak.1998@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "talk2data" }]
+package-mode = false
 exclude = [
   ".env",
   ".env.*",
@@ -38,10 +38,10 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-line-length = 88
+line-length = 120
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 lint.select = ["E", "F", "I", "B"]
 fix = true
 

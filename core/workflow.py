@@ -24,9 +24,7 @@ from core.schemas import AgentState, Decision
 from task_management.domain.conversation.ports import WorkflowInvokerPort
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 DECIDE_ACTION_DEFAULT = "chat_response"
@@ -48,9 +46,7 @@ def extract_code_block(generated_text: str) -> str:
 
 
 class WorkflowEngine:
-    def __init__(
-        self, llm: LLM | OpenAI | None, tokenizer: PreTrainedTokenizerBase
-    ) -> None:
+    def __init__(self, llm: LLM | OpenAI | None, tokenizer: PreTrainedTokenizerBase) -> None:
         self._llm = llm
         self._tokenizer = tokenizer
 
@@ -59,9 +55,7 @@ class WorkflowEngine:
         if self._llm is not None:
             return self._llm
 
-        raise ValueError(
-            "You are trying to implement the local llm which is not initialized"
-        )
+        raise ValueError("You are trying to implement the local llm which is not initialized")
 
     def _local_llm(self) -> LLM:
         llm = self.llm
@@ -97,9 +91,7 @@ class WorkflowEngine:
         if not settings.REMOTE_LLM:
             return cast(
                 str,
-                self._tokenizer.apply_chat_template(
-                    formatted_messages, tokenize=False, add_generation_prompt=True
-                ),
+                self._tokenizer.apply_chat_template(formatted_messages, tokenize=False, add_generation_prompt=True),
             )
 
         # REMOTE_LLM=True:
@@ -189,9 +181,7 @@ class WorkflowEngine:
 
         return state
 
-    def _normalize_decision(
-        self, decision: Any, raw_response: str, state: AgentState
-    ) -> Decision:
+    def _normalize_decision(self, decision: Any, raw_response: str, state: AgentState) -> Decision:
         action: str | None = None
         if isinstance(decision, dict):
             action = decision.get("action")

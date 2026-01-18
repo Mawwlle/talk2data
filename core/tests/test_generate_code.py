@@ -134,12 +134,8 @@ def test_generated_code_for_all_cases(engine):
             kw in generated for kw in ("print", "import", "def", "for", "return")
         ), f"Case {idx} generated text may not be code:\n{generated}"
 
-        assert (
-            "plt" not in generated
-        ), f"Case {idx} contains forbidden 'plt':\n{generated}"
-        assert (
-            "sns" not in generated
-        ), f"Case {idx} contains forbidden 'sns':\n{generated}"
+        assert "plt" not in generated, f"Case {idx} contains forbidden 'plt':\n{generated}"
+        assert "sns" not in generated, f"Case {idx} contains forbidden 'sns':\n{generated}"
 
         assert "response_message" in result, f"Case {idx} missing response_message"
 

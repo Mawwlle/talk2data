@@ -7,12 +7,8 @@ from task_management.domain.transcription.models import (
 
 
 class TranscriberPort(Protocol):
-    def transcribe(
-        self, request: TranscriptionRequest
-    ) -> TranscriptionResult:  # pragma: no cover
+    def transcribe(self, request: TranscriptionRequest) -> TranscriptionResult:  # pragma: no cover
         ...
 
-    async def transcribe_async(
-        self, request: TranscriptionRequest
-    ) -> TranscriptionResult:  # pragma: no cover
+    async def transcribe_async(self, request: TranscriptionRequest) -> TranscriptionResult:  # pragma: no cover
         ...

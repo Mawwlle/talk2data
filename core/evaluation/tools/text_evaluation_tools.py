@@ -38,9 +38,7 @@ def _load_embedding_components(
         raise FileNotFoundError(f"Embedding model not found at {resolved_path}")
 
     try:
-        tokenizer = AutoTokenizer.from_pretrained(
-            str(resolved_path), local_files_only=True
-        )
+        tokenizer = AutoTokenizer.from_pretrained(str(resolved_path), local_files_only=True)
         model = AutoModel.from_pretrained(str(resolved_path), local_files_only=True)
         model.eval()
     except Exception:  # noqa: BLE001
@@ -71,9 +69,7 @@ def _compute_embedding(text: str) -> torch.Tensor:
         summed = masked_embeddings.sum(dim=1)
         counts = attention_mask.sum(dim=1).clamp(min=1e-9)
         sentence_embedding = summed / counts
-        sentence_embedding = torch.nn.functional.normalize(
-            sentence_embedding, p=2, dim=1
-        )
+        sentence_embedding = torch.nn.functional.normalize(sentence_embedding, p=2, dim=1)
 
     return sentence_embedding.squeeze(0)
 
@@ -103,9 +99,7 @@ def fact_presence_score(fact: str, text: str) -> float:
     try:
         fact_embedding = _compute_embedding(fact)
         text_embedding = _compute_embedding(text)
-        similarity = torch.cosine_similarity(
-            fact_embedding.unsqueeze(0), text_embedding.unsqueeze(0)
-        ).item()
+        similarity = torch.cosine_similarity(fact_embedding.unsqueeze(0), text_embedding.unsqueeze(0)).item()
         return float(similarity)
     except Exception:  # noqa: BLE001
         fact_tokens = Counter(tokenize(fact))

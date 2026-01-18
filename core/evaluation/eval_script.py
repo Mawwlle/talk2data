@@ -76,9 +76,7 @@ def _has_plotly_calls(code: str | None) -> bool:
     return "plotly" in lowered or "px." in lowered or "go." in lowered
 
 
-def _has_possible_code_object(
-    tree: ast.AST, possible_code_objects: list[str] | None
-) -> bool:
+def _has_possible_code_object(tree: ast.AST, possible_code_objects: list[str] | None) -> bool:
     if not possible_code_objects:
         return False
     allowed = set(possible_code_objects)
@@ -138,10 +136,7 @@ def _load_all_benchmarks() -> list[dict[str, Any]]:
             case_id = case.get("id")
             key = (case_id, language)
             if key in seen:
-                message = (
-                    f"[benchmarks] duplicate id '{case_id}' for language {language} "
-                    f"in {path.name} ignored"
-                )
+                message = f"[benchmarks] duplicate id '{case_id}' for language {language} " f"in {path.name} ignored"
                 print(message)
                 continue
 
@@ -161,9 +156,7 @@ def evaluate_decision(model_decision: Any, expected: Any) -> bool:
     return model_decision == expected
 
 
-def evaluate_text_similarity(
-    reference_text: str | None, generated_text: str | None
-) -> float | None:
+def evaluate_text_similarity(reference_text: str | None, generated_text: str | None) -> float | None:
     """Return cosine similarity between reference text and generated text.
 
     The reference is expected to be a canonical answer (e.g., concatenated
@@ -178,9 +171,7 @@ def evaluate_text_similarity(
         baseline_embedding = _compute_embedding(reference_text)
         generated_embedding = _compute_embedding(generated_text)
 
-        similarity = cosine_similarity(
-            baseline_embedding, generated_embedding, dim=0
-        ).item()
+        similarity = cosine_similarity(baseline_embedding, generated_embedding, dim=0).item()
         return round(similarity, 4)
     except Exception:
         return None
@@ -226,9 +217,7 @@ def evaluate_chat_semantics(
             forbidden_hit_scores.append((fact, round(score, 3)))
 
     coverage = len(expected_hit_scores) / len(expected_facts) if expected_facts else 1.0
-    penalty = (
-        len(forbidden_hit_scores) / len(forbidden_facts) if forbidden_facts else 0.0
-    )
+    penalty = len(forbidden_hit_scores) / len(forbidden_facts) if forbidden_facts else 0.0
 
     reference_text = ". ".join(expected_facts)
     similarity = evaluate_text_similarity(reference_text, generated_text)
@@ -316,11 +305,7 @@ def evaluate_code(
     expected_calls = extract_calls(expected_code)
     model_calls = extract_calls(model_code)
     adjusted_model_calls = set(model_calls)
-    if (
-        "show" in expected_calls
-        and "show" not in model_calls
-        and _has_plotly_calls(model_code)
-    ):
+    if "show" in expected_calls and "show" not in model_calls and _has_plotly_calls(model_code):
         adjusted_model_calls.add("show")
 
     if expected_calls:
@@ -347,22 +332,16 @@ def evaluate_code(
     model_result, model_error = _run_code_in_sandbox(model_code)
 
     max_heuristic_score = 0.9
-    normalized_heuristic = (
-        heuristic_score / max_heuristic_score if max_heuristic_score else 0.0
-    )
+    normalized_heuristic = heuristic_score / max_heuristic_score if max_heuristic_score else 0.0
     normalized_heuristic = min(max(normalized_heuristic, 0.0), 1.0)
     normalization_factor = 1.0 / max_heuristic_score if max_heuristic_score else 0.0
     heuristic_breakdown["syntax"] = {
         "score": round(syntax_score * normalization_factor, 3),
         "ok": True,
     }
-    heuristic_breakdown["imports"]["score"] = round(
-        import_score * normalization_factor, 3
-    )
+    heuristic_breakdown["imports"]["score"] = round(import_score * normalization_factor, 3)
     heuristic_breakdown["calls"]["score"] = round(call_score * normalization_factor, 3)
-    heuristic_breakdown["objects"]["score"] = round(
-        object_score * normalization_factor, 3
-    )
+    heuristic_breakdown["objects"]["score"] = round(object_score * normalization_factor, 3)
 
     return {
         "heuristic_score": round(normalized_heuristic, 3),
@@ -380,6 +359,7 @@ def evaluate_code(
 
 def run_eval(
     inference_res_path: str,
+    decision_only: bool = False,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Run evaluation comparing inference results to benchmarks and baseline."""
     # 1. inference format check
@@ -416,7 +396,7 @@ def run_eval(
             )
 
         code_score_details = None
-        if case.get("expected_decision") == "code_generation":
+        if case.get("expected_decision") == "code_generation" and not decision_only:
             possible_code_objects = case.get("possible_code_objects")
             code_score_details = evaluate_code(
                 model_output.get("generated_code", ""),
@@ -438,9 +418,7 @@ def run_eval(
     return results, benchmarks
 
 
-def build_report_data(
-    results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]
-) -> dict[str, Any]:
+def build_report_data(results: list[dict[str, Any]], benchmarks: list[dict[str, Any]]) -> dict[str, Any]:
     """Construct aggregated report data from evaluation results."""
 
     benchmarks_by_id = _collect_benchmark_metadata(benchmarks)
@@ -469,11 +447,7 @@ def build_report_data(
     summary = {
         "cases_total": len(enriched_cases),
         "missing": sum(1 for case in enriched_cases if case.get("error")),
-        "decision_accuracy": _mean(
-            case.get("decision_score")
-            for case in enriched_cases
-            if not case.get("error")
-        ),
+        "decision_accuracy": _mean(case.get("decision_score") for case in enriched_cases if not case.get("error")),
     }
 
     by_difficulty = summarize_by_group(enriched_cases, benchmarks_by_id, "difficulty")
@@ -490,21 +464,26 @@ def build_report_data(
 def generate_report(
     inference_res_path: str,
     output_dir: str | Path = REPORT_OUTPUT_DIR,
+    decision_only: bool = False,
 ) -> dict[str, Any]:
     """Generate evaluation report files and return the structured report."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Запускаем Evaluation
-    results, benchmarks = run_eval(inference_res_path)
+    results, benchmarks = run_eval(inference_res_path, decision_only)
 
     # 2. Формируем данные для отчёта
     report = build_report_data(results, benchmarks)
 
     # 3. Добавляем графики
-    charts = generate_visualizations_data(report, output_dir)
-    report["charts"] = charts
-    attach_plot_previews(report["cases"], output_dir)
+    if not decision_only:
+        charts = generate_visualizations_data(
+            report,
+            output_dir,
+        )
+        report["charts"] = charts
+        attach_plot_previews(report["cases"], output_dir)
 
     # 4. Сохраняем отдельно отчёт для русскоязычных и англоязычных инпутов
     report_paths: dict[str, str] = {}
@@ -515,9 +494,7 @@ def generate_report(
             continue
         filename = f"cases_report_{lang}.md"
         title = f"Детальный отчёт по кейсам ({lang})"
-        lang_path = render_case_markdown(
-            lang_cases, output_dir, filename=filename, title=title
-        )
+        lang_path = render_case_markdown(lang_cases, output_dir, filename=filename, title=title)
         report_paths[lang] = str(lang_path)
     report["case_report_path"] = report_paths
 
@@ -554,7 +531,7 @@ def generate_report(
 
 if __name__ == "__main__":
     # формируем полный отчёт и сохраняем метрии и графики
-    report = generate_report(TEST_RESULT_PATH)
+    report = generate_report(TEST_RESULT_PATH, decision_only=True)
 
     print("Отчёт сформирован. Ключевые метрики:")
     print(report.get("summary", {}))

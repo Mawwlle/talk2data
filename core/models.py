@@ -69,11 +69,7 @@ class ModelLoader:
             logger.info("Загружаю модель...")
             self._llm = LLM(
                 model=self._settings.LLM_LOCAL_PATH,
-                load_format=(
-                    self._settings.LLM_LOAD_FORMAT
-                    if hasattr(self._settings, "LLM_LOAD_FORMAT")
-                    else "auto"
-                ),
+                load_format=(self._settings.LLM_LOAD_FORMAT if hasattr(self._settings, "LLM_LOAD_FORMAT") else "auto"),
                 **self._vllm_config,
             )
             logger.info("Модель загружена")

@@ -71,9 +71,7 @@ def extract_calls(code: str | None) -> set[str]:
 def _sandbox_globals() -> dict[str, Any]:
     """Prepare globals for sandboxed execution with restricted builtins."""
 
-    dummy_builtins = {
-        "__builtins__": {name: getattr(builtins, name) for name in SAFE_BUILTINS}
-    }
+    dummy_builtins = {"__builtins__": {name: getattr(builtins, name) for name in SAFE_BUILTINS}}
 
     np.random.seed(RANDOM_SEED)
 
@@ -151,9 +149,7 @@ def _run_code_in_sandbox(code: str | None) -> SandboxResult:
                         sandbox_locals,
                     )
                 else:
-                    body_without_last = ast.Module(
-                        body=parsed.body[:-1], type_ignores=[]
-                    )
+                    body_without_last = ast.Module(body=parsed.body[:-1], type_ignores=[])
                     last_expr = ast.Expression(parsed.body[-1].value)
 
                     if body_without_last.body:

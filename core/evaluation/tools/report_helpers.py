@@ -41,9 +41,7 @@ def _extract_case_code_score(case: dict[str, Any]) -> float | None:
     return code_details.get("heuristic_score")
 
 
-def _append_case_metrics(
-    bucket: dict[str, Any], case: dict[str, Any], code_score: float | None
-) -> None:
+def _append_case_metrics(bucket: dict[str, Any], case: dict[str, Any], code_score: float | None) -> None:
     """Append metric values from a case into an aggregation bucket."""
 
     bucket["count"] += 1
@@ -140,9 +138,7 @@ def _ensure_kaleido() -> bool:
         return False
 
 
-def _save_plot(
-    values: dict[str, float], title: str, ylabel: str, output_path: Path
-) -> str:
+def _save_plot(values: dict[str, float], title: str, ylabel: str, output_path: Path) -> str:
     """Save a simple bar plot and return its file path."""
 
     labels = list(values.keys())
@@ -180,9 +176,7 @@ def _save_language_comparison(
         return ""
 
     languages = sorted(language_summary.keys())
-    metrics = [
-        "decision_avg"
-    ]  # ["decision_avg", "semantic_similarity_avg", "code_avg"]
+    metrics = ["decision_avg"]  # ["decision_avg", "semantic_similarity_avg", "code_avg"]
     metric_labels = ["Decision"]  # ["Decision", "Semantic", "Code"]
     x = np.arange(len(languages))
     bar_width = 0.22
@@ -204,9 +198,7 @@ def _save_language_comparison(
     return str(output_path)
 
 
-def generate_visualizations_data(
-    report: dict[str, Any], output_dir: Path
-) -> dict[str, str]:
+def generate_visualizations_data(report: dict[str, Any], output_dir: Path) -> dict[str, str]:
     """Generate charts for key metrics and return their paths."""
 
     charts: dict[str, str] = {}
@@ -257,9 +249,7 @@ def _rel_image_path(image_path: str | None, report_path: Path) -> str:
         return resolved_path.as_posix()
 
 
-def _render_plotly_image(
-    code_text: str, output_path: Path
-) -> tuple[str | None, str | None]:
+def _render_plotly_image(code_text: str, output_path: Path) -> tuple[str | None, str | None]:
     """Execute Plotly code and export figure to PNG."""
 
     if "plotly" not in code_text.lower():
@@ -347,9 +337,7 @@ def render_case_markdown(
             lines.append("```")
             possible_code_objects = case.get("possible_code_objects") or []
             if possible_code_objects:
-                lines.append(
-                    "- possible_code_objects: " + ", ".join(possible_code_objects)
-                )
+                lines.append("- possible_code_objects: " + ", ".join(possible_code_objects))
             details = case.get("code_details") or {}
             lines.append("- expected_result:\n ")
             lines.append("```python")
@@ -357,10 +345,7 @@ def render_case_markdown(
             lines.append(str(expected_result))
             lines.append("```")
             if details.get("results", {}).get("expected") is None:
-                lines.append(
-                    "- expected_output: "
-                    + _describe_visual_output(case.get("expected_code", ""))
-                )
+                lines.append("- expected_output: " + _describe_visual_output(case.get("expected_code", "")))
             lines.append("- expected_error:\n ")
             lines.append("```python")
             expected_error = details.get("errors", {}).get("expected")
@@ -375,9 +360,7 @@ def render_case_markdown(
                 )
                 lines.append(f" ![expected plot]({expected_plot_path})")
             elif case.get("expected_plot_error"):
-                lines.append(
-                    f"- expected_plot_error: {case.get('expected_plot_error')}"
-                )
+                lines.append(f"- expected_plot_error: {case.get('expected_plot_error')}")
 
         lines.append("\n\n**Model output:**")
         if case.get("response_message"):

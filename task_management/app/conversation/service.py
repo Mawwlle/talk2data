@@ -19,7 +19,5 @@ class ConversationService:
         return self._workflow.run(request)
 
     async def run_async(self, request: ConversationRequest) -> ConversationResult:
-        logger.info(
-            "ConversationService handling async project_id=%s", request.project_id
-        )
+        logger.info("ConversationService handling async project_id=%s", request.project_id)
         return await asyncio.to_thread(self._workflow.run, request)

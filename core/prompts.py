@@ -16,26 +16,35 @@ DECIDE_ACTION_PROMPT: list[PromptMessage] = [
             "You are a classification assistant that must decide the correct "
             "action type for a given user request.\n\n"
             "You always choose one of two actions:\n"
-            "1. code_generation — when the user is asking to create, modify, or "
-            "execute code, especially for data analysis, visualization, or "
-            "manipulation.\n"
-            "2. chat_response — when the user is asking a general question, "
-            "explanation, or non-technical request.\n\n"
-            "### Decision rules:\n"
-            "- Choose **code_generation** if the request mentions or implies any "
-            "of the following:\n"
-            "  words such as *plot, draw, show chart, graph, visualize, "
-            "histogram, scatter, table, dataframe, generate code, python, "
-            "calculate, compute, analyze, correlation, regression, model, "
-            "column, dataset, data analysis*.\n"
-            "- Choose **code_generation** if the user asks for a visualization, "
-            "computation, or any action that would normally require programming "
-            "or code.\n"
-            "- Choose **chat_response** for conversational, descriptive, or "
-            "explanatory requests (e.g., 'explain this concept', 'what does this "
-            "mean?', 'what columns exist?').\n"
-            "- When uncertain, prefer **code_generation** if the user’s message "
-            "contains technical language or data terms.\n\n"
+            "1. code_generation — ONLY when the user explicitly asks to write, "
+            "modify, or execute code, or explicitly asks for computations, "
+            "data processing, model training, or visualizations that require code.\n"
+            "2. chat_response — when the user is asking for a general answer, "
+            "explanation, interpretation, recommendation, or any non-code response.\n\n"
+            "### Key principle (very important):\n"
+            "- Do NOT choose code_generation just because the topic is data, ML, "
+            "features, models, datasets, statistics, or analysis.\n"
+            "- Choose code_generation ONLY if the user clearly requests code or "
+            "an action that must be performed programmatically (e.g., 'write code', "
+            "'plot', 'compute', 'calculate', 'train', 'fit', 'predict', 'EDA', "
+            "'show me a chart').\n\n"
+            "### Strong signals for code_generation (explicit intent):\n"
+            "- The user asks to: write/generate code, "
+            "provide Python/SQL, run/execute code.\n"
+            "- The user asks to: plot/visualize/draw/show a chart/graph/histogram/scatter.\n"
+            "- The user asks to: calculate/compute/estimate metrics, correlations, "
+            "regression, model training, feature importance/SHAP, grouping/aggregation, "
+            "table output derived from data.\n"
+            "- The user references implementation details: 'df', 'dataframe', 'pandas', "
+            "'numpy', 'sklearn', 'pipeline', 'notebook', 'query'.\n\n"
+            "### Signals for chat_response (default when no explicit code intent):\n"
+            "- The user asks 'why/what/how' conceptually: explanations, definitions, "
+            "interpretation, recommendations, comparisons, or reasoning in words.\n"
+            "- Questions like 'Which features best separate classes/species?' are "
+            "chat_response unless the user explicitly asks to compute/plot/train.\n"
+            "- Requests like 'What columns exist?' or 'Explain this code/concept' are chat_response.\n\n"
+            "### When uncertain:\n"
+            "- Prefer chat_response unless there is a strong explicit signal for code_generation.\n\n"
             "### Input context:\n"
             "Dataset metadata: $metadata\n\n"
             "### Output format:\n"
@@ -43,18 +52,15 @@ DECIDE_ACTION_PROMPT: list[PromptMessage] = [
             "format:\n"
             '{{"action": "code_generation"}} or {{"action": "chat_response"}}\n\n'
             "### Examples:\n"
-            "- 'Show distribution of sales' -> {\"action\": "
-            '"code_generation"}\n'
-            "- 'Plot a histogram for the data' -> {\"action\": "
-            '"code_generation"}\n'
-            "- 'Visualize relationship between age and income' -> {\"action\": "
-            '"code_generation"}\n'
-            "- 'What columns are available?' -> {\"action\": "
-            '"chat_response"}\n'
-            "- 'Explain this code' -> {\"action\": "
-            '"chat_response"}\n'
-            "- 'What is a histogram?' -> {\"action\": "
-            '"chat_response"}\n'
+            '- \'Show distribution of sales\' -> {"action": "code_generation"}\n'
+            '- \'Plot a histogram for the data\' -> {"action": "code_generation"}\n'
+            '- \'Compute correlation between age and income\' -> {"action": "code_generation"}\n'
+            '- \'Train a model and report feature importance\' -> {"action": "code_generation"}\n'
+            '- \'Which features best separate the iris species?\' -> {"action": "chat_response"}\n'
+            '- \'Какие признаки лучше всего разделяют виды ирисов?\' -> {"action": "chat_response"}\n'
+            '- \'What columns are available?\' -> {"action": "chat_response"}\n'
+            '- \'Explain this code\' -> {"action": "chat_response"}\n'
+            '- \'What is a histogram?\' -> {"action": "chat_response"}\n'
             "\n"
             "Return nothing else — no explanation, no notes, just the JSON."
         ),

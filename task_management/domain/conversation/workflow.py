@@ -56,9 +56,7 @@ class ConversationWorkflow:
         try:
             result = self._invoker.invoke(workflow_state)
         except Exception as exc:
-            logger.exception(
-                "Workflow invocation failed for project_id=%s", request.project_id
-            )
+            logger.exception("Workflow invocation failed for project_id=%s", request.project_id)
             raise ConversationWorkflowError(
                 "Conversation workflow invocation failed", project_id=request.project_id
             ) from exc
@@ -71,8 +69,7 @@ class ConversationWorkflow:
         updated_history = result.get("conversation_history", []) + [
             {
                 "user": request.user_input,
-                "system": result.get("generated_code")
-                or result.get("response_message"),
+                "system": result.get("generated_code") or result.get("response_message"),
             }
         ]
 

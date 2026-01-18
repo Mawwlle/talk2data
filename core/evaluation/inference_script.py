@@ -26,9 +26,7 @@ class InferenceResults(TypedDict):
     results: list[dict[str, Any]]
 
 
-def run_single_case(
-    workflow: WorkflowRunner, benchmark: dict[str, Any]
-) -> dict[str, Any]:
+def run_single_case(workflow: WorkflowRunner, benchmark: dict[str, Any]) -> dict[str, Any]:
     initial_state = {
         "user_input": benchmark["user_input"],
         "metadata": METADATA,

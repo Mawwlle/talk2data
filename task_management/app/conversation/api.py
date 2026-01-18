@@ -19,9 +19,7 @@ class ConversationHandler:
 
     def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         project_id = payload.get("project_id")
-        logger.info(
-            "ConversationHandler handling payload for project_id=%s", project_id
-        )
+        logger.info("ConversationHandler handling payload for project_id=%s", project_id)
 
         try:
             parsed_payload = self._parse_payload(payload)
@@ -44,9 +42,7 @@ class ConversationHandler:
                 project_id=request.project_id,
             )
         except ConversationError as exc:  # pragma: no cover - defensive
-            logger.warning(
-                "ConversationHandler failed for project_id=%s: %s", project_id, exc
-            )
+            logger.warning("ConversationHandler failed for project_id=%s: %s", project_id, exc)
             return TaskResponse(
                 status="error",
                 task="converse",
@@ -82,9 +78,7 @@ class ConversationHandler:
                 project_id=request.project_id,
             )
         except ConversationError as exc:  # pragma: no cover - defensive
-            logger.warning(
-                "ConversationHandler failed for project_id=%s: %s", project_id, exc
-            )
+            logger.warning("ConversationHandler failed for project_id=%s: %s", project_id, exc)
             return TaskResponse(
                 status="error",
                 task="converse",

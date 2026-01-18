@@ -24,9 +24,7 @@ class AppSettings(BaseSettings):
     METRICS_ENABLED: bool = True
     METRICS_PORT: int = 8003
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 settings = AppSettings()
