@@ -6,7 +6,7 @@
 
 - **Chat response accuracy: 92.3%** (24 / 26)
 
-- 1 из 2 ошибок обусловлена ошибками классификации `decision`, а не качеством ответа
+- 1 из 2 ошибок обусловлена ошибками классификации `decision`, а не качеством ответа: "Which features best separate the iris species?" определена как `code_generation` кейс
 
 - **Overall decision accuracy: 0.964**
 

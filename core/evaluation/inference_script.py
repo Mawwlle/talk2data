@@ -41,11 +41,13 @@ def run_single_case(
     }
 
     result_state = workflow.invoke(initial_state)
+    decision = result_state.get("decision") or {}
+    decision_action = decision.get("action") if isinstance(decision, dict) else decision
 
     return {
         "benchmark_id": benchmark["id"],
         "expected_decision": benchmark["expected_decision"],
-        "model_decision": result_state.get("decision"),
+        "model_decision": decision_action,
         "generated_code": result_state.get("generated_code"),
         "response_message": result_state.get("response_message"),
         "timing_info": result_state.get("timing_info", {}),

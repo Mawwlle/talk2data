@@ -30,6 +30,7 @@ logging.basicConfig(
 
 
 DECIDE_ACTION_DEFAULT = "chat_response"
+DECIDE_ACTION_CHOICES = {"code_generation", "chat_response"}
 
 
 def extract_code_block(generated_text: str) -> str:
@@ -170,6 +171,7 @@ class WorkflowEngine:
                 logger.info("[decide_action] Raw LLM response: %s", raw_response)
 
             decision = parser.parse(raw_response)
+            decision = self._normalize_decision(decision, raw_response, state)
             logger.info("[decide_action] Parsed decision: %s", decision)
 
         except Exception as exc:  # pragma: no cover - defensive
@@ -186,6 +188,29 @@ class WorkflowEngine:
         logger.info("[decide_action] Final state: %s", state)
 
         return state
+
+    def _normalize_decision(
+        self, decision: Any, raw_response: str, state: AgentState
+    ) -> Decision:
+        action: str | None = None
+        if isinstance(decision, dict):
+            action = decision.get("action")
+        elif isinstance(decision, str):
+            action = decision
+
+        if action:
+            action = action.strip().lower()
+
+        if action in DECIDE_ACTION_CHOICES:
+            return {"action": action}
+
+        raw_lower = raw_response.lower()
+        if "code_generation" in raw_lower:
+            return {"action": "code_generation"}
+        if "chat_response" in raw_lower:
+            return {"action": "chat_response"}
+
+        return {"action": DECIDE_ACTION_DEFAULT}
 
     @staticmethod
     def _route_action(state: AgentState) -> str:

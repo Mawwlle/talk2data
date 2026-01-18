@@ -75,7 +75,7 @@ def summarize_by_group(
             bucket = summary.setdefault(value, _init_metric_bucket())
             _append_case_metrics(bucket, case, _extract_case_code_score(case))
 
-    for _value, bucket in summary.items():
+    for _, bucket in summary.items():
         bucket["decision_avg"] = _mean(bucket.pop("decision"))
         bucket["semantic_similarity_avg"] = _mean(bucket.pop("semantic_similarity"))
         bucket["code_avg"] = _mean(bucket.pop("code"))
@@ -210,19 +210,7 @@ def generate_visualizations_data(
     """Generate charts for key metrics and return their paths."""
 
     charts: dict[str, str] = {}
-    # summary = report.get("summary", {})
     chart_dir = output_dir / "charts"
-
-    # charts["overall_scores"] = _save_plot(
-    #     {
-    #         "decision": summary.get("decision_accuracy", 0.0),
-    #         "semantic_similarity": summary.get("semantic_similarity_avg", 0.0),
-    #         "code": summary.get("code_score_avg", 0.0),
-    #     },
-    #     "Средние метрики по всем кейсам",
-    #     "Score",
-    #     chart_dir / "overall_scores.png",
-    # )
 
     difficulty = report.get("by_difficulty", {})
     if difficulty:
@@ -232,12 +220,6 @@ def generate_visualizations_data(
             "Accuracy",
             chart_dir / "decision_by_difficulty.png",
         )
-        # charts["semantic_by_difficulty"] = _save_plot(
-        #     {k: v.get("semantic_similarity_avg", 0.0) for k, v in difficulty.items()},
-        #     "Semantic similarity по уровням сложности",
-        #     "Semantic similarity",
-        #     chart_dir / "semantic_similarity_by_difficulty.png",
-        # )
 
     language_summary = report.get("by_language", {})
     if language_summary:
@@ -339,48 +321,6 @@ def render_case_markdown(
 
     lines.append(f"# {title}")
     lines.append("")
-    # lines.append("## Методика расчёта метрик")
-    # lines.append("### Semantic similarity (только для chat_response)")
-    # lines.append("Формула:")
-    # lines.append("```text")
-    # lines.append(
-    #     "semantic_similarity = 0.6 * similarity + 0.4 * expected_coverage "
-    #     "- 0.5 * forbidden_penalty"
-    # )
-    # lines.append("```")
-    # lines.append(
-    #     "Где доли:\n - expected_coverage — доля ожидаемых фактов, "
-    #     "упомянутых в ответе;\n - forbidden_penalty — доля запрещённых "
-    #     "фактов,"
-    # )
-    # lines.append(
-    #     "попавших в ответ (штраф).\n - similarity — embedding-cosine "
-    #     "между эталонным ответом (конкатенация expected_facts или базовый"
-    # )
-    # lines.append("референс) и ответом модели.")
-    # lines.append(
-    #     "\n\nФакт считается покрытым, если косинусная близость fact↔ответ ≥ 0.55"
-    # )
-    # lines.append(
-    #     "(или высокая токеновая схожесть), что позволяет засчитывать "
-    #     "перефраз. Весами (0.6/0.4/0.5) балансируем близость текста и "
-    #     "полноту фактов,"
-    # )
-    # lines.append(
-    #     "давая штраф за запрещённые факты, чтобы сохранить "
-    #     "интерпретируемость (веса суммарно ограничивают метрику в [0, 1])."
-    # )
-    # lines.append("")
-    # lines.append("### Code score (только для code_generation)")
-    # lines.append(
-    #     "- heuristic_score = 0.3 (валидный синтаксис) + до 0.2 "
-    #     "(совпадение импортов) + до 0.4 (совпадение ключевых вызовов)."
-    # )
-    # lines.append(
-    #     "- result_match: бинарный флаг (1.0/0.0), что итоговый результат "
-    #     "выполнения совпал с эталоном без ошибок исполнения."
-    # )
-    # lines.append("")
     lines.append("## Кейсы")
 
     for case in cases:
@@ -468,87 +408,7 @@ def render_case_markdown(
             elif case.get("model_plot_error"):
                 lines.append(f"- model_plot_error: {case.get('model_plot_error')}")
 
-        # lines.append("\n\n**Метрики:**")
         lines.append("- decision_score: " + str(case.get("decision_score")))
-
-        # if case.get("expected_decision") == "chat_response":
-        #     semantic_details = case.get("semantic_details") or {}
-        #     lines.append(f"- semantic_similarity: {semantic_details.get('score')}")
-        #     lines.append(
-        #         "  - expected_coverage: "
-        #         + str(semantic_details.get("expected_coverage"))
-        #         + " | forbidden_penalty: "
-        #         + str(semantic_details.get("forbidden_penalty"))
-        #     )
-        #     if semantic_details.get("expected_hits"):
-        #         lines.append(
-        #             "  - покрытые факты: "
-        #             + "; ".join(
-        #                 f"{fact} (score {score})"
-        #                 for fact, score in semantic_details.get("expected_hits", [])
-        #             )
-        #         )
-        #     if semantic_details.get("forbidden_hits"):
-        #         lines.append(
-        #             "  - упомянутые запрещённые факты: "
-        #             + "; ".join(
-        #                 f"{fact} (score {score})"
-        #                 for fact, score in semantic_details.get("forbidden_hits", [])
-        #             )
-        #         )
-
-        # if case.get("expected_decision") == "code_generation":
-        #     details = case.get("code_details") or {}
-        #     if "heuristic_score" in details:
-        #         lines.append(
-        #             "  - heuristic_score: " + str(details.get("heuristic_score"))
-        #         )
-        #     if details.get("heuristic_breakdown"):
-        #         breakdown = details.get("heuristic_breakdown", {})
-        #         syntax_part = breakdown.get("syntax", {})
-        #         import_part = breakdown.get("imports", {})
-        #         calls_part = breakdown.get("calls", {})
-        #         lines.append(
-        #             "    - syntax_check: "
-        #             + str(syntax_part.get("score"))
-        #             + " (ok="
-        #             + str(syntax_part.get("ok"))
-        #             + ")"
-        #         )
-        #         lines.append(
-        #             "    - imports_score: "
-        #             + str(import_part.get("score"))
-        #             + " | expected: "
-        #             + ", ".join(import_part.get("expected", []))
-        #             + " | model: "
-        #             + ", ".join(import_part.get("model", []))
-        #             + " | matched: "
-        #             + ", ".join(import_part.get("matched", []))
-        #         )
-        #         lines.append(
-        #             "    - calls_score: "
-        #             + str(calls_part.get("score"))
-        #             + " | expected: "
-        #             + ", ".join(calls_part.get("expected", []))
-        #             + " | model: "
-        #             + ", ".join(calls_part.get("model", []))
-        #             + " | matched: "
-        #             + ", ".join(calls_part.get("matched", []))
-        #         )
-        #     if "result_match" in details:
-        #         lines.append("  - result_match: " + str(details.get("result_match")))
-        #     if details.get("requirements"):
-        #         lines.append(
-        #             "  - requirements_match: "
-        # + str(details.get("requirements_match"))
-        #         )
-        #         for requirement in details.get("requirements", []):
-        #             lines.append(
-        #                 "    - "
-        #                 + str(requirement.get("description") or requirement.get("id"))
-        #                 + ": "
-        #                 + str(requirement.get("ok"))
-        #             )
 
         lines.append("")
 
