@@ -41,6 +41,26 @@ CUDA_VISIBLE_DEVICES=0 poetry run python -m core.worker
 ```bash
 sudo apt-get update && apt-get install -y ffmpeg
 ```
+---
+
+## 🧪 Инференс и оценка на бенчмарках
+
+Короткий пайплайн: сначала инференс, затем оценка.
+
+1. Запустите инференс по всем json-бенчмаркам из `core/benchmarks`:
+
+```bash
+poetry run python -m core.evaluation.inference_script
+```
+
+2. Запустите оценку результатов:
+
+```bash
+poetry run python -m core.evaluation.eval_script
+```
+
+По умолчанию скрипт оценки читает путь `TEST_RESULT_PATH` из `core/evaluation/constants.py`.
+Если нужно оценивать другой файл, поменяйте `RESULT_ID` или `TEST_RESULT_PATH` в этом файле.
 
 ---
 
@@ -54,20 +74,20 @@ sudo apt-get update && apt-get install -y ffmpeg
 │   ├── benchmarks/                              # Наборы данных для бенчмарков
 │   │   ├── iris_code_benchmark_en.json          # Кодовый бенчмарк (EN)
 │   │   ├── iris_code_benchmark_ru.json          # Кодовый бенчмарк (RU)
-│   │   ├── iris_dataset_benchmark_en.txt        # Датасет бенчмарка (EN)
 │   │   ├── iris_text_benchmark_en.json          # Текстовый бенчмарк (EN)
 │   │   └── iris_text_benchmark_ru.json          # Текстовый бенчмарк (RU)
 │   ├── evaluation/                              # Оценка качества и отчёты
 │   │   ├── inference_results/                   # Результаты инференса
-│   │   │   ├── infer_0_baseline.json             # Выход базовой модели
-│   │   │   ├── infer_1_local_llm_with_modifications.json # Выход локальной LLM
-│   │   │   ├── infer_2_remote_llm_gigachat-20b-a3b.json # Выход GigaChat 20B
-│   │   │   ├── infer_2_remote_llm_gpt-oss-20b.json      # Выход GPT-OSS 20B
-│   │   │   ├── infer_2_remote_llm_qwen3-instruct-30b.json # Выход Qwen3 30B
+│   │   │   ├── infer_0_baseline.json             # Инференс базовой модели
+│   │   │   ├── infer_1_local_llm_with_modifications.json # Инференс локальной LLM
+│   │   │   ├── infer_2_remote_llm_gigachat-20b-a3b.json # Инференс GigaChat 20B
+│   │   │   ├── infer_2_remote_llm_gpt-oss-20b.json      # Инференс GPT-OSS 20B
+│   │   │   ├── infer_2_remote_llm_qwen3-instruct-30b.json # Инференс Qwen3 30B
+│   │   │   ├── infer_3_decision_enhancing_qwen3-instruct-30b.json # Инференс Qwen3 30B с улучшенным принятием решений
 │   │   ├── report_0_baseline/                    # Отчёт по baseline
 │   │   │   ├── charts/                           # Диаграммы и метрики
-│   │   │   │   ├── decision_by_difficulty.png    # Решения по сложности
-│   │   │   │   ├── language_comparison.png       # Сравнение языков
+│   │   │   │   ├── decision_by_difficulty.png    # Сравнения метрик между задачами разной сложности
+│   │   │   │   ├── language_comparison.png       # Сравнение метрик по языкам
 │   │   │   │   ├── overall_scores.png            # Сводные оценки
 │   │   │   │   └── semantic_similarity_by_difficulty.png # Семантическая близость
 │   │   │   ├── plots/                            # Графики по кейсам
@@ -77,8 +97,10 @@ sudo apt-get update && apt-get install -y ffmpeg
 │   │   │   └── summary.csv                       # Сводка метрик
 │   │   ├── report_1_local_llm_with_modifications/ # Отчёт по локальной LLM
 │   │   ├── report_2_remote_llm_gigachat-20b-a3b/  # Отчёт по GigaChat
+│   │   ├── report_2_remote_llm_gpt-oss-120b/      # Отчёт по GPT-OSS 120B
 │   │   ├── report_2_remote_llm_gpt-oss-20b/       # Отчёт по GPT-OSS
 │   │   ├── report_2_remote_llm_qwen3-instruct-30b/ # Отчёт по Qwen3
+│   │   ├── report_3_decision_enhancing_qwen3-instruct-30b/ # Отчёт по Qwen3 после улучшения классификатора задач
 │   │   ├── tools/                                # Инструменты оценки
 │   │   │   ├── code_evaluation_tools.py          # Метрики для кода
 │   │   │   ├── report_helpers.py                 # Помощники для отчётов

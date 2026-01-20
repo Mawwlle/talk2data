@@ -531,7 +531,9 @@ def generate_report(
 
 if __name__ == "__main__":
     # формируем полный отчёт и сохраняем метрии и графики
-    report = generate_report(TEST_RESULT_PATH, decision_only=True)
+    report = generate_report(
+        TEST_RESULT_PATH
+    )  # , decision_only=True если хочется проверить только accuracy для decision
 
     print("Отчёт сформирован. Ключевые метрики:")
     print(report.get("summary", {}))
