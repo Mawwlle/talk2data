@@ -15,7 +15,6 @@ x-env-common: &env-common
 
   MODEL_CACHE_DIR: /models
 
-
 x-gpu-resources: &gpu-resources
   deploy:
     resources:
@@ -28,8 +27,7 @@ x-gpu-resources: &gpu-resources
         devices:
           - driver: nvidia
             count: 1
-            capabilities: [gpu]
-
+            capabilities: [ gpu ]
 
 services:
   worker:
@@ -46,23 +44,7 @@ services:
       - talk2data-network
     command: poetry run python -m core.worker
     restart: unless-stopped
-    depends_on:
-      model-init:
-        condition: service_completed_successfully
     <<: *gpu-resources
-
-  model-init:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
-    container_name: talk2data-model-downloader
-    environment:
-      <<: *env-common
-    volumes:
-      - ./model_weights_presaved:/model_weights_presaved
-    networks:
-      - talk2data-network
-    command: poetry run python -m core.download_model_script
 
 volumes:
   model_cache:
