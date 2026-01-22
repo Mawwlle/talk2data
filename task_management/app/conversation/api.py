@@ -113,5 +113,5 @@ class ConversationHandler:
             user_input=str(user_input),
             metadata=dict(metadata),
             chat_history=list(chat_history),
-            project_id=str(project_id), # TODO: fix schema
+            project_id=str(project_id),  # TODO: fix schema
         )
