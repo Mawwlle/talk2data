@@ -358,8 +358,7 @@ def evaluate_code(
 
 
 def run_eval(
-    inference_res_path: str,
-    decision_only: bool = False,
+    inference_res_path: str, decision_only: bool = False, code_check: bool = True
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Run evaluation comparing inference results to benchmarks and baseline."""
     # 1. inference format check
@@ -396,7 +395,7 @@ def run_eval(
             )
 
         code_score_details = None
-        if case.get("expected_decision") == "code_generation" and not decision_only:
+        if case.get("expected_decision") == "code_generation" and not decision_only and code_check:
             possible_code_objects = case.get("possible_code_objects")
             code_score_details = evaluate_code(
                 model_output.get("generated_code", ""),
@@ -465,19 +464,20 @@ def generate_report(
     inference_res_path: str,
     output_dir: str | Path = REPORT_OUTPUT_DIR,
     decision_only: bool = False,
+    code_check: bool = True,
 ) -> dict[str, Any]:
     """Generate evaluation report files and return the structured report."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Запускаем Evaluation
-    results, benchmarks = run_eval(inference_res_path, decision_only)
+    results, benchmarks = run_eval(inference_res_path, decision_only, code_check)
 
     # 2. Формируем данные для отчёта
     report = build_report_data(results, benchmarks)
 
     # 3. Добавляем графики
-    if not decision_only:
+    if not decision_only and code_check:
         charts = generate_visualizations_data(
             report,
             output_dir,
@@ -532,7 +532,7 @@ def generate_report(
 if __name__ == "__main__":
     # формируем полный отчёт и сохраняем метрии и графики
     report = generate_report(
-        TEST_RESULT_PATH
+        TEST_RESULT_PATH, code_check=False
     )  # , decision_only=True если хочется проверить только accuracy для decision
 
     print("Отчёт сформирован. Ключевые метрики:")
