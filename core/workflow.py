@@ -22,6 +22,7 @@ from core.prompts import (
 )
 from core.schemas import AgentState, Decision
 from task_management.domain.conversation.ports import WorkflowInvokerPort
+from task_management.domain.conversation.streaming import StreamingEmitterPort
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -128,6 +129,80 @@ class WorkflowEngine:
         )
         return completion.choices[0].message.content or ""
 
+    def _remote_llm_streaming(
+        self,
+        prompt: str,
+        *,
+        emitter: StreamingEmitterPort | None,
+        meta: dict[str, Any],
+    ) -> str:
+        llm = self.llm
+        if not isinstance(llm, OpenAI):
+            raise ValueError("Remote streaming requires an OpenAI client")
+
+        if emitter is not None:
+            emitter.emit_start(meta)
+
+        chunks: list[str] = []
+        seq = 0
+        finish_reason: str | None = None
+        usage: dict[str, Any] | None = None
+        logger.info(
+            "[streaming] start node=%s request_id=%s project_id=%s",
+            meta.get("node"),
+            meta.get("request_id"),
+            meta.get("project_id"),
+        )
+
+        try:
+            stream = llm.chat.completions.create(
+                model=settings.REMOTE_MODEL_NAME,
+                messages=[{"role": "user", "content": prompt}],
+                stream=True,
+            )
+
+            for chunk in stream:
+                if chunk is None:
+                    continue
+                choices = getattr(chunk, "choices", []) or []
+                if not choices:
+                    continue
+                choice = choices[0]
+                delta_obj = getattr(choice, "delta", None)
+                delta = getattr(delta_obj, "content", None)
+                finish_reason = getattr(choice, "finish_reason", None) or finish_reason
+                usage = getattr(chunk, "usage", None) or usage
+                if not delta:
+                    continue
+                chunks.append(delta)
+                if emitter is not None:
+                    emitter.emit_delta(delta, seq, meta)
+                seq += 1
+        except Exception as exc:
+            logger.exception(
+                "[streaming] error node=%s request_id=%s project_id=%s",
+                meta.get("node"),
+                meta.get("request_id"),
+                meta.get("project_id"),
+            )
+            if emitter is not None:
+                emitter.emit_error(str(exc), meta)
+            raise
+
+        final_text = "".join(chunks)
+        if emitter is not None:
+            emitter.emit_end(final_text, meta, usage=usage, finish_reason=finish_reason)
+
+        logger.info(
+            "[streaming] end node=%s request_id=%s project_id=%s chunks=%s chars=%s",
+            meta.get("node"),
+            meta.get("request_id"),
+            meta.get("project_id"),
+            seq,
+            len(final_text),
+        )
+        return final_text
+
     def _decide_action(self, state: AgentState) -> AgentState:
         """Decision node with enhanced logging using print and timing."""
         start = time.perf_counter()
@@ -211,7 +286,25 @@ class WorkflowEngine:
         code_prompt = self._format_prompt(CODE_GENERATION_PROMPT, state)
 
         if settings.REMOTE_LLM:
-            generated_text = self._remote_chat_completion(code_prompt)
+            streaming_emitter = state.get("streaming_emitter")
+            streaming_meta = dict(state.get("streaming_meta") or {})
+            streaming_meta.update(
+                {
+                    "node": "generate_code",
+                    "project_id": streaming_meta.get("project_id") or state.get("metadata", {}).get("project_id"),
+                }
+            )
+            if settings.REMOTE_LLM_STREAMING:
+                emitter = streaming_emitter
+                if emitter is not None:
+                    emitter = _CodeStreamingEmitter(emitter)
+                generated_text = self._remote_llm_streaming(
+                    code_prompt,
+                    emitter=emitter,
+                    meta=streaming_meta,
+                )
+            else:
+                generated_text = self._remote_chat_completion(code_prompt)
         else:
             bad_words = [
                 "print",
@@ -261,7 +354,22 @@ class WorkflowEngine:
         chat_prompt = self._format_prompt(CHAT_RESPONSE_PROMPT, state)
 
         if settings.REMOTE_LLM:
-            response = self._remote_chat_completion(chat_prompt).strip()
+            streaming_emitter = state.get("streaming_emitter")
+            streaming_meta = dict(state.get("streaming_meta") or {})
+            streaming_meta.update(
+                {
+                    "node": "generate_chat_response",
+                    "project_id": streaming_meta.get("project_id") or state.get("metadata", {}).get("project_id"),
+                }
+            )
+            if settings.REMOTE_LLM_STREAMING:
+                response = self._remote_llm_streaming(
+                    chat_prompt,
+                    emitter=streaming_emitter,
+                    meta=streaming_meta,
+                ).strip()
+            else:
+                response = self._remote_chat_completion(chat_prompt).strip()
         else:
             sampling_params = SamplingParams(
                 max_tokens=200,
@@ -302,6 +410,30 @@ class WorkflowEngine:
         builder.set_entry_point("decide_action")
         compiled = builder.compile()
         return _WorkflowInvoker(compiled)
+
+
+class _CodeStreamingEmitter:
+    def __init__(self, emitter: StreamingEmitterPort) -> None:
+        self._emitter = emitter
+
+    def emit_start(self, meta: dict[str, Any]) -> None:
+        self._emitter.emit_start(meta)
+
+    def emit_delta(self, delta_text: str, seq: int, meta: dict[str, Any]) -> None:
+        self._emitter.emit_delta(delta_text, seq, meta)
+
+    def emit_end(
+        self,
+        final_text: str,
+        meta: dict[str, Any],
+        usage: dict[str, Any] | None = None,
+        finish_reason: str | None = None,
+    ) -> None:
+        code_block = extract_code_block(final_text)
+        self._emitter.emit_end(code_block, meta, usage=usage, finish_reason=finish_reason)
+
+    def emit_error(self, error: str, meta: dict[str, Any]) -> None:
+        self._emitter.emit_error(error, meta)
 
 
 class _WorkflowInvoker:

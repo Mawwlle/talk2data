@@ -2,6 +2,7 @@ import asyncio
 import copy
 import logging
 import time
+from typing import Any
 
 from task_management.domain.conversation.exceptions import ConversationWorkflowError
 from task_management.domain.conversation.models import (
@@ -38,7 +39,13 @@ class ConversationWorkflow:
         self._invoker = invoker
         self._result_persister = result_persister or NoopResultPersister()
 
-    def run(self, request: ConversationRequest) -> ConversationResult:
+    def run(
+        self,
+        request: ConversationRequest,
+        *,
+        streaming_emitter: Any | None = None,
+        streaming_meta: dict[str, Any] | None = None,
+    ) -> ConversationResult:
         start = time.perf_counter()
 
         workflow_state = {
@@ -50,6 +57,8 @@ class ConversationWorkflow:
             "response_audio": None,
             "decision": None,
             "timing_info": {},
+            "streaming_emitter": streaming_emitter,
+            "streaming_meta": streaming_meta or {},
         }
 
         logger.info("Starting workflow with state: %s", workflow_state)
@@ -83,5 +92,16 @@ class ConversationWorkflow:
         logger.info("Workflow finished with result: %s", conversation_result)
         return conversation_result
 
-    async def run_async(self, request: ConversationRequest) -> ConversationResult:
-        return await asyncio.to_thread(self.run, request)
+    async def run_async(
+        self,
+        request: ConversationRequest,
+        *,
+        streaming_emitter: Any | None = None,
+        streaming_meta: dict[str, Any] | None = None,
+    ) -> ConversationResult:
+        return await asyncio.to_thread(
+            self.run,
+            request,
+            streaming_emitter=streaming_emitter,
+            streaming_meta=streaming_meta,
+        )

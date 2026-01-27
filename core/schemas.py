@@ -19,6 +19,9 @@ class AgentState(TypedDict):
     timing_info: NotRequired[dict[str, float]]
     bad_words: NotRequired[list[str]]  # слова, запрещённые к генерации
 
+    streaming_emitter: NotRequired[Any]
+    streaming_meta: NotRequired[dict[str, Any]]
+
 
 # TypedDict for decision result
 class Decision(TypedDict):

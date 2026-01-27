@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any
 
 from task_management.domain.conversation.models import (
     ConversationRequest,
@@ -14,10 +15,31 @@ class ConversationService:
     def __init__(self, workflow: ConversationWorkflow) -> None:
         self._workflow = workflow
 
-    def run(self, request: ConversationRequest) -> ConversationResult:
+    def run(
+        self,
+        request: ConversationRequest,
+        *,
+        streaming_emitter: Any | None = None,
+        streaming_meta: dict[str, Any] | None = None,
+    ) -> ConversationResult:
         logger.info("ConversationService handling project_id=%s", request.project_id)
-        return self._workflow.run(request)
+        return self._workflow.run(
+            request,
+            streaming_emitter=streaming_emitter,
+            streaming_meta=streaming_meta,
+        )
 
-    async def run_async(self, request: ConversationRequest) -> ConversationResult:
+    async def run_async(
+        self,
+        request: ConversationRequest,
+        *,
+        streaming_emitter: Any | None = None,
+        streaming_meta: dict[str, Any] | None = None,
+    ) -> ConversationResult:
         logger.info("ConversationService handling async project_id=%s", request.project_id)
-        return await asyncio.to_thread(self._workflow.run, request)
+        return await asyncio.to_thread(
+            self._workflow.run,
+            request,
+            streaming_emitter=streaming_emitter,
+            streaming_meta=streaming_meta,
+        )
