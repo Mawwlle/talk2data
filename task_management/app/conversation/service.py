@@ -19,13 +19,13 @@ class ConversationService:
         self,
         request: ConversationRequest,
         *,
-        streaming_emitter: Any | None = None,
+        streaming_emitter_factory: Any | None = None,
         streaming_meta: dict[str, Any] | None = None,
     ) -> ConversationResult:
         logger.info("ConversationService handling project_id=%s", request.project_id)
         return self._workflow.run(
             request,
-            streaming_emitter=streaming_emitter,
+            streaming_emitter_factory=streaming_emitter_factory,
             streaming_meta=streaming_meta,
         )
 
@@ -33,13 +33,13 @@ class ConversationService:
         self,
         request: ConversationRequest,
         *,
-        streaming_emitter: Any | None = None,
+        streaming_emitter_factory: Any | None = None,
         streaming_meta: dict[str, Any] | None = None,
     ) -> ConversationResult:
         logger.info("ConversationService handling async project_id=%s", request.project_id)
         return await asyncio.to_thread(
             self._workflow.run,
             request,
-            streaming_emitter=streaming_emitter,
+            streaming_emitter_factory=streaming_emitter_factory,
             streaming_meta=streaming_meta,
         )

@@ -2,7 +2,7 @@ import asyncio
 import copy
 import logging
 import time
-from typing import Any
+from typing import Any, Callable
 
 from task_management.domain.conversation.exceptions import ConversationWorkflowError
 from task_management.domain.conversation.models import (
@@ -43,10 +43,19 @@ class ConversationWorkflow:
         self,
         request: ConversationRequest,
         *,
-        streaming_emitter: Any | None = None,
+        streaming_emitter_factory: Callable[[], Any] | None = None,
         streaming_meta: dict[str, Any] | None = None,
     ) -> ConversationResult:
         start = time.perf_counter()
+
+        # create emitter inside the current thread (the worker thread in async path)
+        streaming_emitter = None
+        if streaming_emitter_factory is not None:
+            try:
+                streaming_emitter = streaming_emitter_factory()
+            except Exception:
+                logger.exception("Failed to create streaming emitter for project_id=%s", request.project_id)
+                streaming_emitter = None  # streaming becomes best-effort
 
         workflow_state = {
             "user_input": request.user_input,
@@ -69,6 +78,15 @@ class ConversationWorkflow:
             raise ConversationWorkflowError(
                 "Conversation workflow invocation failed", project_id=request.project_id
             ) from exc
+        finally:
+            # close emitter if it has close() / __exit__
+            if streaming_emitter is not None:
+                close = getattr(streaming_emitter, "close", None)
+                if callable(close):
+                    try:
+                        close()
+                    except Exception:
+                        logger.exception("Failed to close streaming emitter for project_id=%s", request.project_id)
 
         self._result_persister.persist(result)
 
@@ -96,12 +114,12 @@ class ConversationWorkflow:
         self,
         request: ConversationRequest,
         *,
-        streaming_emitter: Any | None = None,
+        streaming_emitter_factory: Callable[[], Any] | None = None,
         streaming_meta: dict[str, Any] | None = None,
     ) -> ConversationResult:
         return await asyncio.to_thread(
             self.run,
             request,
-            streaming_emitter=streaming_emitter,
+            streaming_emitter_factory=streaming_emitter_factory,
             streaming_meta=streaming_meta,
         )
