@@ -1,6 +1,9 @@
 import logging
-from typing import Any, Mapping
+import uuid
+from typing import Any, Callable, Mapping
 
+from core.config import settings
+from task_management.adapters.task_queue.streaming_emitter import RabbitMQStreamingEmitter
 from task_management.app.conversation.schema import ConversationPayload
 from task_management.app.conversation.service import ConversationService
 from task_management.domain.conversation.exceptions import (
@@ -29,7 +32,12 @@ class ConversationHandler:
                 chat_history=parsed_payload.chat_history,
                 project_id=parsed_payload.project_id,
             )
-            result = self._service.run(request)
+            streaming_emitter, streaming_meta = self._build_streaming(request)
+            result = self._service.run(
+                request,
+                streaming_emitter_factory=streaming_emitter,
+                streaming_meta=streaming_meta,
+            )
             return TaskResponse(
                 status="done",
                 task="llm_agent_response",
@@ -65,7 +73,12 @@ class ConversationHandler:
                 chat_history=parsed_payload.chat_history,
                 project_id=parsed_payload.project_id,
             )
-            result = await self._service.run_async(request)
+            streaming_emitter, streaming_meta = self._build_streaming(request)
+            result = await self._service.run_async(
+                request,
+                streaming_emitter_factory=streaming_emitter,
+                streaming_meta=streaming_meta,
+            )
             return TaskResponse(
                 status="done",
                 task="llm_agent_response",
@@ -115,3 +128,31 @@ class ConversationHandler:
             chat_history=list(chat_history),
             project_id=str(project_id),  # TODO: fix schema
         )
+
+    def _build_streaming(
+        self, request: ConversationRequest
+    ) -> tuple[Callable[[], RabbitMQStreamingEmitter] | None, dict[str, Any]]:
+        if not (settings.REMOTE_LLM and settings.REMOTE_LLM_STREAMING):
+            return None, {}
+
+        request_id = str(uuid.uuid4())
+        base_meta = {"request_id": request_id}
+
+        def emitter_factory() -> RabbitMQStreamingEmitter:
+            # создаётся в том треде, где вызовут factory
+            return RabbitMQStreamingEmitter(
+                host=settings.RABBITMQ_HOST,
+                user=settings.RABBITMQ_USER,
+                password=settings.RABBITMQ_PASS,
+                exchange=settings.EXCHANGE,
+                routing_key=settings.ROUTING_KEY,
+                task="llm_agent_response",
+                project_id=request.project_id,
+                base_meta=base_meta,
+            )
+
+        streaming_meta = {
+            "request_id": request_id,
+            "project_id": request.project_id,
+        }
+        return emitter_factory, streaming_meta

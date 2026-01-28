@@ -42,6 +42,48 @@ CUDA_VISIBLE_DEVICES=0 poetry run python -m core.worker
 sudo apt-get update && apt-get install -y ffmpeg
 ```
 ---
+## 🔄 Remote LLM streaming (RabbitMQ deltas)
+
+To enable token streaming for remote LLM calls (only the final graph nodes), set:
+
+```bash
+REMOTE_LLM=true
+REMOTE_LLM_STREAMING=true
+```
+
+When enabled, the worker will send intermediate delta payloads to the same RabbitMQ exchange/routing key as the final response. The final payload remains unchanged for backward compatibility, while the streaming emitter publishes additional messages for live display.
+
+**Delta message shape (example):**
+
+```json
+{
+  "project_id": "<project_id>",
+  "task": "llm_agent_response",
+  "result": {
+    "type": "delta",
+    "message": "<delta_text>",
+    "seq": 3,
+    "stream": true
+  },
+  "meta": { "node": "generate_chat_response", "request_id": "<uuid>" }
+}
+```
+
+**Streaming end message (example):**
+
+```json
+{
+  "project_id": "<project_id>",
+  "task": "llm_agent_response",
+  "result": {
+    "type": "final",
+    "message": "<final_text>"
+  },
+  "meta": { "node": "generate_chat_response", "request_id": "<uuid>" }
+}
+```
+
+For `generate_code`, the `final` payload uses a `code` field with the extracted code block.
 
 ## 🧪 Инференс и оценка на бенчмарках
 

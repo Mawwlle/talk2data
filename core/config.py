@@ -10,6 +10,7 @@ class AppSettings(BaseSettings):
     EXCHANGE: str = "smile_exchange"
     ROUTING_KEY: str = "talk2data_response"
     REMOTE_LLM: bool = True
+    REMOTE_LLM_STREAMING: bool = True
     # доступны: qwen3-instruct-30b, gigachat-20b-a3b или gpt-oss-20b
     REMOTE_MODEL_NAME: str = "qwen3-instruct-30b"
     REMOTE_URL: str = "http://10.32.15.88:4000/v1"
