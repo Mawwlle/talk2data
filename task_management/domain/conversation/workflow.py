@@ -88,7 +88,7 @@ class ConversationWorkflow:
                     except Exception:
                         logger.exception("Failed to close streaming emitter for project_id=%s", request.project_id)
 
-            result.pop("streaming_emitter")
+            result.pop("streaming_emitter", None)
 
         self._result_persister.persist(result)
 

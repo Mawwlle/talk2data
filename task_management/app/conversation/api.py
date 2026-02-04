@@ -62,6 +62,7 @@ class ConversationHandler:
 
     async def handle_async(self, payload: Mapping[str, Any]) -> TaskResponse:
         project_id = payload.get("project_id")
+        request_id = payload.get("request_id") if isinstance(payload.get("request_id"), str) else None
         logger.info(
             "ConversationHandler handling async payload for project_id=%s",
             project_id,
@@ -100,7 +101,7 @@ class ConversationHandler:
                 task="converse",
                 error=str(exc),
                 project_id=project_id,
-                request_id=parsed_payload.request_id,
+                request_id=request_id or "unknown",
             )
 
     def _parse_payload(self, payload: Mapping[str, Any]) -> ConversationPayload:
