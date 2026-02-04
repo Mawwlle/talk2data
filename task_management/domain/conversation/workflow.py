@@ -71,6 +71,7 @@ class ConversationWorkflow:
         }
 
         logger.info("Starting workflow with state: %s", workflow_state)
+        result = {}
         try:
             result = self._invoker.invoke(workflow_state)
         except Exception as exc:

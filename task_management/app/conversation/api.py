@@ -22,6 +22,7 @@ class ConversationHandler:
 
     def handle(self, payload: Mapping[str, Any]) -> TaskResponse:
         project_id = payload.get("project_id")
+        request_id = payload.get("request_id") if isinstance(payload.get("request_id"), str) else None
         logger.info("ConversationHandler handling payload for project_id=%s", project_id)
 
         try:
@@ -48,7 +49,7 @@ class ConversationHandler:
                     "timing": result.timing,
                 },
                 project_id=request.project_id,
-                request_id=parsed_payload.request_id,
+                request_id=request_id,
             )
         except ConversationError as exc:  # pragma: no cover - defensive
             logger.warning("ConversationHandler failed for project_id=%s: %s", project_id, exc)
@@ -131,7 +132,7 @@ class ConversationHandler:
         if not isinstance(request_id, str):
             raise ConversationValidationError(
                 "Conversation request_id is invalid",
-                request_id=request_id,
+                project_id=project_id,
             )
 
         return ConversationPayload(
