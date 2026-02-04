@@ -88,6 +88,8 @@ class ConversationWorkflow:
                     except Exception:
                         logger.exception("Failed to close streaming emitter for project_id=%s", request.project_id)
 
+            result.pop("streaming_emitter")
+
         self._result_persister.persist(result)
 
         total_time = round(time.perf_counter() - start, 3)
