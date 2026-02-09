@@ -13,6 +13,7 @@ class ConversationPayload(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
     chat_history: list[dict[str, Any]] = Field(default_factory=list)
     project_id: str | None = None
+    request_id: str
 
     @field_validator("user_input")
     @classmethod

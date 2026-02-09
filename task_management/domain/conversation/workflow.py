@@ -71,6 +71,7 @@ class ConversationWorkflow:
         }
 
         logger.info("Starting workflow with state: %s", workflow_state)
+        result = {}
         try:
             result = self._invoker.invoke(workflow_state)
         except Exception as exc:
@@ -87,6 +88,8 @@ class ConversationWorkflow:
                         close()
                     except Exception:
                         logger.exception("Failed to close streaming emitter for project_id=%s", request.project_id)
+
+            result.pop("streaming_emitter", None)
 
         self._result_persister.persist(result)
 
